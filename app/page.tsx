@@ -12,21 +12,22 @@ const number = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 export default function ExecutivePage() {
   const openCases = cases.length;
   const stuckCases = cases.filter((item) => item.queue === "Stuck").length;
+  const dueToday = cases.filter((item) => item.due.toLowerCase().includes("today")).length;
 
   return (
     <div className="page-stack">
       <header className="page-header">
-        <div>
-          <div className="eyebrow">Executive command center</div>
-          <h1>Attendance economics, without losing the student</h1>
+        <div className="page-header-copy">
+          <div className="eyebrow">Executive overview</div>
+          <h1>See attendance trajectory, funding exposure, and unresolved support.</h1>
           <p className="lede">
-            This MVP combines aggregate Texas ADA/funding scenarios with an operational queue for resolving the barriers behind absence.
+            Anchor connects aggregate Texas ADA planning with the operational work required to remove attendance barriers. Finance stays at the campus or network level; student support stays focused on need.
           </p>
         </div>
-        <div className="data-badge">Synthetic data · 2026–27</div>
+        <div className="data-badge"><span className="status-dot" aria-hidden="true" />Synthetic data · 2026–27</div>
       </header>
 
-      <section className="metric-grid">
+      <section className="metric-grid" aria-label="Network attendance metrics">
         <article className="metric-card">
           <span>Enrollment</span>
           <strong>{number.format(network.enrollment)}</strong>
@@ -38,14 +39,14 @@ export default function ExecutivePage() {
           <small>Illustrative current rate</small>
         </article>
         <article className="metric-card">
-          <span>ADA</span>
+          <span>Current ADA</span>
           <strong>{number.format(network.ada)}</strong>
           <small>Enrollment × attendance rate</small>
         </article>
         <article className="metric-card accent">
-          <span>Gross value of +1 point</span>
+          <span>Gross value of +1 attendance point</span>
           <strong>{money.format(network.onePointGrossValue)}</strong>
-          <small>Basic-Allotment scenario, not guaranteed net aid</small>
+          <small>Planning scenario, not guaranteed net state aid</small>
         </article>
       </section>
 
@@ -53,19 +54,20 @@ export default function ExecutivePage() {
         <article className="panel">
           <div className="panel-heading">
             <div>
-              <div className="eyebrow">Campus view</div>
+              <div className="eyebrow">Campus performance</div>
               <h2>Where attendance is drifting</h2>
             </div>
-            <Link href="/funding" className="text-link">Open funding model →</Link>
+            <Link href="/funding" className="text-link">Review funding model</Link>
           </div>
           <div className="table-wrap">
             <table>
+              <caption className="sr-only">Campus enrollment, attendance rate, and ADA</caption>
               <thead>
                 <tr>
-                  <th>Campus</th>
-                  <th>Enrollment</th>
-                  <th>Attendance</th>
-                  <th>ADA</th>
+                  <th scope="col">Campus</th>
+                  <th scope="col">Enrollment</th>
+                  <th scope="col">Attendance</th>
+                  <th scope="col">ADA</th>
                 </tr>
               </thead>
               <tbody>
@@ -82,16 +84,16 @@ export default function ExecutivePage() {
           </div>
         </article>
 
-        <article className="panel dark-panel">
+        <article className="panel resolution-panel">
           <div className="eyebrow">ResolutionOS</div>
-          <h2>What can change tomorrow?</h2>
-          <div className="resolution-summary">
+          <h2>Work that can change tomorrow&apos;s attendance</h2>
+          <div className="resolution-summary" aria-label="Resolution queue summary">
             <div><strong>{openCases}</strong><span>active demo cases</span></div>
             <div><strong>{stuckCases}</strong><span>stuck handoff</span></div>
-            <div><strong>3</strong><span>actions due today</span></div>
+            <div><strong>{dueToday}</strong><span>actions due today</span></div>
           </div>
           <p className="muted-copy">
-            Student-level workflows never display a dollar value. Financial impact stays aggregated at the campus or network level.
+            The queue tracks ownership, commitments, verification, and follow-through. It never displays a student-level dollar value.
           </p>
           <Link href="/cases" className="primary-link">Open resolution queue</Link>
         </article>

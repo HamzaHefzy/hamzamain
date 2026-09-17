@@ -13,22 +13,43 @@ export default function Image() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#10241f",
-          color: "#f5f8f7",
-          padding: 72,
+          background: "#f8fafc",
+          color: "#111b26",
+          padding: 68,
           fontFamily: "Arial, sans-serif",
+          border: "1px solid #e2e8ee",
         }}
       >
-        <div style={{ fontSize: 30, color: "#b9ead8", fontWeight: 700 }}>Anchor</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 22, maxWidth: 960 }}>
-          <div style={{ fontSize: 66, lineHeight: 1.05, fontWeight: 700 }}>
-            Attendance resolution and revenue assurance.
+        <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 30, fontWeight: 700 }}>
+          <div
+            style={{
+              width: 44,
+              height: 38,
+              borderRadius: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "#152232",
+              color: "#ffffff",
+              fontSize: 20,
+            }}
+          >
+            A
           </div>
-          <div style={{ fontSize: 28, lineHeight: 1.4, color: "#c7d7d1" }}>
-            See attendance trajectory, funding exposure, and unresolved student-support work in one operating system.
+          Anchor
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 22, maxWidth: 980 }}>
+          <div style={{ fontSize: 76, lineHeight: 1.02, letterSpacing: -3, fontWeight: 700 }}>
+            Attendance that actually gets solved.
+          </div>
+          <div style={{ fontSize: 28, lineHeight: 1.4, color: "#566675", maxWidth: 930 }}>
+            Barrier resolution, virtual participation recovery, and clearer funding impact in one operating system for schools.
           </div>
         </div>
-        <div style={{ fontSize: 20, color: "#9fb4ac" }}>Texas charter-network MVP · Synthetic data</div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 19, color: "#1769aa", fontWeight: 700 }}>
+          <span>Detect → Resolve → Verify</span>
+          <span>Anchor</span>
+        </div>
       </div>
     ),
     size,

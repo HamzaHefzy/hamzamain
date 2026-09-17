@@ -13,6 +13,11 @@ const navItems = [
   { href: "/cases", label: "ResolutionOS" },
 ];
 
+function isActive(pathname: string, href: string) {
+  if (href === "/cases") return pathname === href || pathname.startsWith("/cases/");
+  return pathname === href;
+}
+
 export default function RouteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
@@ -31,17 +36,15 @@ export default function RouteShell({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="nav app-nav">
-          {navItems.map((item) => {
-            const active =
-              pathname === item.href ||
-              (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
-
-            return (
-              <Link key={item.href} href={item.href} className={active ? "active" : undefined}>
-                {item.label}
-              </Link>
-            );
-          })}
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={isActive(pathname, item.href) ? "active" : undefined}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="sidebar-note">

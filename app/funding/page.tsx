@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { network, campuses } from "@/lib/data";
+
+export const metadata: Metadata = {
+  title: "Funding Impact",
+  description: "Texas ADA and Basic-Allotment planning scenarios for Anchor.",
+};
 
 const money = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -10,16 +16,17 @@ export default function FundingPage() {
   return (
     <div className="page-stack">
       <header className="page-header">
-        <div>
-          <div className="eyebrow">Funding Impact Engine</div>
-          <h1>Turn attendance movement into a finance scenario</h1>
+        <div className="page-header-copy">
+          <div className="eyebrow">Funding impact</div>
+          <h1>Make the attendance-to-funding relationship explicit.</h1>
           <p className="lede">
-            The first Texas model uses the 2026–27 Basic Allotment of ${network.basicAllotment.toLocaleString()} per ADA as a transparent planning input.
+            The Texas MVP uses the 2026–27 Basic Allotment of ${network.basicAllotment.toLocaleString()} per ADA as a transparent planning input. It is a scenario model, not a promise of net state aid.
           </p>
         </div>
+        <div className="data-badge"><span className="status-dot" aria-hidden="true" />Aggregate finance view</div>
       </header>
 
-      <section className="metric-grid three">
+      <section className="metric-grid three" aria-label="Funding metrics">
         <article className="metric-card">
           <span>Current ADA</span>
           <strong>{network.ada.toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong>
@@ -31,17 +38,24 @@ export default function FundingPage() {
           <small>ADA × Basic Allotment</small>
         </article>
         <article className="metric-card accent">
-          <span>+1 attendance point</span>
+          <span>Value of +1 attendance point</span>
           <strong>{money.format(network.onePointGrossValue)}</strong>
           <small>+{network.onePointAda.toFixed(0)} ADA in this network</small>
         </article>
+      </section>
+
+      <section className="formula-strip" aria-label="Funding formula">
+        <strong>Planning formula</strong>
+        <code>ADA = enrollment × attendance rate</code>
+        <span>then</span>
+        <code>gross base-formula value = ADA × Basic Allotment</code>
       </section>
 
       <section className="panel">
         <div className="panel-heading">
           <div>
             <div className="eyebrow">Scenario ladder</div>
-            <h2>What different attendance levels imply</h2>
+            <h2>How attendance movement changes the planning model</h2>
           </div>
         </div>
         <div className="scenario-grid">
@@ -49,11 +63,11 @@ export default function FundingPage() {
             const ada = network.enrollment * rate;
             const value = ada * network.basicAllotment;
             return (
-              <div className="scenario-card" key={rate}>
+              <article className="scenario-card" key={rate}>
                 <span>{(rate * 100).toFixed(0)}% attendance</span>
                 <strong>{ada.toLocaleString()} ADA</strong>
                 <small>{money.format(value)} gross base-formula scenario</small>
-              </div>
+              </article>
             );
           })}
         </div>
@@ -63,17 +77,18 @@ export default function FundingPage() {
         <div className="panel-heading">
           <div>
             <div className="eyebrow">Campus exposure</div>
-            <h2>Aggregate finance view only</h2>
+            <h2>Compare aggregate attendance economics by campus</h2>
           </div>
         </div>
         <div className="table-wrap">
           <table>
+            <caption className="sr-only">Campus attendance and aggregate gross formula scenarios</caption>
             <thead>
               <tr>
-                <th>Campus</th>
-                <th>Attendance</th>
-                <th>ADA</th>
-                <th>Gross value of +1 point</th>
+                <th scope="col">Campus</th>
+                <th scope="col">Attendance</th>
+                <th scope="col">ADA</th>
+                <th scope="col">Gross value of +1 point</th>
               </tr>
             </thead>
             <tbody>
@@ -91,7 +106,7 @@ export default function FundingPage() {
       </section>
 
       <section className="disclaimer">
-        <strong>Important:</strong> this is an aggregate planning model, not a claim that each incremental ADA produces exactly the displayed net cash amount. Production finance logic must incorporate the organization’s actual Texas FSP circumstances.
+        <strong>Important:</strong> this is an aggregate planning model, not a claim that each incremental ADA produces exactly the displayed net cash amount. Production finance logic must incorporate the organization&apos;s actual Texas FSP circumstances.
       </section>
     </div>
   );

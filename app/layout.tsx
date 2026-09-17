@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import RouteShell from "@/components/RouteShell";
 import "./globals.css";
+import "./marketing.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -8,20 +9,16 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: "Anchor",
   title: {
-    default: "Anchor | Attendance Resolution & Revenue Assurance",
+    default: "Anchor | Attendance that actually gets solved",
     template: "%s | Anchor",
   },
   description:
-    "Attendance resolution, virtual attendance evidence, and revenue assurance for school systems, beginning with Texas charter networks.",
+    "Anchor helps districts and virtual schools turn attendance data into barrier resolution, verified support, virtual participation recovery, and clearer funding impact.",
   openGraph: {
-    title: "Anchor | Attendance Resolution & Revenue Assurance",
+    title: "Anchor | Attendance that actually gets solved",
     description:
-      "See attendance trajectory, funding exposure, virtual attendance evidence, and unresolved student-support work in one operating system.",
+      "Attendance resolution, virtual participation recovery, and funding impact in one operating system for schools.",
     type: "website",
-  },
-  robots: {
-    index: false,
-    follow: false,
   },
 };
 
@@ -29,30 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <div className="app-shell">
-          <aside className="sidebar" aria-label="Primary navigation">
-            <div>
-              <div className="brand-mark" aria-hidden="true">A</div>
-              <div className="brand">Anchor</div>
-              <p className="brand-subtitle">Attendance resolution and revenue assurance</p>
-            </div>
-            <nav className="nav">
-              <Link href="/">Executive</Link>
-              <Link href="/funding">Funding</Link>
-              <Link href="/virtual">Anchor Virtual</Link>
-              <Link href="/virtual/show-up">Show-Up Engine</Link>
-              <Link href="/cases">ResolutionOS</Link>
-            </nav>
-            <div className="sidebar-note">Synthetic Texas charter-network environment</div>
-          </aside>
-          <main className="main-content">
-            {children}
-            <footer className="app-footer">
-              <span>© 2026 Anchor. Internal product prototype.</span>
-              <span>Synthetic data only · No student-level financial valuation</span>
-            </footer>
-          </main>
-        </div>
+        <RouteShell>{children}</RouteShell>
       </body>
     </html>
   );

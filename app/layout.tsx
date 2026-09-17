@@ -12,11 +12,11 @@ export const metadata: Metadata = {
     template: "%s | Anchor",
   },
   description:
-    "Attendance resolution and revenue assurance for school systems, beginning with Texas charter networks.",
+    "Attendance resolution, virtual attendance evidence, and revenue assurance for school systems, beginning with Texas charter networks.",
   openGraph: {
     title: "Anchor | Attendance Resolution & Revenue Assurance",
     description:
-      "See attendance trajectory, funding exposure, and unresolved student-support work in one operating system.",
+      "See attendance trajectory, funding exposure, virtual attendance evidence, and unresolved student-support work in one operating system.",
     type: "website",
   },
   robots: {
@@ -39,6 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <nav className="nav">
               <Link href="/">Executive</Link>
               <Link href="/funding">Funding</Link>
+              <Link href="/virtual">Anchor Virtual</Link>
               <Link href="/cases">ResolutionOS</Link>
             </nav>
             <div className="sidebar-note">Synthetic Texas charter-network environment</div>

@@ -40,6 +40,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <Link href="/">Executive</Link>
               <Link href="/funding">Funding</Link>
               <Link href="/virtual">Anchor Virtual</Link>
+              <Link href="/virtual/show-up">Show-Up Engine</Link>
               <Link href="/cases">ResolutionOS</Link>
             </nav>
             <div className="sidebar-note">Synthetic Texas charter-network environment</div>

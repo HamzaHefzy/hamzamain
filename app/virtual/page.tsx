@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   evidenceSources,
   virtualExceptions,
@@ -21,7 +22,7 @@ export default function VirtualPage() {
           <div className="eyebrow">Anchor Virtual</div>
           <h1>Make every virtual attendance record defensible before the day closes.</h1>
           <p className="lede">
-            Anchor combines LMS activity, teacher-student interactions, assignment evidence, policy rules, and ResolutionOS follow-through into one audit-ready virtual attendance workflow.
+            Anchor combines LMS activity, teacher-student interactions, assignment evidence, policy rules, proactive show-up recovery, and ResolutionOS follow-through into one audit-ready virtual attendance workflow.
           </p>
         </div>
         <div className="data-badge">
@@ -87,19 +88,17 @@ export default function VirtualPage() {
         </article>
 
         <article className="panel resolution-panel">
-          <div className="eyebrow">Day-close logic</div>
-          <h2>Exceptions become action, not manual cleanup.</h2>
+          <div className="eyebrow">From evidence to attendance recovery</div>
+          <h2>Do not wait until tomorrow to discover today&apos;s no-show.</h2>
           <p className="muted-copy">
-            Anchor first looks for approved evidence. If the record is unsupported, it routes the smallest next action: link existing evidence, contact the student, ask for a teacher confirmation, or open a ResolutionOS barrier case.
+            Anchor first looks for approved evidence. If a student has not participated, the Show-Up Engine removes friction before class, asks what blocked participation after a miss, and escalates repeated disengagement to a named human owner.
           </p>
           <div className="resolution-summary">
-            <div><strong>1</strong><span>collect evidence</span></div>
-            <div><strong>2</strong><span>apply local policy</span></div>
-            <div><strong>3</strong><span>resolve exception</span></div>
+            <div><strong>1</strong><span>prevent the miss</span></div>
+            <div><strong>2</strong><span>recover today</span></div>
+            <div><strong>3</strong><span>human rescue</span></div>
           </div>
-          <p className="muted-copy">
-            No keystroke monitoring, always-on webcam checks, or student-level financial ranking.
-          </p>
+          <Link className="primary-link" href="/virtual/show-up">Open Show-Up Engine</Link>
         </article>
       </section>
 
@@ -139,14 +138,14 @@ export default function VirtualPage() {
 
       <section className="scenario-grid" aria-label="Virtual product value layers">
         <article className="scenario-card">
+          <span>Show-up recovery</span>
+          <strong>Same-day</strong>
+          <small>Prevent avoidable misses, identify the barrier quickly, and recover instructional participation before the day closes.</small>
+        </article>
+        <article className="scenario-card">
           <span>Attendance evidence</span>
           <strong>Policy-aware</strong>
           <small>LMS progress, teacher interaction, assignment submission, and approved local evidence.</small>
-        </article>
-        <article className="scenario-card">
-          <span>Student re-engagement</span>
-          <strong>Closed loop</strong>
-          <small>Unsupported attendance can become a barrier check-in and ResolutionOS case before disengagement compounds.</small>
         </article>
         <article className="scenario-card">
           <span>Audit support</span>

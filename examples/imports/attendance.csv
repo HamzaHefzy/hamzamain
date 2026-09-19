@@ -1,0 +1,3 @@
+student_external_id,date,status,source,occurred_at,minutes,external_event_id
+S10001,2026-09-18,present,sis,2026-09-18T08:05:00-05:00,420,ATT-10001
+S10002,2026-09-18,absent,sis,2026-09-18T08:05:00-05:00,,ATT-10002

@@ -1,84 +1,54 @@
 import Link from "next/link";
-import { campuses, cases, network } from "@/lib/data";
+import { requireSession } from "@/lib/auth";
+import { getDashboardSnapshot } from "@/lib/data-access";
 
-const money = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
+export const dynamic = "force-dynamic";
 
+const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 const number = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+const pct = (value: number | null) => value === null ? "—" : (value * 100).toFixed(1) + "%";
 
-export default function DashboardPage() {
-  const openCases = cases.length;
-  const stuckCases = cases.filter((item) => item.queue === "Stuck").length;
-  const dueToday = cases.filter((item) => item.due.toLowerCase().includes("today")).length;
+export default async function DashboardPage() {
+  const session = await requireSession();
+  const snapshot = await getDashboardSnapshot(session.orgId);
 
   return (
     <div className="page-stack">
       <header className="page-header">
         <div className="page-header-copy">
           <div className="eyebrow">Executive overview</div>
-          <h1>Attendance operations, funding impact, and student support in one view.</h1>
+          <h1>Good to see you, {session.name.split(" ")[0]}.</h1>
           <p className="lede">
-            Anchor connects aggregate Texas ADA planning with the operational work required to remove attendance barriers. Finance stays at the campus or network level; student support stays focused on need.
+            {session.orgName} now has one operating view for attendance, unresolved barriers,
+            virtual participation, and aggregate funding impact.
           </p>
         </div>
-        <div className="data-badge"><span className="status-dot" aria-hidden="true" />Synthetic data · 2026–27</div>
+        <div className="data-badge"><span className="status-dot" aria-hidden="true" />Live organization workspace</div>
       </header>
 
-      <section className="metric-grid" aria-label="Network attendance metrics">
-        <article className="metric-card">
-          <span>Enrollment</span>
-          <strong>{number.format(network.enrollment)}</strong>
-          <small>Network total</small>
-        </article>
-        <article className="metric-card">
-          <span>Current attendance</span>
-          <strong>{(network.attendanceRate * 100).toFixed(1)}%</strong>
-          <small>Illustrative current rate</small>
-        </article>
-        <article className="metric-card">
-          <span>Current ADA</span>
-          <strong>{number.format(network.ada)}</strong>
-          <small>Enrollment × attendance rate</small>
-        </article>
-        <article className="metric-card accent">
-          <span>Gross value of +1 attendance point</span>
-          <strong>{money.format(network.onePointGrossValue)}</strong>
-          <small>Planning scenario, not guaranteed net state aid</small>
-        </article>
+      <section className="metric-grid" aria-label="Organization attendance metrics">
+        <article className="metric-card"><span>Active enrollment</span><strong>{number.format(snapshot.enrollment)}</strong><small>Across active campuses</small></article>
+        <article className="metric-card"><span>Recorded attendance</span><strong>{pct(snapshot.attendanceRate)}</strong><small>Last 30 calendar days of loaded daily records</small></article>
+        <article className="metric-card"><span>Current ADA scenario</span><strong>{snapshot.currentAda === null ? "—" : number.format(snapshot.currentAda)}</strong><small>Enrollment × recorded attendance</small></article>
+        <article className="metric-card accent"><span>Gross value of +1 attendance point</span><strong>{snapshot.onePointGrossValue === null ? "—" : money.format(snapshot.onePointGrossValue)}</strong><small>Aggregate planning scenario only</small></article>
       </section>
 
       <section className="two-column">
         <article className="panel">
           <div className="panel-heading">
-            <div>
-              <div className="eyebrow">Campus performance</div>
-              <h2>Where attendance is drifting</h2>
-            </div>
-            <Link href="/funding" className="text-link">Review funding model</Link>
+            <div><div className="eyebrow">Campus performance</div><h2>Where attendance needs attention</h2></div>
+            <Link href="/attendance" className="text-link">Manage attendance data</Link>
           </div>
           <div className="table-wrap">
             <table>
-              <caption className="sr-only">Campus enrollment, attendance rate, and ADA</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Campus</th>
-                  <th scope="col">Enrollment</th>
-                  <th scope="col">Attendance</th>
-                  <th scope="col">ADA</th>
-                </tr>
-              </thead>
+              <thead><tr><th>Campus</th><th>Model</th><th>Enrollment</th><th>Recorded attendance</th></tr></thead>
               <tbody>
-                {campuses.map((campus) => (
-                  <tr key={campus.name}>
-                    <td>{campus.name}</td>
-                    <td>{number.format(campus.enrollment)}</td>
-                    <td>{(campus.attendanceRate * 100).toFixed(1)}%</td>
-                    <td>{number.format(campus.ada)}</td>
+                {snapshot.campuses.length ? snapshot.campuses.map((campus) => (
+                  <tr key={campus.id}>
+                    <td>{campus.name}</td><td>{campus.deliveryModel.replaceAll("_"," ")}</td>
+                    <td>{number.format(campus.enrollment)}</td><td>{pct(campus.attendanceRate)}</td>
                   </tr>
-                ))}
+                )) : <tr><td colSpan={4}>No campuses are configured yet.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -86,21 +56,22 @@ export default function DashboardPage() {
 
         <article className="panel resolution-panel">
           <div className="eyebrow">ResolutionOS</div>
-          <h2>Work that can change tomorrow&apos;s attendance</h2>
-          <div className="resolution-summary" aria-label="Resolution queue summary">
-            <div><strong>{openCases}</strong><span>active demo cases</span></div>
-            <div><strong>{stuckCases}</strong><span>stuck handoff</span></div>
-            <div><strong>{dueToday}</strong><span>actions due today</span></div>
+          <h2>Attendance only improves when the next action happens.</h2>
+          <div className="resolution-summary">
+            <div><strong>{snapshot.openCases}</strong><span>open cases</span></div>
+            <div><strong>{snapshot.stuckCases}</strong><span>stuck handoffs</span></div>
+            <div><strong>{snapshot.dueToday}</strong><span>due or overdue</span></div>
           </div>
-          <p className="muted-copy">
-            The queue tracks ownership, commitments, verification, and follow-through. It never displays a student-level dollar value.
-          </p>
-          <Link href="/cases" className="primary-link">Open resolution queue</Link>
+          <p className="muted-copy">Student-level work stays separate from financial valuation. Cases are prioritized by need, urgency, and actionability.</p>
+          <Link href="/cases" className="primary-link">Open ResolutionOS</Link>
         </article>
       </section>
 
-      <section className="disclaimer">
-        <strong>Finance-model disclaimer:</strong> gross Basic-Allotment values are planning scenarios only. Actual Texas FSP impact can differ because of weights, recapture, local/state interactions, attendance-accounting rules, and other formula components.
+      <section className="scenario-grid">
+        <Link className="scenario-card" href="/attendance"><span>Data operations</span><strong>Attendance</strong><small>Roster, daily attendance, and participation imports.</small></Link>
+        <Link className="scenario-card" href="/virtual"><span>Virtual schools</span><strong>Evidence</strong><small>Policy-aware participation and exception resolution.</small></Link>
+        <Link className="scenario-card" href="/virtual/show-up"><span>Recovery operations</span><strong>Show-Up</strong><small>Miss detection, check-ins, and same-day intervention.</small></Link>
+        <Link className="scenario-card" href="/funding"><span>Finance</span><strong>Funding impact</strong><small>Aggregate scenario modeling and assumptions.</small></Link>
       </section>
     </div>
   );

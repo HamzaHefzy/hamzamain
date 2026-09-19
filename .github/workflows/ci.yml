@@ -2,17 +2,67 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, production-v1]
   pull_request:
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: anchor
+          POSTGRES_USER: anchor
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U anchor -d anchor"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      DATABASE_URL: postgres://anchor@localhost:5432/anchor
+      DATABASE_SSL: "false"
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm install
-      - run: npm run build
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=moderate
+
+      - name: Source hygiene
+        run: npm run check:source
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Migrate database
+        run: npm run db:migrate
+
+      - name: Seed database
+        env:
+          SEED_ADMIN_EMAIL: ci-admin@example.invalid
+          SEED_ADMIN_PASSWORD: ci-only-password-value
+          SEED_ORG_NAME: Anchor CI District
+          SEED_ORG_SLUG: anchor-ci
+        run: npm run db:seed
+
+      - name: Test
+        run: npm test
+
+      - name: Production build
+        env:
+          AUTH_SECRET: ci-only-auth-secret-value-with-more-than-thirty-two-characters
+        run: npm run build

@@ -79,10 +79,11 @@ export default function MarketingHome() {
             <a href="#virtual">Virtual schools</a>
             <Link href="/funding">Funding</Link>
             <a href="#how">How it works</a>
+            <Link href="/pricing">Pricing</Link>
           </nav>
           <div className="m-nav-actions">
-            <Link href="/dashboard" className="m-nav-secondary">Sign in</Link>
-            <Link href="/dashboard" className="m-button dark compact">View platform <ArrowIcon /></Link>
+            <Link href="/login" className="m-nav-secondary">Sign in</Link>
+            <Link href="/request-demo" className="m-button dark compact">Request demo <ArrowIcon /></Link>
           </div>
         </div>
       </header>
@@ -97,7 +98,7 @@ export default function MarketingHome() {
                 Anchor helps districts and virtual schools turn attendance data into barrier resolution, verified support, and clearer funding impact.
               </p>
               <div className="m-hero-actions">
-                <Link href="/dashboard" className="m-button dark">See platform <ArrowIcon /></Link>
+                <Link href="/request-demo" className="m-button dark">Request demo <ArrowIcon /></Link>
                 <Link href="/virtual" className="m-button light">Explore virtual schools</Link>
               </div>
               <div className="m-hero-proof">More students present. Fewer barriers. Better follow-through.</div>
@@ -207,7 +208,7 @@ export default function MarketingHome() {
               <p>Explore the working prototype for district attendance, virtual participation, funding scenarios, and barrier resolution.</p>
             </div>
             <div className="m-final-actions">
-              <Link href="/dashboard" className="m-button dark">Open the platform <ArrowIcon /></Link>
+              <Link href="/login" className="m-button dark">Sign in to workspace <ArrowIcon /></Link>
               <Link href="/virtual/show-up" className="m-button light">See virtual recovery</Link>
             </div>
           </div>
@@ -217,7 +218,7 @@ export default function MarketingHome() {
       <footer className="m-footer">
         <div className="m-container m-footer-grid">
           <div><Logo /><p>Attendance today. Better follow-through tomorrow.</p></div>
-          <nav aria-label="Footer navigation"><a href="#product">Product</a><a href="#solutions">Solutions</a><Link href="/virtual">Virtual schools</Link><Link href="/funding">Funding</Link></nav>
+          <nav aria-label="Footer navigation"><a href="#product">Product</a><a href="#solutions">Solutions</a><Link href="/virtual">Virtual schools</Link><Link href="/funding">Funding</Link><Link href="/security">Security</Link><Link href="/privacy">Privacy</Link></nav>
           <div className="m-footer-note"><span>Student support before surveillance.</span><small>© 2026 Anchor.</small></div>
         </div>
       </footer>

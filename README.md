@@ -1,56 +1,79 @@
 # Anchor
 
-Anchor is an attendance-resolution and revenue-assurance platform for school systems. The first product is a Texas charter-network MVP that combines aggregate ADA/funding visibility with a student-support ResolutionOS.
+Anchor is an attendance-resolution operating system for school systems. It combines attendance ingestion, ResolutionOS case execution, virtual participation recovery, and aggregate attendance-linked funding planning in one organization-scoped workspace.
+
+## Production-v1 capabilities
+
+- PostgreSQL multi-tenancy
+- signed sessions and role-based access
+- team invitations and password recovery
+- campus and delivery-model configuration
+- versioned virtual attendance policies
+- roster, attendance, evidence, and virtual-session CSV ingestion
+- OneRoster roster synchronization with encrypted OAuth credentials
+- persistent ResolutionOS cases, owners, commitments, verification, and history
+- virtual evidence adjudication
+- scheduled-session Show-Up recovery and secure student barrier check-ins
+- Twilio SMS and Resend email adapters
+- aggregate funding assumptions and scenarios
+- audit logging
+- public pricing and sales lead capture
+- Docker support and PostgreSQL-backed CI
 
 ## Product guardrail
 
-Finance views may show aggregate campus/network funding scenarios. Student-level views must never assign or display a dollar value to an individual child.
+Finance views may show aggregate campus/network funding scenarios. Student-level views must never assign or display a dollar value to an individual child, and support prioritization must not depend on funding weight.
 
-## Current MVP
+## Local development
 
-The repository now includes:
+Start PostgreSQL:
 
-- `/` — executive ADA + attendance economics dashboard
-- `/funding` — transparent Texas Basic-Allotment scenario model
-- `/cases` — ResolutionOS queue organized as Do Now / Stuck / Check Outcome
-- `lib/finance.ts` — deterministic ADA/funding calculations
-- `lib/data.ts` — synthetic charter-network and case data
-- `docs/PRODUCT_GUARDRAILS.md` — financial/privacy product constraints
-- `.github/workflows/ci.yml` — build verification
+~~~bash
+docker compose up -d
+~~~
 
-## Run locally
+Install dependencies and export development environment variables:
 
-```bash
+~~~bash
 npm install
+export DATABASE_URL=postgres://anchor:anchor@localhost:5432/anchor
+export DATABASE_SSL=false
+export AUTH_SECRET="replace-with-at-least-32-random-characters"
+export SEED_ADMIN_EMAIL=admin@example.org
+export SEED_ADMIN_PASSWORD="replace-with-a-development-password"
+export SEED_ORG_NAME="Anchor Demo District"
+export SEED_ORG_SLUG="anchor-demo"
+npm run db:setup
 npm run dev
-```
+~~~
 
-Then open `http://localhost:3000`.
+Open http://localhost:3000.
 
-For a production build:
+## Validation
 
-```bash
+~~~bash
+npm run check:source
+npm run typecheck
+npm test
 npm run build
-npm start
-```
+~~~
 
-## Initial stack
+GitHub Actions additionally starts PostgreSQL, runs migrations and seed, executes the database smoke test, and performs the production build.
 
-- Next.js 16.3.3 (Active LTS)
-- React 19.3
-- TypeScript
-- CSS variables/components
-- synthetic data only during the MVP phase
+## Customer setup
 
-## First milestone
+See:
 
-The first runnable version answers four questions every morning:
-
-1. What is our current ADA trajectory?
-2. What is the gross funding exposure associated with that trajectory?
-3. Which attendance barriers can we act on today?
-4. Did completed interventions improve attendance?
+- docs/DEPLOYMENT.md
+- docs/CUSTOMER_ONBOARDING.md
+- docs/SECURITY.md
+- docs/PRODUCT_GUARDRAILS.md
+- examples/imports/
 
 ## Important finance disclaimer
 
-The MVP's Texas finance numbers are gross Basic-Allotment planning scenarios, not guarantees of net state-aid impact. Production calculations must incorporate the customer's actual Foundation School Program circumstances and current TEA attendance-accounting rules.
+Texas funding values in Anchor are transparent planning scenarios, not guarantees of net state-aid impact. Production calculations must be reconciled to the customer's actual Foundation School Program circumstances and current attendance-accounting rules.
+
+## Integration truthfulness
+
+CSV import and the OneRoster roster adapter are implemented paths. Other named SIS/LMS vendors should not be represented as live integrations until their provider-specific adapters have been implemented and validated with authorized customer credentials.

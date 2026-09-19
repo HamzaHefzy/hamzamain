@@ -13,7 +13,7 @@ const navItems = [
   { href: "/virtual", label: "Virtual" },
   { href: "/virtual/show-up", label: "Show-Up" },
   { href: "/funding", label: "Funding" },
-  { href: "/integrations", label: "Integrations" },
+  { href: "/integrations", label: "Integrations" },\n  { href: "/team", label: "Team" },
 ];
 
 const publicPaths = new Set(["/", "/login", "/request-demo", "/pricing"]);
@@ -27,7 +27,7 @@ function isActive(pathname: string, href: string) {
 export default function RouteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
-  if (publicPaths.has(pathname) || pathname.startsWith("/check-in/")) {
+  if (publicPaths.has(pathname) || pathname === "/forgot-password" || pathname.startsWith("/check-in/") || pathname.startsWith("/invite/") || pathname.startsWith("/reset-password/")) {
     return <>{children}</>;
   }
 

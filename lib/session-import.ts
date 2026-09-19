@@ -172,6 +172,8 @@ export async function importVirtualSessionsCsv(input: {
                     decided_by = excluded.decided_by,
                     decided_at = now(),
                     updated_at = now()
+                where attendance_daily.source = 'virtual_policy'
+                   or attendance_daily.status = 'unresolved'
             `;
           }
         }

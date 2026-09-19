@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       join organizations o on o.id = m.org_id
       where lower(u.email) = lower(${input.email})
         and u.active = true
+        and m.active = true
         and o.status in ('active','trial')
         and (${input.organization ?? null}::text is null or o.slug = ${input.organization ?? null})
       order by o.created_at

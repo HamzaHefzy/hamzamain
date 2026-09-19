@@ -3,7 +3,7 @@ import {
   adjudicateVirtualEvidence,
   evidenceQualifies,
   type VirtualPolicyConfig,
-} from "@/lib/virtual-policy";
+} from "../lib/virtual-policy";
 
 const policy: VirtualPolicyConfig = {
   qualifyingEvidence: ["lms_progress", "teacher_interaction", "live_session"],

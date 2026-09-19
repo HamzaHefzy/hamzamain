@@ -111,3 +111,34 @@
   .form-grid.two { grid-template-columns: 1fr; }
   .inline-settings-form { grid-template-columns: 1fr; }
 }
+
+.case-create-form, .case-editor { display: grid; gap: 16px; }
+.case-create-form label, .case-editor label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted-strong);
+  font-size: 12px;
+  font-weight: 650;
+}
+.case-create-form input, .case-create-form select, .case-create-form textarea,
+.case-editor input, .case-editor select, .case-editor textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-strong);
+}
+.case-create-form textarea, .case-editor textarea { resize: vertical; }
+.button-link { border: 0; background: transparent; cursor: pointer; }
+.case-editor-stack { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--space-4); }
+.case-editor-stack > :nth-child(3) { grid-column: 1 / -1; }
+.editor-message { color: var(--muted); grid-column: 1 / -1; }
+.checkin-form { display: grid; gap: 18px; margin-top: 24px; }
+.checkin-form fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 9px; }
+.checkin-form legend { font-weight: 750; margin-bottom: 10px; }
+.checkin-option { display: flex !important; grid-template-columns: none !important; align-items: center; gap: 10px !important; padding: 11px 12px; border: 1px solid #dce4eb; border-radius: 10px; cursor: pointer; }
+.checkin-option input { width: auto !important; min-height: auto !important; }
+.checkin-success { padding: 18px; border-radius: 12px; background: #eaf7f0; color: #176a48; line-height: 1.6; }
+@media (max-width: 850px) { .case-editor-stack { grid-template-columns: 1fr; } .case-editor-stack > :nth-child(3) { grid-column: auto; } }

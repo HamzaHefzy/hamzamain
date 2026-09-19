@@ -159,19 +159,19 @@ export async function syncOneRoster(integration: IntegrationRow) {
     for (const org of orgs) {
       if (!org.sourcedId || !org.name) continue;
       const code = (org.identifier || org.sourcedId).slice(0, 120);
-      const [campus] = await tx<{ id: string }[]>\`
+      const [campus] = await tx<{ id: string }[]>`
         insert into campuses (
           org_id, name, code, delivery_model
         )
         values (
-          \${integration.org_id}, \${org.name}, \${code}, 'in_person'
+          ${integration.org_id}, ${org.name}, ${code}, 'in_person'
         )
         on conflict (org_id, code) do update
           set name = excluded.name,
               active = true,
               updated_at = now()
         returning id
-      \`;
+      `;
       campusBySourcedId.set(org.sourcedId, campus.id);
       campusesUpserted += 1;
     }
@@ -184,16 +184,16 @@ export async function syncOneRoster(integration: IntegrationRow) {
       const lastName = student.familyName?.trim() || student.identifier?.trim() || student.sourcedId;
       const grade = student.grades?.[0] ?? null;
 
-      await tx\`
+      await tx`
         insert into students (
           org_id, campus_id, external_id, first_name, last_name,
           grade, email, phone, metadata
         )
         values (
-          \${integration.org_id}, \${campusId}, \${student.sourcedId},
-          \${firstName}, \${lastName}, \${grade},
-          \${student.email ?? null}, \${student.phone ?? student.sms ?? null},
-          \${tx.json({ source: "oneroster", identifier: student.identifier ?? null })}
+          ${integration.org_id}, ${campusId}, ${student.sourcedId},
+          ${firstName}, ${lastName}, ${grade},
+          ${student.email ?? null}, ${student.phone ?? student.sms ?? null},
+          ${tx.json({ source: "oneroster", identifier: student.identifier ?? null })}
         )
         on conflict (org_id, external_id) do update
           set campus_id = coalesce(excluded.campus_id, students.campus_id),
@@ -205,7 +205,7 @@ export async function syncOneRoster(integration: IntegrationRow) {
               active = true,
               metadata = students.metadata || excluded.metadata,
               updated_at = now()
-      \`;
+      `;
       studentsUpserted += 1;
     }
   });
@@ -215,12 +215,12 @@ export async function syncOneRoster(integration: IntegrationRow) {
 
 export async function syncIntegration(orgId: string, integrationId: string) {
   const sql = db();
-  const [integration] = await sql<IntegrationRow[]>\`
+  const [integration] = await sql<IntegrationRow[]>`
     select id, org_id, provider, public_config, encrypted_config
     from integrations
-    where id = \${integrationId} and org_id = \${orgId}
+    where id = ${integrationId} and org_id = ${orgId}
     limit 1
-  \`;
+  `;
   if (!integration) throw new Error("Integration not found.");
 
   try {
@@ -235,25 +235,25 @@ export async function syncIntegration(orgId: string, integrationId: string) {
       );
     }
 
-    await sql\`
+    await sql`
       update integrations
       set status = 'active',
           last_sync_at = now(),
           last_error = null,
           updated_at = now()
-      where id = \${integrationId} and org_id = \${orgId}
-    \`;
+      where id = ${integrationId} and org_id = ${orgId}
+    `;
 
     return stats;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Integration sync failed.";
-    await sql\`
+    await sql`
       update integrations
       set status = 'error',
-          last_error = \${message},
+          last_error = ${message},
           updated_at = now()
-      where id = \${integrationId} and org_id = \${orgId}
-    \`;
+      where id = ${integrationId} and org_id = ${orgId}
+    `;
     throw error;
   }
 }

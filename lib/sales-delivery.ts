@@ -40,6 +40,10 @@ async function claimDelivery(
           last_attempt_at = now(),
           updated_at = now()
       where lead_deliveries.status = 'failed'
+         or (
+           lead_deliveries.status = 'processing'
+           and lead_deliveries.last_attempt_at <= now() - interval '15 minutes'
+         )
     returning id
   `;
   return row?.id ?? null;
@@ -164,6 +168,27 @@ async function deliverWebhook(lead: SalesLead): Promise<DeliveryResult | null> {
     return { channel: "webhook", status: "failed" };
   }
 
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(url);
+  } catch {
+    await finishDelivery({
+      id: deliveryId,
+      status: "failed",
+      error: "SALES_WEBHOOK_URL is not a valid URL.",
+    });
+    return { channel: "webhook", status: "failed" };
+  }
+
+  if (process.env.NODE_ENV === "production" && parsedUrl.protocol !== "https:") {
+    await finishDelivery({
+      id: deliveryId,
+      status: "failed",
+      error: "SALES_WEBHOOK_URL must use HTTPS in production.",
+    });
+    return { channel: "webhook", status: "failed" };
+  }
+
   const payload = JSON.stringify({
     event: "lead.created",
     version: 1,
@@ -225,13 +250,39 @@ export async function retryFailedSalesLeadDeliveries(limit = 50) {
     message: string | null;
     created_at: Date;
   }[]>`
-    select distinct l.id, l.name, l.email, l.organization, l.role,
+    select l.id, l.name, l.email, l.organization, l.role,
            l.enrollment, l.state, l.interest, l.message, l.created_at
     from leads l
-    join lead_deliveries d on d.lead_id = l.id
-    where d.status = 'failed'
-      and d.last_attempt_at <= now() - interval '5 minutes'
-      and l.created_at >= now() - interval '14 days'
+    where l.created_at >= now() - interval '14 days'
+      and (
+        (
+          ${Boolean(process.env.SALES_ALERT_EMAIL)}
+          and not exists (
+            select 1 from lead_deliveries d
+            where d.lead_id = l.id
+              and d.channel = 'email'
+              and (
+                d.status = 'sent'
+                or (d.status = 'processing' and d.last_attempt_at > now() - interval '15 minutes')
+                or (d.status = 'failed' and d.last_attempt_at > now() - interval '5 minutes')
+              )
+          )
+        )
+        or
+        (
+          ${Boolean(process.env.SALES_WEBHOOK_URL)}
+          and not exists (
+            select 1 from lead_deliveries d
+            where d.lead_id = l.id
+              and d.channel = 'webhook'
+              and (
+                d.status = 'sent'
+                or (d.status = 'processing' and d.last_attempt_at > now() - interval '15 minutes')
+                or (d.status = 'failed' and d.last_attempt_at > now() - interval '5 minutes')
+              )
+          )
+        )
+      )
     order by l.created_at
     limit ${limit}
   `;

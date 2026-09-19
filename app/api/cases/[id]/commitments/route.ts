@@ -24,12 +24,12 @@ export async function POST(request: Request, context: Context) {
     const input = schema.parse(await request.json());
     const sql = db();
 
-    const [caseRow] = await sql<{ id: string }[]>\`
+    const [caseRow] = await sql<{ id: string }[]>`
       select id from cases
-      where org_id = \${session.orgId}
-        and (id::text = \${id} or case_number = \${id})
+      where org_id = ${session.orgId}
+        and (id::text = ${id} or case_number = ${id})
       limit 1
-    \`;
+    `;
     if (!caseRow) return NextResponse.json({ error: "Case not found." }, { status: 404 });
 
     const commitment = await addCommitment({

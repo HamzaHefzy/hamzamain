@@ -26,17 +26,17 @@ export async function POST(request: Request) {
 
     const input = schema.parse(await request.json());
     const sql = db();
-    const [lead] = await sql<{ id: string }[]>\`
+    const [lead] = await sql<{ id: string }[]>`
       insert into leads (
         email, name, organization, role, enrollment, state, interest, message
       )
       values (
-        \${input.email.toLowerCase()}, \${input.name}, \${input.organization},
-        \${input.role ?? null}, \${input.enrollment ?? null}, \${input.state ?? null},
-        \${input.interest}, \${input.message ?? null}
+        ${input.email.toLowerCase()}, ${input.name}, ${input.organization},
+        ${input.role ?? null}, ${input.enrollment ?? null}, ${input.state ?? null},
+        ${input.interest}, ${input.message ?? null}
       )
       returning id
-    \`;
+    `;
 
     return NextResponse.json({ ok: true, id: lead.id }, { status: 201 });
   } catch (error) {

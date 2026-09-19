@@ -17,6 +17,7 @@ const navItems = [
   { href: "/integrations", label: "Integrations" },
   { href: "/team", label: "Team" },
   { href: "/audit", label: "Audit" },
+  { href: "/data-governance", label: "Data" },
   { href: "/settings", label: "Settings" },
 ];
 

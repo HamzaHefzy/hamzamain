@@ -137,6 +137,8 @@ export async function runVirtualDayClose(
               decision_reason = excluded.decision_reason,
               decided_at = now(),
               updated_at = now()
+          where attendance_daily.source = 'virtual_policy'
+             or attendance_daily.status = 'unresolved'
       `;
 
       adjudicated += 1;

@@ -3,7 +3,7 @@ import {
   calculateAda,
   calculateFundingScenario,
   calculateOnePointAttendanceValue,
-} from "@/lib/finance";
+} from "../lib/finance";
 
 describe("funding calculations", () => {
   it("calculates ADA from enrollment and attendance rate", () => {

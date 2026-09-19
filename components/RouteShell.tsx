@@ -21,7 +21,7 @@ const navItems = [
   { href: "/settings", label: "Settings" },
 ];
 
-const publicPaths = new Set(["/", "/login", "/request-demo", "/pricing"]);
+const publicPaths = new Set(["/", "/login", "/request-demo", "/pricing", "/security", "/privacy"]);
 
 function isActive(pathname: string, href: string) {
   if (href === "/cases") return pathname === href || pathname.startsWith("/cases/");

@@ -11,6 +11,7 @@ const navItems = [
   { href: "/attendance", label: "Attendance" },
   { href: "/cases", label: "ResolutionOS" },
   { href: "/evidence", label: "Evidence" },
+  { href: "/value", label: "Value" },
   { href: "/virtual", label: "Virtual" },
   { href: "/virtual/show-up", label: "Show-Up" },
   { href: "/funding", label: "Funding" },

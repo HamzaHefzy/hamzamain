@@ -10,6 +10,7 @@ const schema = z.object({
   modelType: z.enum(["texas_ada","enrollment","custom"]),
   basicAllotment: z.coerce.number().positive().nullable(),
   budgetedAttendanceRate: z.coerce.number().min(0).max(1).nullable(),
+  annualAnchorCost: z.coerce.number().min(0).nullable(),
 });
 
 export async function GET() {
@@ -34,17 +35,19 @@ export async function PATCH(request: Request) {
 
     await sql`
       insert into funding_assumptions (
-        org_id, school_year, model_type, basic_allotment, budgeted_attendance_rate
+        org_id, school_year, model_type, basic_allotment, budgeted_attendance_rate,
+        annual_anchor_cost
       )
       values (
         ${session.orgId}, ${input.schoolYear}, ${input.modelType},
-        ${input.basicAllotment}, ${input.budgetedAttendanceRate}
+        ${input.basicAllotment}, ${input.budgetedAttendanceRate}, ${input.annualAnchorCost}
       )
       on conflict (org_id) do update
         set school_year = excluded.school_year,
             model_type = excluded.model_type,
             basic_allotment = excluded.basic_allotment,
             budgeted_attendance_rate = excluded.budgeted_attendance_rate,
+            annual_anchor_cost = excluded.annual_anchor_cost,
             updated_at = now()
     `;
 

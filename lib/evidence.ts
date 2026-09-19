@@ -29,6 +29,8 @@ export type EvidenceSnapshot = {
   resolvedCases90d: number;
   averageResolutionHours: number | null;
   averageFirstActionHours: number | null;
+  commitmentsTotal90d: number;
+  verifiedCommitments90d: number;
   commitmentCompletionRate: number | null;
   commitmentOnTimeRate: number | null;
   overdueCommitments: number;
@@ -387,6 +389,8 @@ export async function getEvidenceSnapshot(orgId: string): Promise<EvidenceSnapsh
     resolvedCases90d: Number(summary?.resolved_cases ?? 0),
     averageResolutionHours: nullableNumber(summary?.average_resolution_hours),
     averageFirstActionHours: nullableNumber(summary?.average_first_action_hours),
+    commitmentsTotal90d: commitmentsTotal,
+    verifiedCommitments90d: commitmentsCompleted,
     commitmentCompletionRate: rate(commitmentsCompleted, commitmentsTotal),
     commitmentOnTimeRate: rate(commitmentsOnTime, commitmentsDue),
     overdueCommitments: Number(summary?.overdue_commitments ?? 0),

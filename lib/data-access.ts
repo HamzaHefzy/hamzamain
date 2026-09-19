@@ -23,6 +23,7 @@ export type DashboardSnapshot = {
   onePointGrossValue: number | null;
   schoolYear: string | null;
   budgetedAttendanceRate: number | null;
+  annualAnchorCost: number | null;
   openCases: number;
   stuckCases: number;
   dueToday: number;
@@ -45,11 +46,13 @@ export async function getDashboardSnapshot(orgId: string): Promise<DashboardSnap
     school_year: string | null;
     basic_allotment: string | null;
     budgeted_attendance_rate: string | null;
+    annual_anchor_cost: string | null;
   }[]>`
     select o.id, o.name, o.state,
            f.school_year,
            f.basic_allotment,
-           f.budgeted_attendance_rate
+           f.budgeted_attendance_rate,
+           f.annual_anchor_cost
     from organizations o
     left join funding_assumptions f on f.org_id = o.id
     where o.id = ${orgId}
@@ -149,6 +152,7 @@ export async function getDashboardSnapshot(orgId: string): Promise<DashboardSnap
     onePointGrossValue,
     schoolYear: org.school_year,
     budgetedAttendanceRate: toNumber(org.budgeted_attendance_rate),
+    annualAnchorCost: toNumber(org.annual_anchor_cost),
     openCases: Number(caseStats?.open_cases ?? 0),
     stuckCases: Number(caseStats?.stuck_cases ?? 0),
     dueToday: Number(caseStats?.due_today ?? 0),

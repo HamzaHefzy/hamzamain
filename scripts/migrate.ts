@@ -2,6 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import postgres from "postgres";
 
+async function main() {
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL is required.");
 
@@ -40,3 +41,10 @@ for (const filename of files) {
 
 await sql.end();
 console.log("Database migrations complete.");
+
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

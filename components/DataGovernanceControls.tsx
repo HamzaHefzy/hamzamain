@@ -6,25 +6,23 @@ import { useRouter } from "next/navigation";
 export default function DataGovernanceControls() {
   const router = useRouter();
   const [message, setMessage] = useState("");
-
-  function externalId(form: FormData) {
-    return String(form.get("externalId") ?? "").trim();
-  }
+  const [statusExternalId, setStatusExternalId] = useState("");
 
   function exportStudent(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const id = externalId(form);
+    const id = String(form.get("externalId") ?? "").trim();
     if (!id) return;
     setMessage("Preparing audited export…");
     window.location.assign("/api/students/" + encodeURIComponent(id) + "/export");
   }
 
-  async function setActive(event: FormEvent<HTMLFormElement>, active: boolean) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const id = externalId(form);
-    if (!id) return;
+  async function updateStudent(active: boolean) {
+    const id = statusExternalId.trim();
+    if (!id) {
+      setMessage("Enter a student external ID.");
+      return;
+    }
 
     setMessage(active ? "Restoring student…" : "Removing student from active operations…");
     const response = await fetch("/api/students/" + encodeURIComponent(id), {
@@ -59,7 +57,7 @@ export default function DataGovernanceControls() {
         <button className="primary-link" type="submit">Export JSON</button>
       </form>
 
-      <form className="panel case-editor" onSubmit={(event) => void setActive(event, false)}>
+      <section className="panel case-editor">
         <div className="panel-heading">
           <div><div className="eyebrow">Roster status</div><h2>Remove from active operations</h2></div>
         </div>
@@ -67,21 +65,19 @@ export default function DataGovernanceControls() {
           Deactivation stops the student from active roster workflows while preserving historical
           attendance and audit records. It is reversible and is not a legal deletion.
         </p>
-        <label><span>Student external ID</span><input name="externalId" required /></label>
+        <label>
+          <span>Student external ID</span>
+          <input
+            value={statusExternalId}
+            onChange={(event) => setStatusExternalId(event.target.value)}
+            required
+          />
+        </label>
         <div className="operations-actions">
-          <button className="secondary-link" type="submit">Deactivate</button>
-          <button
-            className="case-action"
-            type="button"
-            onClick={(event) => {
-              const form = event.currentTarget.closest("form");
-              if (form) void setActive({ preventDefault() {}, currentTarget: form } as unknown as FormEvent<HTMLFormElement>, true);
-            }}
-          >
-            Restore
-          </button>
+          <button className="secondary-link" type="button" onClick={() => void updateStudent(false)}>Deactivate</button>
+          <button className="case-action" type="button" onClick={() => void updateStudent(true)}>Restore</button>
         </div>
-      </form>
+      </section>
 
       {message ? <div className="disclaimer governance-message">{message}</div> : null}
     </div>

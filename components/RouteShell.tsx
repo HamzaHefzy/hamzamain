@@ -10,11 +10,13 @@ const navItems = [
   { href: "/dashboard", label: "Overview" },
   { href: "/attendance", label: "Attendance" },
   { href: "/cases", label: "ResolutionOS" },
+  { href: "/evidence", label: "Evidence" },
   { href: "/virtual", label: "Virtual" },
   { href: "/virtual/show-up", label: "Show-Up" },
   { href: "/funding", label: "Funding" },
   { href: "/integrations", label: "Integrations" },
   { href: "/team", label: "Team" },
+  { href: "/audit", label: "Audit" },
   { href: "/settings", label: "Settings" },
 ];
 

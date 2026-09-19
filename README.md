@@ -11,6 +11,7 @@ Anchor is an attendance-resolution operating system for school systems. It combi
 - versioned virtual attendance policies
 - roster, attendance, evidence, and virtual-session CSV ingestion
 - OneRoster roster synchronization with encrypted OAuth credentials
+- scoped, revocable inbound Virtual Evidence API keys for automated participation feeds
 - persistent ResolutionOS cases, owners, commitments, verification, and history
 - virtual evidence adjudication
 - scheduled-session Show-Up recovery and secure student barrier check-ins
@@ -68,6 +69,7 @@ See:
 - docs/CUSTOMER_ONBOARDING.md
 - docs/SECURITY.md
 - docs/PRODUCT_GUARDRAILS.md
+- docs/INBOUND_EVIDENCE_API.md
 - examples/imports/
 
 ## Important finance disclaimer
@@ -76,4 +78,4 @@ Texas funding values in Anchor are transparent planning scenarios, not guarantee
 
 ## Integration truthfulness
 
-CSV import and the OneRoster roster adapter are implemented paths. Other named SIS/LMS vendors should not be represented as live integrations until their provider-specific adapters have been implemented and validated with authorized customer credentials.
+CSV import, the OneRoster roster adapter, and the scoped inbound Virtual Evidence API are implemented paths. Other named SIS/LMS vendors should not be represented as live integrations until their provider-specific adapters have been implemented and validated with authorized customer credentials.

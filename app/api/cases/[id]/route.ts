@@ -21,13 +21,13 @@ const patchSchema = z.object({
 
 async function resolveCaseId(orgId: string, value: string) {
   const sql = db();
-  const [row] = await sql<{ id: string; case_number: string }[]>\`
+  const [row] = await sql<{ id: string; case_number: string }[]>`
     select id, case_number
     from cases
-    where org_id = \${orgId}
-      and (id::text = \${value} or case_number = \${value})
+    where org_id = ${orgId}
+      and (id::text = ${value} or case_number = ${value})
     limit 1
-  \`;
+  `;
   return row ?? null;
 }
 

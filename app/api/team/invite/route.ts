@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { sendNotification } from "@/lib/notifications";
 import { assertSameOrigin } from "@/lib/security";
 import { createOpaqueToken } from "@/lib/auth-tokens";
+import { canInviteRole } from "@/lib/permissions";
 
 const schema = z.object({
   email: z.string().email(),
@@ -20,9 +21,9 @@ export async function POST(request: Request) {
     const session = auth.session!;
     const input = schema.parse(await request.json());
 
-    if (input.role === "owner" && session.role !== "owner") {
+    if (!canInviteRole(session.role, input.role)) {
       return NextResponse.json(
-        { error: "Only an owner can invite another owner." },
+        { error: "You cannot invite a user with that role." },
         { status: 403 },
       );
     }

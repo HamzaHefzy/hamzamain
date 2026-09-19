@@ -6,13 +6,14 @@ describe("role permissions", () => {
 
   it("limits admin-only operations to owner and admin roles", () => {
     expect(roles.filter((role) => can(role, "admin"))).toEqual(["owner","admin"]);
-    it("allows only owners to invite another owner", () => {
+  });
+
+  it("allows only owners to invite another owner", () => {
     expect(canInviteRole("owner", "owner")).toBe(true);
     expect(canInviteRole("admin", "owner")).toBe(false);
     expect(canInviteRole("admin", "attendance")).toBe(true);
     expect(canInviteRole("viewer", "attendance")).toBe(false);
   });
-});
 
   it("does not grant finance access to attendance or support roles", () => {
     expect(can("attendance", "finance")).toBe(false);

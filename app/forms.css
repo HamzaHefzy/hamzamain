@@ -100,7 +100,7 @@
 .import-card input[type=file] { font-size: 12px; max-width: 100%; }
 .import-result { color: var(--muted-strong); }
 .integration-form { max-width: 620px; }
-.inline-settings-form { grid-template-columns: repeat(3, minmax(120px, 1fr)) auto; align-items: end; }
+.inline-settings-form { grid-template-columns: repeat(4, minmax(120px, 1fr)) auto; align-items: end; }
 .inline-settings-form > small { grid-column: 1 / -1; color: var(--muted); }
 .sidebar-logout { margin-top: 12px; border: 0; background: transparent; color: #9fb0c0; padding: 7px 0; text-align: left; cursor: pointer; font-size: 12px; }
 .sidebar-logout:hover { color: #fff; }

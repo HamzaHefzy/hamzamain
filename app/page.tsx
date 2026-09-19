@@ -78,7 +78,8 @@ export default function MarketingHome() {
             <a href="#solutions">Solutions</a>
             <a href="#virtual">Virtual schools</a>
             <Link href="/funding">Funding</Link>
-            <a href="#how">How it works</a>\n            <Link href="/pricing">Pricing</Link>
+            <a href="#how">How it works</a>
+            <Link href="/pricing">Pricing</Link>
           </nav>
           <div className="m-nav-actions">
             <Link href="/login" className="m-nav-secondary">Sign in</Link>

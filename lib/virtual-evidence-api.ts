@@ -121,8 +121,12 @@ export async function ingestVirtualEvidenceEvents(
             student_id: string;
             evidence_date: string;
             evidence_type: string;
+            occurred_at: Date;
+            minutes: number | null;
+            qualifies: boolean;
           }[]>`
-            select id, student_id, evidence_date::text, evidence_type
+            select id, student_id, evidence_date::text, evidence_type,
+                   occurred_at, minutes, qualifies
             from virtual_evidence_events
             where org_id = ${context.orgId}
               and source = ${event.source}
@@ -135,6 +139,8 @@ export async function ingestVirtualEvidenceEvents(
             || existing.student_id !== student.id
             || existing.evidence_date !== event.date
             || existing.evidence_type !== event.evidenceType
+            || existing.occurred_at.getTime() !== occurredAt.getTime()
+            || existing.minutes !== event.minutes
           ) {
             throw new Error("sourceRef is already assigned to a different evidence event.");
           }
@@ -142,8 +148,8 @@ export async function ingestVirtualEvidenceEvents(
           return {
             status: "duplicate" as const,
             id: existing.id,
-            qualifies,
-            attendanceDecision: qualifies
+            qualifies: existing.qualifies,
+            attendanceDecision: existing.qualifies
               ? "present" as const
               : "evidence_recorded" as const,
           };

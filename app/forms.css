@@ -182,3 +182,20 @@
   font-size: 11px;
   line-height: 1.45;
 }
+
+.team-actions {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 250px;
+}
+.team-actions select {
+  min-height: 34px;
+  padding: 5px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+.team-actions small { grid-column: 1 / -1; color: var(--muted); }

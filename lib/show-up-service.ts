@@ -55,15 +55,15 @@ export async function createCheckinToken(input: {
 }) {
   const sql = db();
   const token = randomBytes(32).toString("base64url");
-  await sql\`
+  await sql`
     insert into checkin_tokens (
       org_id, student_id, session_id, case_id, token_hash, expires_at
     )
     values (
-      \${input.orgId}, \${input.studentId}, \${input.sessionId},
-      \${input.caseId}, \${tokenHash(token)}, now() + interval '24 hours'
+      ${input.orgId}, ${input.studentId}, ${input.sessionId},
+      ${input.caseId}, ${tokenHash(token)}, now() + interval '24 hours'
     )
-  \`;
+  `;
   return token;
 }
 
@@ -76,16 +76,16 @@ export async function getCheckinContext(token: string) {
     starts_at: Date | null;
     used_at: Date | null;
     expires_at: Date;
-  }[]>\`
+  }[]>`
     select ct.id as token_id, s.first_name,
            vs.title as session_title, vs.starts_at,
            ct.used_at, ct.expires_at
     from checkin_tokens ct
     join students s on s.id = ct.student_id
     left join virtual_sessions vs on vs.id = ct.session_id
-    where ct.token_hash = \${tokenHash(token)}
+    where ct.token_hash = ${tokenHash(token)}
     limit 1
-  \`;
+  `;
   if (!row || row.expires_at < new Date()) return null;
   return {
     firstName: row.first_name,
@@ -112,12 +112,12 @@ export async function submitCheckin(input: {
       case_id: string | null;
       used_at: Date | null;
       expires_at: Date;
-    }[]>\`
+    }[]>`
       select id, org_id, student_id, session_id, case_id, used_at, expires_at
       from checkin_tokens
-      where token_hash = \${tokenHash(input.token)}
+      where token_hash = ${tokenHash(input.token)}
       for update
-    \`;
+    `;
 
     if (!tokenRow || tokenRow.expires_at < new Date()) {
       throw new Error("This check-in link is invalid or expired.");
@@ -126,46 +126,46 @@ export async function submitCheckin(input: {
       throw new Error("This check-in has already been submitted.");
     }
 
-    await tx\`
+    await tx`
       insert into checkin_responses (
         org_id, student_id, session_id, case_id,
         barrier_code, barrier_label, note
       )
       values (
-        \${tokenRow.org_id}, \${tokenRow.student_id}, \${tokenRow.session_id},
-        \${tokenRow.case_id}, \${input.barrier}, \${config.label}, \${input.note ?? null}
+        ${tokenRow.org_id}, ${tokenRow.student_id}, ${tokenRow.session_id},
+        ${tokenRow.case_id}, ${input.barrier}, ${config.label}, ${input.note ?? null}
       )
-    \`;
+    `;
 
-    await tx\`
-      update checkin_tokens set used_at = now() where id = \${tokenRow.id}
-    \`;
+    await tx`
+      update checkin_tokens set used_at = now() where id = ${tokenRow.id}
+    `;
 
     if (tokenRow.case_id) {
-      await tx\`
+      await tx`
         update cases
-        set barrier_code = \${input.barrier},
-            barrier_label = \${config.label},
-            priority = \${config.priority},
+        set barrier_code = ${input.barrier},
+            barrier_label = ${config.label},
+            priority = ${config.priority},
             status = 'in_progress',
             queue = 'do_now',
-            next_action = \${config.nextAction},
+            next_action = ${config.nextAction},
             due_at = least(coalesce(due_at, now() + interval '2 hours'), now() + interval '2 hours'),
             updated_at = now()
-        where id = \${tokenRow.case_id}
-          and org_id = \${tokenRow.org_id}
-      \`;
+        where id = ${tokenRow.case_id}
+          and org_id = ${tokenRow.org_id}
+      `;
 
-      await tx\`
+      await tx`
         insert into case_events (
           org_id, case_id, event_type, note, to_status, metadata
         )
         values (
-          \${tokenRow.org_id}, \${tokenRow.case_id}, 'student_checkin',
-          \${input.note ?? null}, 'in_progress',
-          \${tx.json({ barrier: input.barrier, barrierLabel: config.label })}
+          ${tokenRow.org_id}, ${tokenRow.case_id}, 'student_checkin',
+          ${input.note ?? null}, 'in_progress',
+          ${tx.json({ barrier: input.barrier, barrierLabel: config.label })}
         )
-      \`;
+      `;
     }
 
     return config;
@@ -174,14 +174,14 @@ export async function submitCheckin(input: {
 
 async function hasNotification(orgId: string, studentId: string, templateKey: string) {
   const sql = db();
-  const [row] = await sql<{ id: string }[]>\`
+  const [row] = await sql<{ id: string }[]>`
     select id from notifications
-    where org_id = \${orgId}
-      and student_id = \${studentId}
-      and template_key = \${templateKey}
+    where org_id = ${orgId}
+      and student_id = ${studentId}
+      and template_key = ${templateKey}
       and status in ('queued','sent','delivered')
     limit 1
-  \`;
+  `;
   return Boolean(row);
 }
 
@@ -247,7 +247,7 @@ export async function runShowUpAutomation(orgId: string) {
     phone: string | null;
     guardian_email: string | null;
     guardian_phone: string | null;
-  }[]>\`
+  }[]>`
     select sp.id as participation_id, vs.id as session_id,
            vs.title as session_title, vs.starts_at, vs.live_url,
            s.id as student_id, s.first_name, s.email, s.phone,
@@ -255,11 +255,11 @@ export async function runShowUpAutomation(orgId: string) {
     from session_participation sp
     join virtual_sessions vs on vs.id = sp.session_id
     join students s on s.id = sp.student_id
-    where sp.org_id = \${orgId}
+    where sp.org_id = ${orgId}
       and sp.status = 'scheduled'
       and vs.required = true
       and vs.starts_at between now() + interval '10 minutes' and now() + interval '2 hours'
-  \`;
+  `;
 
   for (const item of upcoming) {
     const key = "virtual_pre_session:" + item.session_id;
@@ -293,7 +293,7 @@ export async function runShowUpAutomation(orgId: string) {
     phone: string | null;
     guardian_email: string | null;
     guardian_phone: string | null;
-  }[]>\`
+  }[]>`
     select sp.id as participation_id, vs.id as session_id,
            vs.title as session_title, s.id as student_id,
            s.campus_id, s.first_name, s.email, s.phone,
@@ -301,29 +301,29 @@ export async function runShowUpAutomation(orgId: string) {
     from session_participation sp
     join virtual_sessions vs on vs.id = sp.session_id
     join students s on s.id = sp.student_id
-    where sp.org_id = \${orgId}
+    where sp.org_id = ${orgId}
       and sp.status = 'scheduled'
       and vs.required = true
       and vs.ends_at <= now() - interval '10 minutes'
       and vs.ends_at >= now() - interval '8 hours'
-  \`;
+  `;
 
   for (const item of missed) {
-    await sql\`
+    await sql`
       update session_participation
       set status = 'missed', updated_at = now()
-      where id = \${item.participation_id} and status = 'scheduled'
-    \`;
+      where id = ${item.participation_id} and status = 'scheduled'
+    `;
     misses += 1;
 
-    const [existing] = await sql<{ id: string }[]>\`
+    const [existing] = await sql<{ id: string }[]>`
       select id from cases
-      where org_id = \${orgId}
-        and student_id = \${item.student_id}
+      where org_id = ${orgId}
+        and student_id = ${item.student_id}
         and status not in ('resolved','closed')
-        and metadata ->> 'sessionId' = \${item.session_id}
+        and metadata ->> 'sessionId' = ${item.session_id}
       limit 1
-    \`;
+    `;
 
     let caseId = existing?.id;
     if (!caseId) {
@@ -380,39 +380,39 @@ export async function getShowUpSnapshot(orgId: string) {
     missed_today: string;
     recovered_today: string;
     human_due: string;
-  }[]>\`
+  }[]>`
     select
       (
         select count(*)::text
         from session_participation sp
         join virtual_sessions vs on vs.id = sp.session_id
-        where sp.org_id = \${orgId}
+        where sp.org_id = ${orgId}
           and sp.status = 'scheduled'
           and vs.starts_at between now() and now() + interval '2 hours'
       ) as upcoming,
       (
         select count(*)::text
         from session_participation sp
-        where sp.org_id = \${orgId}
+        where sp.org_id = ${orgId}
           and sp.status = 'missed'
           and sp.updated_at::date = current_date
       ) as missed_today,
       (
         select count(*)::text
         from session_participation sp
-        where sp.org_id = \${orgId}
+        where sp.org_id = ${orgId}
           and sp.status = 'recovered'
           and sp.updated_at::date = current_date
       ) as recovered_today,
       (
         select count(*)::text
         from cases c
-        where c.org_id = \${orgId}
+        where c.org_id = ${orgId}
           and c.barrier_code in ('virtual_missed_session','virtual_nonparticipation')
           and c.status not in ('resolved','closed')
           and c.due_at <= now()
       ) as human_due
-  \`;
+  `;
 
   const queue = await sql<{
     case_number: string;
@@ -424,14 +424,14 @@ export async function getShowUpSnapshot(orgId: string) {
     next_action: string | null;
     due_at: Date | null;
     status: string;
-  }[]>\`
+  }[]>`
     select c.case_number, s.external_id,
            concat(s.first_name, ' ', s.last_name) as student_name,
            s.grade, c.barrier_label, c.priority,
            c.next_action, c.due_at, c.status
     from cases c
     join students s on s.id = c.student_id
-    where c.org_id = \${orgId}
+    where c.org_id = ${orgId}
       and c.barrier_code in (
         'virtual_missed_session','virtual_nonparticipation',
         'technology','forgot','behind','caregiving','motivation','health','other'
@@ -439,7 +439,7 @@ export async function getShowUpSnapshot(orgId: string) {
       and c.status not in ('resolved','closed')
     order by c.due_at nulls last, c.opened_at
     limit 50
-  \`;
+  `;
 
   return {
     upcoming: Number(metrics?.upcoming ?? 0),

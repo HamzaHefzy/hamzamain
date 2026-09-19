@@ -49,6 +49,8 @@ export async function GET() {
       createdAt: row.created_at.toISOString(),
       createdBy: row.created_by_name,
     })),
+  }, {
+    headers: { "Cache-Control": "no-store" },
   });
 }
 
@@ -104,7 +106,10 @@ export async function POST(request: Request) {
       prefix: created.prefix,
       scopes: ["virtual_evidence:write"],
       expiresAt: expiresAt?.toISOString() ?? null,
-    }, { status: 201 });
+    }, {
+      status: 201,
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unable to create API key." },

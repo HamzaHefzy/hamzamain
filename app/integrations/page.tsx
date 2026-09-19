@@ -16,12 +16,12 @@ export default async function IntegrationsPage() {
     public_config: Record<string, unknown>;
     last_sync_at: Date | null;
     last_error: string | null;
-  }[]>\`
+  }[]>`
     select id, provider, name, status, public_config, last_sync_at, last_error
     from integrations
-    where org_id = \${session.orgId}
+    where org_id = ${session.orgId}
     order by created_at desc
-  \` : [];
+  ` : [];
 
   return (
     <div className="page-stack">

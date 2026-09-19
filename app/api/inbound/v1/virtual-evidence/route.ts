@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateIntegrationApiKey } from "@/lib/api-key-auth";
 import { rateLimit } from "@/lib/rate-limit";
+import { hashIp, requestIp } from "@/lib/security";
 import {
   ingestVirtualEvidenceEvents,
   type InboundEvidenceEvent,
@@ -39,6 +40,22 @@ const requestSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const ipKey = hashIp(requestIp(request)) ?? "unknown";
+  const ipLimited = await rateLimit("evidence-api-ip:" + ipKey, 120, 60);
+  if (!ipLimited.allowed) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded." },
+      {
+        status: 429,
+        headers: {
+          "Cache-Control": "no-store",
+          "Retry-After": "60",
+          "X-Anchor-API-Version": "1",
+        },
+      },
+    );
+  }
+
   const session = await authenticateIntegrationApiKey(
     request,
     "virtual_evidence:write",
@@ -82,7 +99,7 @@ export async function POST(request: Request) {
     }
 
     const raw = await request.text();
-    if (raw.length > 1_000_000) {
+    if (new TextEncoder().encode(raw).byteLength > 1_000_000) {
       return NextResponse.json(
         { error: "Request body exceeds 1 MB." },
         { status: 413 },

@@ -73,7 +73,9 @@ export async function POST(request: Request, context: Context) {
       await tx`
         insert into memberships (user_id, org_id, role)
         values (${userId}, ${invite.org_id}, ${invite.role})
-        on conflict (user_id, org_id) do update set role = excluded.role
+        on conflict (user_id, org_id) do update
+          set role = excluded.role,
+              active = true
       `;
 
       await tx`

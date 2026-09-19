@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { createCase } from "@/lib/case-service";
+import { localDateString } from "@/lib/time";
 import {
   adjudicateVirtualEvidence,
   type VirtualEvidenceType,
@@ -8,6 +9,9 @@ import {
 
 export async function runVirtualDayClose(orgId: string) {
   const sql = db();
+  const [org] = await sql<{ timezone: string }[]>`select timezone from organizations where id = ${orgId}`;
+  if (!org) throw new Error("Organization not found.");
+  const schoolDate = localDateString(new Date(), org.timezone);
   const [job] = await sql<{ id: string }[]>`
     insert into job_runs (org_id, job_key, status)
     values (${orgId}, 'virtual_day_close', 'running')
@@ -25,8 +29,8 @@ export async function runVirtualDayClose(orgId: string) {
       where org_id = ${orgId}
         and active = true
         and delivery_model in ('virtual_program','hybrid')
-        and effective_from <= current_date
-        and (effective_to is null or effective_to >= current_date)
+        and effective_from <= ${schoolDate}::date
+        and (effective_to is null or effective_to >= ${schoolDate}::date)
       order by version desc
       limit 1
     `;
@@ -57,7 +61,7 @@ export async function runVirtualDayClose(orgId: string) {
         from virtual_evidence_events
         where org_id = ${orgId}
           and student_id = ${student.id}
-          and evidence_date = current_date
+          and evidence_date = ${schoolDate}::date
       `;
 
       const decision = adjudicateVirtualEvidence(
@@ -75,7 +79,7 @@ export async function runVirtualDayClose(orgId: string) {
           evidence_refs, decision_reason
         )
         values (
-          ${orgId}, ${student.id}, current_date, ${decision.status},
+          ${orgId}, ${student.id}, ${schoolDate}::date, ${decision.status},
           'virtual_policy', ${sql.json(decision.qualifyingIds)}, ${decision.reason}
         )
         on conflict (org_id, student_id, school_date) do update
@@ -114,7 +118,7 @@ export async function runVirtualDayClose(orgId: string) {
             dueAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
             metadata: {
               source: "virtual_day_close",
-              schoolDate: new Date().toISOString().slice(0, 10),
+              schoolDate,
             },
           });
           casesCreated += 1;

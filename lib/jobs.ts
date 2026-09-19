@@ -8,28 +8,28 @@ import {
 
 export async function runVirtualDayClose(orgId: string) {
   const sql = db();
-  const [job] = await sql<{ id: string }[]>\`
+  const [job] = await sql<{ id: string }[]>`
     insert into job_runs (org_id, job_key, status)
-    values (\${orgId}, 'virtual_day_close', 'running')
+    values (${orgId}, 'virtual_day_close', 'running')
     returning id
-  \`;
+  `;
 
   let adjudicated = 0;
   let unresolved = 0;
   let casesCreated = 0;
 
   try {
-    const [policy] = await sql<{ config: VirtualPolicyConfig }[]>\`
+    const [policy] = await sql<{ config: VirtualPolicyConfig }[]>`
       select config
       from attendance_policies
-      where org_id = \${orgId}
+      where org_id = ${orgId}
         and active = true
         and delivery_model in ('virtual_program','hybrid')
         and effective_from <= current_date
         and (effective_to is null or effective_to >= current_date)
       order by version desc
       limit 1
-    \`;
+    `;
 
     if (!policy) throw new Error("No active virtual attendance policy configured.");
 
@@ -38,27 +38,27 @@ export async function runVirtualDayClose(orgId: string) {
       campus_id: string | null;
       external_id: string;
       first_name: string;
-    }[]>\`
+    }[]>`
       select s.id, s.campus_id, s.external_id, s.first_name
       from students s
       join campuses c on c.id = s.campus_id
-      where s.org_id = \${orgId}
+      where s.org_id = ${orgId}
         and s.active = true
         and c.delivery_model in ('virtual_program','hybrid')
-    \`;
+    `;
 
     for (const student of students) {
       const evidence = await sql<{
         id: string;
         evidence_type: VirtualEvidenceType;
         minutes: number | null;
-      }[]>\`
+      }[]>`
         select id, evidence_type, minutes
         from virtual_evidence_events
-        where org_id = \${orgId}
-          and student_id = \${student.id}
+        where org_id = ${orgId}
+          and student_id = ${student.id}
           and evidence_date = current_date
-      \`;
+      `;
 
       const decision = adjudicateVirtualEvidence(
         policy.config,
@@ -69,14 +69,14 @@ export async function runVirtualDayClose(orgId: string) {
         })),
       );
 
-      await sql\`
+      await sql`
         insert into attendance_daily (
           org_id, student_id, school_date, status, source,
           evidence_refs, decision_reason
         )
         values (
-          \${orgId}, \${student.id}, current_date, \${decision.status},
-          'virtual_policy', \${sql.json(decision.qualifyingIds)}, \${decision.reason}
+          ${orgId}, ${student.id}, current_date, ${decision.status},
+          'virtual_policy', ${sql.json(decision.qualifyingIds)}, ${decision.reason}
         )
         on conflict (org_id, student_id, school_date) do update
           set status = excluded.status,
@@ -85,22 +85,22 @@ export async function runVirtualDayClose(orgId: string) {
               decision_reason = excluded.decision_reason,
               decided_at = now(),
               updated_at = now()
-      \`;
+      `;
 
       adjudicated += 1;
 
       if (decision.status === "unresolved") {
         unresolved += 1;
 
-        const [existing] = await sql<{ id: string }[]>\`
+        const [existing] = await sql<{ id: string }[]>`
           select id
           from cases
-          where org_id = \${orgId}
-            and student_id = \${student.id}
+          where org_id = ${orgId}
+            and student_id = ${student.id}
             and barrier_code = 'virtual_nonparticipation'
             and status not in ('resolved','closed')
           limit 1
-        \`;
+        `;
 
         if (!existing) {
           await createCase({
@@ -123,19 +123,19 @@ export async function runVirtualDayClose(orgId: string) {
     }
 
     const stats = { adjudicated, unresolved, casesCreated };
-    await sql\`
+    await sql`
       update job_runs
-      set status = 'completed', stats = \${sql.json(stats)}, completed_at = now()
-      where id = \${job.id}
-    \`;
+      set status = 'completed', stats = ${sql.json(stats)}, completed_at = now()
+      where id = ${job.id}
+    `;
     return stats;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Virtual day-close failed.";
-    await sql\`
+    await sql`
       update job_runs
-      set status = 'failed', error = \${message}, completed_at = now()
-      where id = \${job.id}
-    \`;
+      set status = 'failed', error = ${message}, completed_at = now()
+      where id = ${job.id}
+    `;
     throw error;
   }
 }

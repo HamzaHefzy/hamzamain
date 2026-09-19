@@ -1,4 +1,5 @@
 import Link from "next/link";
+import OperationsPanel from "@/components/OperationsPanel";
 import { requireSession } from "@/lib/auth";
 import { getShowUpSnapshot } from "@/lib/show-up-service";
 
@@ -18,6 +19,8 @@ export default async function VirtualShowUpPage() {
         </div>
         <Link href="/attendance" className="secondary-link">Import class schedule</Link>
       </header>
+
+      <OperationsPanel />
 
       <section className="metric-grid">
         <article className="metric-card"><span>Sessions in next 2 hours</span><strong>{data.upcoming}</strong><small>Scheduled students awaiting participation</small></article>

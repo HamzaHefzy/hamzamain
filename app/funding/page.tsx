@@ -34,7 +34,7 @@ export default async function FundingPage() {
       {editable ? (
         <section className="panel">
           <div className="panel-heading"><div><div className="eyebrow">Finance assumptions</div><h2>Control the scenario inputs</h2></div></div>
-          <FundingSettingsForm schoolYear={snapshot.schoolYear ?? "2026-27"} basicAllotment={snapshot.basicAllotment} budgetedAttendanceRate={snapshot.budgetedAttendanceRate} />
+          <FundingSettingsForm schoolYear={snapshot.schoolYear ?? "2026-27"} basicAllotment={snapshot.basicAllotment} budgetedAttendanceRate={snapshot.budgetedAttendanceRate} annualAnchorCost={snapshot.annualAnchorCost} />
         </section>
       ) : null}
 

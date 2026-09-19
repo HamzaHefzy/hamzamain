@@ -142,3 +142,21 @@
 .checkin-option input { width: auto !important; min-height: auto !important; }
 .checkin-success { padding: 18px; border-radius: 12px; background: #eaf7f0; color: #176a48; line-height: 1.6; }
 @media (max-width: 850px) { .case-editor-stack { grid-template-columns: 1fr; } .case-editor-stack > :nth-child(3) { grid-column: auto; } }
+
+.operations-panel {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 16px 24px;
+  align-items: center;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.operations-panel p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+.operations-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.operations-panel > small { grid-column: 1 / -1; color: var(--muted-strong); }
+@media (max-width: 760px) {
+  .operations-panel { grid-template-columns: 1fr; }
+  .operations-panel > small { grid-column: auto; }
+}

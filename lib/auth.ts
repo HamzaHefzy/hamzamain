@@ -2,10 +2,12 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 import { db } from "@/lib/db";
+import { can, type AnchorRole, type Permission } from "@/lib/permissions";
+
+export { can } from "@/lib/permissions";
+export type { AnchorRole, Permission } from "@/lib/permissions";
 
 export const SESSION_COOKIE = "anchor_session";
-
-export type AnchorRole = "owner" | "admin" | "attendance" | "finance" | "support" | "viewer";
 
 export type AnchorSession = {
   userId: string;
@@ -98,16 +100,3 @@ export async function requireSession(): Promise<AnchorSession> {
   return session;
 }
 
-export type Permission = "admin" | "attendance_write" | "finance" | "support_write" | "view";
-
-export function can(role: AnchorRole, permission: Permission) {
-  const permissions: Record<AnchorRole, Set<Permission>> = {
-    owner: new Set(["admin","attendance_write","finance","support_write","view"]),
-    admin: new Set(["admin","attendance_write","finance","support_write","view"]),
-    attendance: new Set(["attendance_write","support_write","view"]),
-    finance: new Set(["finance","view"]),
-    support: new Set(["support_write","view"]),
-    viewer: new Set(["view"]),
-  };
-  return permissions[role].has(permission);
-}

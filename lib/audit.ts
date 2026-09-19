@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { toJson } from "@/lib/json";
 import { hashIp, requestIp } from "@/lib/security";
 
 export async function audit(input: {
@@ -22,7 +23,7 @@ export async function audit(input: {
       ${input.entityType},
       ${input.entityId ?? null},
       ${ipHash},
-      ${sql.json(input.metadata ?? {})}
+      ${sql.json(toJson(input.metadata ?? {}))}
     )
   `;
 }

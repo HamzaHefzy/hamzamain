@@ -7,6 +7,7 @@ export default function FundingSettingsForm(props: {
   schoolYear: string;
   basicAllotment: number | null;
   budgetedAttendanceRate: number | null;
+  annualAnchorCost: number | null;
 }) {
   const router = useRouter();
   const [status, setStatus] = useState("");
@@ -26,6 +27,9 @@ export default function FundingSettingsForm(props: {
         budgetedAttendanceRate: form.get("budgetedAttendanceRate")
           ? Number(form.get("budgetedAttendanceRate")) / 100
           : null,
+        annualAnchorCost: form.get("annualAnchorCost")
+          ? Number(form.get("annualAnchorCost"))
+          : null,
       }),
     });
 
@@ -43,6 +47,7 @@ export default function FundingSettingsForm(props: {
       <label><span>School year</span><input name="schoolYear" defaultValue={props.schoolYear} required /></label>
       <label><span>Basic Allotment</span><input name="basicAllotment" type="number" step="0.01" defaultValue={props.basicAllotment ?? ""} /></label>
       <label><span>Budgeted attendance %</span><input name="budgetedAttendanceRate" type="number" step="0.01" min="0" max="100" defaultValue={props.budgetedAttendanceRate === null ? "" : (props.budgetedAttendanceRate * 100).toFixed(2)} /></label>
+      <label><span>Annual Anchor contract cost</span><input name="annualAnchorCost" type="number" step="0.01" min="0" defaultValue={props.annualAnchorCost ?? ""} /></label>
       <button className="secondary-link" type="submit">Save assumptions</button>
       <small>{status}</small>
     </form>

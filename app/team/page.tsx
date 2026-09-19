@@ -1,4 +1,5 @@
 import InviteForm from "@/components/InviteForm";
+import TeamMemberActions from "@/components/TeamMemberActions";
 import { can, requireSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getMembers } from "@/lib/data-access";
@@ -7,8 +8,8 @@ export const dynamic = "force-dynamic";
 
 export default async function TeamPage() {
   const session = await requireSession();
-  const members = await getMembers(session.orgId);
   const admin = can(session.role, "admin");
+  const members = await getMembers(session.orgId, { includeInactive: admin });
   const sql = db();
   const invites = admin ? await sql<{
     id: string;
@@ -39,12 +40,27 @@ export default async function TeamPage() {
 
       <section className="two-column">
         <article className="panel">
-          <div className="panel-heading"><div><div className="eyebrow">Members</div><h2>Active access</h2></div></div>
+          <div className="panel-heading"><div><div className="eyebrow">Members</div><h2>Organization access</h2></div></div>
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+              <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Access</th></tr></thead>
               <tbody>{members.map((member) => (
-                <tr key={member.id}><td>{member.name}</td><td>{member.email}</td><td>{member.role}</td></tr>
+                <tr key={member.id}>
+                  <td>{member.name}{member.id === session.userId ? <><br /><small>You</small></> : null}</td>
+                  <td>{member.email}</td>
+                  <td>{member.active ? "Active" : "Revoked"}</td>
+                  <td>
+                    {admin ? (
+                      <TeamMemberActions
+                        userId={member.id}
+                        role={member.role}
+                        active={member.active}
+                        isSelf={member.id === session.userId}
+                        canManageOwners={session.role === "owner"}
+                      />
+                    ) : member.role}
+                  </td>
+                </tr>
               ))}</tbody>
             </table>
           </div>

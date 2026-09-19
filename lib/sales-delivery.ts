@@ -1,5 +1,5 @@
-import { createHmac } from "node:crypto";
 import { db } from "@/lib/db";
+import { signSalesWebhook } from "@/lib/sales-webhook";
 
 export type SalesLead = {
   id: string;
@@ -18,10 +18,6 @@ type DeliveryResult = {
   channel: "email" | "webhook";
   status: "sent" | "failed" | "skipped";
 };
-
-export function signSalesWebhook(payload: string, secret: string) {
-  return "sha256=" + createHmac("sha256", secret).update(payload).digest("hex");
-}
 
 async function claimDelivery(
   leadId: string,

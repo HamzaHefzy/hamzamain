@@ -1,17 +1,79 @@
 import { db } from "@/lib/db";
 import { createCase } from "@/lib/case-service";
-import { localDateString } from "@/lib/time";
+import { localDateString, localTimeString } from "@/lib/time";
 import {
   adjudicateVirtualEvidence,
   type VirtualEvidenceType,
   type VirtualPolicyConfig,
 } from "@/lib/virtual-policy";
 
-export async function runVirtualDayClose(orgId: string) {
+export async function runVirtualDayClose(
+  orgId: string,
+  options: { force?: boolean } = {},
+) {
   const sql = db();
-  const [org] = await sql<{ timezone: string }[]>`select timezone from organizations where id = ${orgId}`;
+  const [org] = await sql<{ timezone: string }[]>`
+    select timezone from organizations where id = ${orgId}
+  `;
   if (!org) throw new Error("Organization not found.");
-  const schoolDate = localDateString(new Date(), org.timezone);
+
+  const now = new Date();
+  const schoolDate = localDateString(now, org.timezone);
+  const localTime = localTimeString(now, org.timezone);
+
+  const [policy] = await sql<{ config: VirtualPolicyConfig }[]>`
+    select config
+    from attendance_policies
+    where org_id = ${orgId}
+      and active = true
+      and delivery_model in ('virtual_program','hybrid')
+      and effective_from <= ${schoolDate}::date
+      and (effective_to is null or effective_to >= ${schoolDate}::date)
+    order by version desc
+    limit 1
+  `;
+
+  if (!policy) throw new Error("No active virtual attendance policy configured.");
+
+  const closeTime = policy.config.dayCloseLocalTime ?? "23:59";
+  if (!options.force && localTime < closeTime) {
+    return {
+      skipped: true,
+      reason: "before_day_close",
+      schoolDate,
+      localTime,
+      closeTime,
+      adjudicated: 0,
+      unresolved: 0,
+      casesCreated: 0,
+    };
+  }
+
+  if (!options.force) {
+    const [alreadyCompleted] = await sql<{ id: string }[]>`
+      select id
+      from job_runs
+      where org_id = ${orgId}
+        and job_key = 'virtual_day_close'
+        and status = 'completed'
+        and stats ->> 'schoolDate' = ${schoolDate}
+      limit 1
+    `;
+
+    if (alreadyCompleted) {
+      return {
+        skipped: true,
+        reason: "already_completed",
+        schoolDate,
+        localTime,
+        closeTime,
+        adjudicated: 0,
+        unresolved: 0,
+        casesCreated: 0,
+      };
+    }
+  }
+
   const [job] = await sql<{ id: string }[]>`
     insert into job_runs (org_id, job_key, status)
     values (${orgId}, 'virtual_day_close', 'running')
@@ -23,20 +85,6 @@ export async function runVirtualDayClose(orgId: string) {
   let casesCreated = 0;
 
   try {
-    const [policy] = await sql<{ config: VirtualPolicyConfig }[]>`
-      select config
-      from attendance_policies
-      where org_id = ${orgId}
-        and active = true
-        and delivery_model in ('virtual_program','hybrid')
-        and effective_from <= ${schoolDate}::date
-        and (effective_to is null or effective_to >= ${schoolDate}::date)
-      order by version desc
-      limit 1
-    `;
-
-    if (!policy) throw new Error("No active virtual attendance policy configured.");
-
     const students = await sql<{
       id: string;
       campus_id: string | null;
@@ -48,7 +96,7 @@ export async function runVirtualDayClose(orgId: string) {
       join campuses c on c.id = s.campus_id
       where s.org_id = ${orgId}
         and s.active = true
-        and c.delivery_model in ('virtual_program','hybrid')
+        and c.delivery_model in ('virtual_program','virtual_campus','hybrid')
     `;
 
     for (const student of students) {
@@ -114,7 +162,8 @@ export async function runVirtualDayClose(orgId: string) {
             barrierCode: "virtual_nonparticipation",
             barrierLabel: "Virtual participation missing",
             priority: "high",
-            nextAction: "Contact student or family, identify the barrier, and route an approved same-day participation path.",
+            nextAction:
+              "Contact student or family, identify the barrier, and route an approved same-day participation path.",
             dueAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
             metadata: {
               source: "virtual_day_close",
@@ -126,20 +175,38 @@ export async function runVirtualDayClose(orgId: string) {
       }
     }
 
-    const stats = { adjudicated, unresolved, casesCreated };
+    const stats = {
+      adjudicated,
+      unresolved,
+      casesCreated,
+      schoolDate,
+      localTime,
+      closeTime,
+      forced: Boolean(options.force),
+    };
+
     await sql`
       update job_runs
-      set status = 'completed', stats = ${sql.json(stats)}, completed_at = now()
+      set status = 'completed',
+          stats = ${sql.json(stats)},
+          completed_at = now()
       where id = ${job.id}
     `;
+
     return stats;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Virtual day-close failed.";
+    const message =
+      error instanceof Error ? error.message : "Virtual day-close failed.";
+
     await sql`
       update job_runs
-      set status = 'failed', error = ${message}, completed_at = now()
+      set status = 'failed',
+          error = ${message},
+          stats = ${sql.json({ schoolDate, localTime, closeTime, forced: Boolean(options.force) })},
+          completed_at = now()
       where id = ${job.id}
     `;
+
     throw error;
   }
 }

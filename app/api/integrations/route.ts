@@ -17,12 +17,12 @@ export async function GET() {
   const auth = await apiSession("admin");
   if (auth.response) return auth.response;
   const sql = db();
-  const rows = await sql\`
+  const rows = await sql`
     select id, provider, name, status, public_config, last_sync_at, last_error, created_at
     from integrations
-    where org_id = \${auth.session!.orgId}
+    where org_id = ${auth.session!.orgId}
     order by created_at desc
-  \`;
+  `;
   return NextResponse.json({ integrations: rows });
 }
 
@@ -39,13 +39,13 @@ export async function POST(request: Request) {
       ? encryptSecret(input.secrets)
       : null;
 
-    const [row] = await sql<{ id: string }[]>\`
+    const [row] = await sql<{ id: string }[]>`
       insert into integrations (
         org_id, provider, name, public_config, encrypted_config, status
       )
       values (
-        \${session.orgId}, \${input.provider}, \${input.name},
-        \${sql.json(input.publicConfig)}, \${encrypted}, 'configured'
+        ${session.orgId}, ${input.provider}, ${input.name},
+        ${sql.json(input.publicConfig)}, ${encrypted}, 'configured'
       )
       on conflict (org_id, provider, name) do update
         set public_config = excluded.public_config,
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
             status = 'configured',
             updated_at = now()
       returning id
-    \`;
+    `;
 
     await audit({
       orgId: session.orgId,

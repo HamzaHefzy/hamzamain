@@ -34,7 +34,7 @@ Recommended order:
 
 Sample CSVs are in examples/imports.
 
-OneRoster may be configured for roster synchronization. Vendor-specific SIS/LMS adapters other than OneRoster are not represented as live integrations until separately tested.
+OneRoster may be configured for roster synchronization. For recurring virtual participation evidence, an administrator may create a scoped key for the Inbound Virtual Evidence API and store that secret in the approved upstream system. Vendor-specific SIS/LMS adapters other than OneRoster are not represented as live integrations until separately tested.
 
 ## 6. Validate operations
 
@@ -43,6 +43,7 @@ Before launch:
 - confirm enrollment by campus
 - reconcile a sample of official attendance records
 - validate at least five virtual evidence decisions against the approved policy
+- if the inbound evidence API is enabled, verify an exact retry is idempotent and confirm an official SIS record is not overwritten
 - create and resolve a test ResolutionOS case
 - verify commitment audit history
 - exercise one missed-session recovery/check-in

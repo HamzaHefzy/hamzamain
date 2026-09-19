@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { toJson } from "@/lib/json";
 
 export type CasePatch = {
   status?: "open" | "in_progress" | "waiting" | "resolved" | "closed";
@@ -37,7 +38,7 @@ export async function createCase(input: {
         concat('CASE-', upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8))),
         ${input.barrierCode}, ${input.barrierLabel}, ${input.priority ?? "medium"},
         ${input.ownerUserId ?? null}, ${input.nextAction ?? null},
-        ${input.dueAt ?? null}, ${tx.json(input.metadata ?? {})}
+        ${input.dueAt ?? null}, ${tx.json(toJson(input.metadata ?? {}))}
       )
       returning id, case_number
     `;
@@ -49,7 +50,7 @@ export async function createCase(input: {
       values (
         ${input.orgId}, ${created.id}, ${input.actorUserId ?? null},
         'case_created', ${input.nextAction ?? null}, 'open',
-        ${tx.json(input.metadata ?? {})}
+        ${tx.json(toJson(input.metadata ?? {}))}
       )
     `;
 
@@ -124,13 +125,13 @@ export async function updateCase(input: {
         ${input.orgId}, ${input.caseId}, ${input.actorUserId},
         'case_updated', ${input.patch.note ?? null},
         ${current.status}, ${status},
-        ${tx.json({
+        ${tx.json(toJson({
           queue,
           priority,
           ownerUserId: owner,
           nextAction,
           dueAt: dueAt?.toISOString() ?? null,
-        })}
+        }))}
       )
     `;
 

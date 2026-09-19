@@ -26,6 +26,7 @@ const plans = [
     items: [
       "Everything in Core",
       "Virtual evidence ledger",
+      "Scoped inbound participation-evidence API",
       "Policy-aware attendance adjudication",
       "Same-day participation recovery",
       "Virtual exception and day-close automation",

@@ -17,7 +17,7 @@ export function assertSameOrigin(request: Request) {
 export function hashIp(ip: string | null) {
   if (!ip) return null;
   const salt = process.env.AUTH_SECRET ?? "anchor";
-  return createHash("sha256").update(\`\${salt}:\${ip}\`).digest("hex").slice(0, 24);
+  return createHash("sha256").update(`${salt}:${ip}`).digest("hex").slice(0, 24);
 }
 
 export function requestIp(request: Request) {

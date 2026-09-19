@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { assertSameOrigin } from "@/lib/security";
 
 const schema = z.object({
-  provider: z.enum(["csv","canvas","oneroster","powerschool","infinite_campus","skyward"]),
+  provider: z.literal("oneroster"),
   name: z.string().min(2).max(120),
   publicConfig: z.record(z.unknown()).default({}),
   secrets: z.record(z.unknown()).optional(),

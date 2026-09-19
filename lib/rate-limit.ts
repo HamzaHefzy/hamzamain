@@ -7,13 +7,13 @@ export async function rateLimit(key: string, limit: number, windowSeconds: numbe
     Math.floor(now.getTime() / (windowSeconds * 1000)) * windowSeconds * 1000,
   );
 
-  const rows = await sql<{ count: number }[]>\`
+  const rows = await sql<{ count: number }[]>`
     insert into rate_limits (key, window_start, count)
-    values (\${key}, \${windowStart}, 1)
+    values (${key}, ${windowStart}, 1)
     on conflict (key, window_start)
     do update set count = rate_limits.count + 1
     returning count
-  \`;
+  `;
 
   const count = rows[0]?.count ?? 1;
   return { allowed: count <= limit, count };

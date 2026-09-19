@@ -77,7 +77,6 @@ export async function ingestVirtualEvidenceEvents(
         select config
         from attendance_policies
         where org_id = ${context.orgId}
-          and active = true
           and delivery_model in ('virtual_program','virtual_campus','hybrid')
           and effective_from <= ${event.date}::date
           and (effective_to is null or effective_to >= ${event.date}::date)

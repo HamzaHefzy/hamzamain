@@ -64,18 +64,18 @@ export async function getSession(): Promise<AnchorSession | null> {
     org_id: string;
     org_name: string;
     org_slug: string;
-  }[]>\`
+  }[]>`
     select u.id as user_id, u.email, u.name, m.role,
            o.id as org_id, o.name as org_name, o.slug as org_slug
     from users u
     join memberships m on m.user_id = u.id
     join organizations o on o.id = m.org_id
-    where u.id = \${session.userId}
-      and o.id = \${session.orgId}
+    where u.id = ${session.userId}
+      and o.id = ${session.orgId}
       and u.active = true
       and o.status in ('active','trial')
     limit 1
-  \`;
+  `;
 
   const row = rows[0];
   if (!row) return null;

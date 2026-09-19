@@ -19,7 +19,7 @@ export async function POST(request: Request, context: Context) {
     if (job === "show-up") {
       result = await runShowUpAutomation(session.orgId);
     } else if (job === "virtual-day-close") {
-      result = await runVirtualDayClose(session.orgId);
+      result = await runVirtualDayClose(session.orgId, { force: true });
     } else {
       return NextResponse.json({ error: "Unknown operation." }, { status: 404 });
     }

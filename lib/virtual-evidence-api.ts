@@ -85,7 +85,7 @@ export async function ingestVirtualEvidenceEvents(
       `;
 
       if (!policy) {
-        throw new Error("No active virtual attendance policy covers this evidence date.");
+        throw new Error("No virtual attendance policy covers this evidence date.");
       }
 
       const qualifies = evidenceQualifies(policy.config, {

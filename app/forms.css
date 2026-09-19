@@ -219,3 +219,71 @@
 .trust-grid h2 { margin: 0 0 10px; font-size: 20px; }
 .trust-grid p { margin: 0; color: #657483; line-height: 1.65; }
 @media (max-width: 900px) { .trust-grid { grid-template-columns: 1fr; } }
+
+
+.api-key-manager {
+  display: grid;
+  gap: var(--space-4);
+}
+.api-key-create {
+  max-width: none;
+}
+.api-key-reveal {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface-subtle);
+}
+.api-key-warning {
+  display: grid;
+  gap: 4px;
+}
+.api-key-warning strong {
+  color: var(--text-strong);
+}
+.api-key-warning span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.secret-row,
+.api-example-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.secret-row code {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  font-size: 12px;
+}
+.api-example {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0;
+  padding: 16px;
+  border-radius: 10px;
+  background: #101820;
+  color: #edf4f8;
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: pre;
+}
+.danger-action {
+  color: #9a2f2a;
+}
+@media (max-width: 700px) {
+  .secret-row,
+  .api-example-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

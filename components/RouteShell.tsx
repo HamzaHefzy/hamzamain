@@ -15,6 +15,7 @@ const navItems = [
   { href: "/funding", label: "Funding" },
   { href: "/integrations", label: "Integrations" },
   { href: "/team", label: "Team" },
+  { href: "/settings", label: "Settings" },
 ];
 
 const publicPaths = new Set(["/", "/login", "/request-demo", "/pricing"]);

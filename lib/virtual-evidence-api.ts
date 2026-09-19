@@ -145,18 +145,32 @@ export async function ingestVirtualEvidenceEvents(
             throw new Error("sourceRef is already assigned to a different evidence event.");
           }
 
+          const [daily] = existing.qualifies
+            ? await tx<{ status: string; source: string }[]>`
+                select status, source
+                from attendance_daily
+                where org_id = ${context.orgId}
+                  and student_id = ${student.id}
+                  and school_date = ${event.date}::date
+                limit 1
+              `
+            : [];
+
           return {
             status: "duplicate" as const,
             id: existing.id,
             qualifies: existing.qualifies,
-            attendanceDecision: existing.qualifies
-              ? "present" as const
-              : "evidence_recorded" as const,
+            attendanceDecision:
+              daily?.status === "present" && daily?.source === "virtual_policy"
+                ? "present" as const
+                : "evidence_recorded" as const,
           };
         }
 
+        let attendanceDecision: "present" | "evidence_recorded" = "evidence_recorded";
+
         if (qualifies) {
-          await tx`
+          const [attendance] = await tx<{ status: string }[]>`
             insert into attendance_daily (
               org_id, student_id, school_date, status, minutes,
               source, evidence_refs, decision_reason
@@ -180,16 +194,19 @@ export async function ingestVirtualEvidenceEvents(
                   updated_at = now()
               where attendance_daily.source = 'virtual_policy'
                  or attendance_daily.status = 'unresolved'
+            returning status
           `;
+
+          if (attendance?.status === "present") {
+            attendanceDecision = "present";
+          }
         }
 
         return {
           status: "accepted" as const,
           id: inserted.id,
           qualifies,
-          attendanceDecision: qualifies
-            ? "present" as const
-            : "evidence_recorded" as const,
+          attendanceDecision,
         };
       });
 

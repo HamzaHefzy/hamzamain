@@ -18,14 +18,14 @@ export default async function InvitePage({ params }: Props) {
     expires_at: Date;
     accepted_at: Date | null;
     existing_user: boolean;
-  }[]>\`
+  }[]>`
     select i.email, i.role, o.name as org_name, i.expires_at, i.accepted_at,
            exists(select 1 from users u where lower(u.email)=lower(i.email)) as existing_user
     from invitations i
     join organizations o on o.id = i.org_id
-    where i.token_hash = \${hashOpaqueToken(token)}
+    where i.token_hash = ${hashOpaqueToken(token)}
     limit 1
-  \`;
+  `;
 
   if (!invite || invite.expires_at < new Date()) notFound();
 

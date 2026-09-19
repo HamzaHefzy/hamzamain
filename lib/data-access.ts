@@ -486,19 +486,25 @@ export async function getVirtualSnapshot(orgId: string) {
   };
 }
 
-export async function getMembers(orgId: string) {
+export async function getMembers(
+  orgId: string,
+  options: { includeInactive?: boolean } = {},
+) {
   const sql = db();
   const rows = await sql<{
     id: string;
     name: string;
     email: string;
     role: string;
+    active: boolean;
   }[]>`
-    select u.id, u.name, u.email, m.role
+    select u.id, u.name, u.email, m.role, m.active
     from memberships m
     join users u on u.id = m.user_id
-    where m.org_id = ${orgId} and u.active = true
-    order by u.name
+    where m.org_id = ${orgId}
+      and u.active = true
+      and (${Boolean(options.includeInactive)} or m.active = true)
+    order by m.active desc, u.name
   `;
   return rows;
 }

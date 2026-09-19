@@ -64,17 +64,17 @@ async function sendEmail(to: string, subject: string, body: string) {
 export async function sendNotification(input: NotificationInput) {
   const sql = db();
 
-  const [row] = await sql<{ id: string }[]>\`
+  const [row] = await sql<{ id: string }[]>`
     insert into notifications (
       org_id, student_id, case_id, channel, recipient,
       template_key, status
     )
     values (
-      \${input.orgId}, \${input.studentId ?? null}, \${input.caseId ?? null},
-      \${input.channel}, \${input.recipient}, \${input.templateKey}, 'queued'
+      ${input.orgId}, ${input.studentId ?? null}, ${input.caseId ?? null},
+      ${input.channel}, ${input.recipient}, ${input.templateKey}, 'queued'
     )
     returning id
-  \`;
+  `;
 
   try {
     const providerMessageId = input.channel === "sms"
@@ -85,22 +85,22 @@ export async function sendNotification(input: NotificationInput) {
           input.body,
         );
 
-    await sql\`
+    await sql`
       update notifications
       set status = 'sent',
-          provider_message_id = \${providerMessageId},
+          provider_message_id = ${providerMessageId},
           sent_at = now()
-      where id = \${row.id}
-    \`;
+      where id = ${row.id}
+    `;
 
     return { id: row.id, providerMessageId };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Notification failed.";
-    await sql\`
+    await sql`
       update notifications
-      set status = 'failed', error = \${message}
-      where id = \${row.id}
-    \`;
+      set status = 'failed', error = ${message}
+      where id = ${row.id}
+    `;
     throw error;
   }
 }

@@ -27,7 +27,7 @@ function isActive(pathname: string, href: string) {
 export default function RouteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
-  if (publicPaths.has(pathname)) {
+  if (publicPaths.has(pathname) || pathname.startsWith("/check-in/")) {
     return <>{children}</>;
   }
 

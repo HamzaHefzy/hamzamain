@@ -1,76 +1,74 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cases } from "@/lib/data";
+import CaseEditor from "@/components/CaseEditor";
+import { requireSession } from "@/lib/auth";
+import { getCase, getMembers } from "@/lib/data-access";
 
-type CasePageProps = {
-  params: Promise<{ id: string }>;
-};
+type Props = { params: Promise<{ id: string }> };
+export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }: CasePageProps): Promise<Metadata> {
+export default async function CaseDetailPage({ params }: Props) {
+  const session = await requireSession();
   const { id } = await params;
-  const item = cases.find((entry) => entry.id === id);
-  return {
-    title: item ? `${item.id} · ${item.barrier}` : "Case not found",
-    description: item ? `Synthetic ResolutionOS case for ${item.barrier}.` : undefined,
-  };
-}
-
-export default async function CaseDetailPage({ params }: CasePageProps) {
-  const { id } = await params;
-  const item = cases.find((entry) => entry.id === id);
-
+  const [item, members] = await Promise.all([
+    getCase(session.orgId, id),
+    getMembers(session.orgId),
+  ]);
   if (!item) notFound();
 
   return (
     <div className="page-stack">
       <header className="page-header">
         <div className="page-header-copy">
-          <div className="eyebrow">ResolutionOS case</div>
-          <h1>{item.barrier}</h1>
-          <p className="lede">
-            Review the current commitment and next step for {item.id}. This synthetic student view contains no financial valuation.
-          </p>
+          <div className="eyebrow">ResolutionOS · {item.caseNumber}</div>
+          <h1>{item.barrierLabel}</h1>
+          <p className="lede">{item.studentName} · {item.campusName ?? "No campus"} {item.grade ? "· Grade " + item.grade : ""}. This operational record contains no student-level financial valuation.</p>
         </div>
-        <div className="data-badge"><span className="status-dot" aria-hidden="true" />{item.queue}</div>
+        <div className="data-badge"><span className="status-dot" aria-hidden="true" />{item.status.replaceAll("_"," ")}</div>
       </header>
 
       <section className="detail-grid">
         <article className="detail-card">
-          <div className="eyebrow">Case details</div>
-          <h2>{item.id} · Grade {item.grade}</h2>
+          <div className="eyebrow">Case details</div><h2>Current state</h2>
           <dl className="detail-list">
-            <div><dt>Campus</dt><dd>{item.campus}</dd></div>
-            <div><dt>Barrier</dt><dd>{item.barrier}</dd></div>
-            <div><dt>Owner</dt><dd>{item.owner}</dd></div>
-            <div><dt>Status</dt><dd>{item.status}</dd></div>
+            <div><dt>Student ID</dt><dd>{item.externalStudentId}</dd></div>
+            <div><dt>Barrier</dt><dd>{item.barrierLabel}</dd></div>
+            <div><dt>Priority</dt><dd>{item.priority}</dd></div>
+            <div><dt>Owner</dt><dd>{item.ownerName ?? "Unassigned"}</dd></div>
+            <div><dt>Due</dt><dd>{item.dueAt ? new Date(item.dueAt).toLocaleString() : "Not set"}</dd></div>
           </dl>
         </article>
-
         <article className="detail-card">
-          <div className="eyebrow">Current commitment</div>
-          <h2>What must happen next</h2>
-          <dl className="detail-list">
-            <div><dt>Commitment</dt><dd>{item.commitment}</dd></div>
-            <div><dt>Due</dt><dd>{item.due}</dd></div>
-            <div><dt>Outcome check</dt><dd>Verify support delivery, then compare attendance after the planned return point.</dd></div>
-          </dl>
+          <div className="eyebrow">Current next action</div><h2>What must happen next</h2>
+          <p>{item.nextAction ?? "No next action is defined yet."}</p>
+          <Link className="secondary-link" href="/cases">Back to queue</Link>
         </article>
       </section>
 
-      <section className="guardrail-card">
-        <div>
-          <div className="eyebrow">Design rule</div>
-          <h2>Support decisions stay separate from finance.</h2>
-        </div>
-        <p>
-          This page is intentionally operational. Aggregate funding scenarios belong in the finance view; individual cases are prioritized by student need and intervention evidence.
-        </p>
-      </section>
+      <CaseEditor
+        caseId={item.id}
+        caseNumber={item.caseNumber}
+        status={item.status}
+        queue={item.queue}
+        priority={item.priority}
+        ownerUserId={item.ownerUserId}
+        nextAction={item.nextAction}
+        dueAt={item.dueAt}
+        members={members}
+        commitments={item.commitments}
+      />
 
-      <div>
-        <Link className="secondary-link" href="/cases">Back to resolution queue</Link>
-      </div>
+      <section className="panel">
+        <div className="panel-heading"><div><div className="eyebrow">Audit trail</div><h2>Case activity</h2></div></div>
+        <div className="case-stack">
+          {item.events.length ? item.events.map((event) => (
+            <div className="case-card" key={event.id}>
+              <div className="case-topline"><strong>{event.event_type.replaceAll("_"," ")}</strong><span>{new Date(event.created_at).toLocaleString()}</span></div>
+              <p>{event.note ?? "No note"} {event.actor_name ? "· " + event.actor_name : ""}</p>
+            </div>
+          )) : <p className="muted-copy">No events recorded yet.</p>}
+        </div>
+      </section>
     </div>
   );
 }

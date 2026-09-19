@@ -73,7 +73,11 @@ export NEW_ORG_TYPE="charter_network"
 npm run org:create
 ~~~
 
-After first sign-in, the administrator should configure campuses/delivery models in Settings, configure a versioned virtual attendance policy if needed, invite team members, load data or configure OneRoster, configure approved messaging, and review Funding assumptions.
+After first sign-in, the administrator should configure campuses/delivery models in Settings, configure a versioned virtual attendance policy if needed, invite team members, load data or configure OneRoster, create scoped inbound evidence API keys for approved server-to-server participation feeds when needed, configure approved messaging, and review Funding assumptions.
+
+## Inbound virtual evidence
+
+For automated virtual participation feeds, create a scoped API key from the Integrations workspace and follow docs/INBOUND_EVIDENCE_API.md. Store the plaintext key only in the upstream system's secret manager. Revoke and rotate it if exposed.
 
 ## Scheduled jobs
 

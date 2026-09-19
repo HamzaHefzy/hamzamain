@@ -11,7 +11,9 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:setup": "npm run db:migrate && npm run db:seed",
-    "org:create": "tsx scripts/create-org.ts"
+    "org:create": "tsx scripts/create-org.ts",
+    "check:source": "node scripts/check-source.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

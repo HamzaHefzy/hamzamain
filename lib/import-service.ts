@@ -34,11 +34,11 @@ async function startImport(
   total: number,
 ) {
   const sql = db();
-  const [row] = await sql<{ id: string }[]>\`
+  const [row] = await sql<{ id: string }[]>`
     insert into imports (org_id, uploaded_by, kind, filename, rows_total)
-    values (\${orgId}, \${userId}, \${kind}, \${filename}, \${total})
+    values (${orgId}, ${userId}, ${kind}, ${filename}, ${total})
     returning id
-  \`;
+  `;
   return row.id;
 }
 
@@ -49,15 +49,15 @@ async function finishImport(
   errors: { row: number; message: string }[],
 ) {
   const sql = db();
-  await sql\`
+  await sql`
     update imports
-    set status = \${failed > 0 && succeeded === 0 ? "failed" : "completed"},
-        rows_succeeded = \${succeeded},
-        rows_failed = \${failed},
-        error_report = \${sql.json(errors.slice(0, 250))},
+    set status = ${failed > 0 && succeeded === 0 ? "failed" : "completed"},
+        rows_succeeded = ${succeeded},
+        rows_failed = ${failed},
+        error_report = ${sql.json(errors.slice(0, 250))},
         completed_at = now()
-    where id = \${importId}
-  \`;
+    where id = ${importId}
+  `;
 }
 
 const studentSchema = z.object({
@@ -87,22 +87,22 @@ export async function importStudentsCsv(input: {
   for (let index = 0; index < rows.length; index += 1) {
     try {
       const item = studentSchema.parse(rows[index]);
-      const [campus] = await sql<{ id: string }[]>\`
+      const [campus] = await sql<{ id: string }[]>`
         select id from campuses
-        where org_id = \${input.orgId} and code = \${item.campus_code} and active = true
+        where org_id = ${input.orgId} and code = ${item.campus_code} and active = true
         limit 1
-      \`;
+      `;
       if (!campus) throw new Error("Unknown campus_code.");
 
-      await sql\`
+      await sql`
         insert into students (
           org_id, campus_id, external_id, first_name, last_name, grade,
           email, guardian_email, phone, guardian_phone
         )
         values (
-          \${input.orgId}, \${campus.id}, \${item.external_id},
-          \${item.first_name}, \${item.last_name}, \${item.grade || null},
-          \${item.email || null}, \${item.guardian_email || null}
+          ${input.orgId}, ${campus.id}, ${item.external_id},
+          ${item.first_name}, ${item.last_name}, ${item.grade || null},
+          ${item.email || null}, ${item.guardian_email || null}
         )
         on conflict (org_id, external_id) do update
           set campus_id = excluded.campus_id,
@@ -115,7 +115,7 @@ export async function importStudentsCsv(input: {
               guardian_phone = excluded.guardian_phone,
               active = true,
               updated_at = now()
-      \`;
+      `;
       succeeded += 1;
     } catch (error) {
       errors.push({
@@ -160,11 +160,11 @@ export async function importAttendanceCsv(input: {
   for (let index = 0; index < rows.length; index += 1) {
     try {
       const item = attendanceSchema.parse(rows[index]);
-      const [student] = await sql<{ id: string }[]>\`
+      const [student] = await sql<{ id: string }[]>`
         select id from students
-        where org_id = \${input.orgId} and external_id = \${item.student_external_id}
+        where org_id = ${input.orgId} and external_id = ${item.student_external_id}
         limit 1
-      \`;
+      `;
       if (!student) throw new Error("Unknown student_external_id.");
 
       const minutes = item.minutes ? Number(item.minutes) : null;
@@ -173,29 +173,29 @@ export async function importAttendanceCsv(input: {
       }
 
       await sql.begin(async (tx) => {
-        await tx\`
+        await tx`
           insert into attendance_events (
             org_id, student_id, event_date, occurred_at, status,
             source, minutes, external_event_id
           )
           values (
-            \${input.orgId}, \${student.id}, \${item.date},
-            \${item.occurred_at ? new Date(item.occurred_at) : null},
-            \${item.status}, \${item.source}, \${minutes},
-            \${item.external_event_id || null}
+            ${input.orgId}, ${student.id}, ${item.date},
+            ${item.occurred_at ? new Date(item.occurred_at) : null},
+            ${item.status}, ${item.source}, ${minutes},
+            ${item.external_event_id || null}
           )
           on conflict do nothing
-        \`;
+        `;
 
-        await tx\`
+        await tx`
           insert into attendance_daily (
             org_id, student_id, school_date, status, minutes,
             source, decision_reason, decided_by
           )
           values (
-            \${input.orgId}, \${student.id}, \${item.date}, \${item.status},
-            \${minutes}, \${item.source}, 'Imported official attendance record',
-            \${input.userId}
+            ${input.orgId}, ${student.id}, ${item.date}, ${item.status},
+            ${minutes}, ${item.source}, 'Imported official attendance record',
+            ${input.userId}
           )
           on conflict (org_id, student_id, school_date) do update
             set status = excluded.status,
@@ -205,7 +205,7 @@ export async function importAttendanceCsv(input: {
                 decided_by = excluded.decided_by,
                 decided_at = now(),
                 updated_at = now()
-        \`;
+        `;
       });
 
       succeeded += 1;
@@ -258,17 +258,17 @@ export async function importVirtualEvidenceCsv(input: {
   const errors: { row: number; message: string }[] = [];
   let succeeded = 0;
 
-  const [policyRow] = await sql<{ config: VirtualPolicyConfig }[]>\`
+  const [policyRow] = await sql<{ config: VirtualPolicyConfig }[]>`
     select config
     from attendance_policies
-    where org_id = \${input.orgId}
+    where org_id = ${input.orgId}
       and active = true
       and delivery_model in ('virtual_program','hybrid')
       and effective_from <= current_date
       and (effective_to is null or effective_to >= current_date)
     order by version desc
     limit 1
-  \`;
+  `;
 
   if (!policyRow) {
     await finishImport(importId, 0, rows.length, [
@@ -286,15 +286,15 @@ export async function importVirtualEvidenceCsv(input: {
   for (let index = 0; index < rows.length; index += 1) {
     try {
       const item = evidenceSchema.parse(rows[index]);
-      const [student] = await sql<{ id: string }[]>\`
+      const [student] = await sql<{ id: string }[]>`
         select s.id
         from students s
         join campuses c on c.id = s.campus_id
-        where s.org_id = \${input.orgId}
-          and s.external_id = \${item.student_external_id}
+        where s.org_id = ${input.orgId}
+          and s.external_id = ${item.student_external_id}
           and c.delivery_model in ('virtual_program','virtual_campus','hybrid')
         limit 1
-      \`;
+      `;
       if (!student) throw new Error("Unknown virtual student_external_id.");
 
       const minutes = item.minutes ? Number(item.minutes) : null;
@@ -308,33 +308,33 @@ export async function importVirtualEvidenceCsv(input: {
       });
 
       await sql.begin(async (tx) => {
-        const [evidence] = await tx<{ id: string }[]>\`
+        const [evidence] = await tx<{ id: string }[]>`
           insert into virtual_evidence_events (
             org_id, student_id, evidence_date, evidence_type,
             occurred_at, source, source_ref, minutes, qualifies
           )
           values (
-            \${input.orgId}, \${student.id}, \${item.date},
-            \${item.evidence_type}, \${new Date(item.occurred_at)},
-            \${item.source}, \${item.source_ref || null}, \${minutes}, \${qualifies}
+            ${input.orgId}, ${student.id}, ${item.date},
+            ${item.evidence_type}, ${new Date(item.occurred_at)},
+            ${item.source}, ${item.source_ref || null}, ${minutes}, ${qualifies}
           )
           on conflict do nothing
           returning id
-        \`;
+        `;
 
         if (qualifies) {
           const evidenceRef = evidence?.id ?? item.source_ref;
-          await tx\`
+          await tx`
             insert into attendance_daily (
               org_id, student_id, school_date, status, minutes, source,
               evidence_refs, decision_reason, decided_by
             )
             values (
-              \${input.orgId}, \${student.id}, \${item.date}, 'present',
-              \${minutes}, 'virtual_policy',
-              \${tx.json(evidenceRef ? [evidenceRef] : [])},
+              ${input.orgId}, ${student.id}, ${item.date}, 'present',
+              ${minutes}, 'virtual_policy',
+              ${tx.json(evidenceRef ? [evidenceRef] : [])},
               'Approved virtual participation evidence satisfied the active policy',
-              \${input.userId}
+              ${input.userId}
             )
             on conflict (org_id, student_id, school_date) do update
               set status = 'present',
@@ -345,7 +345,7 @@ export async function importVirtualEvidenceCsv(input: {
                   decided_by = excluded.decided_by,
                   decided_at = now(),
                   updated_at = now()
-          \`;
+          `;
         }
       });
 

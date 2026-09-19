@@ -27,6 +27,6 @@ export function db() {
 
 export async function pingDatabase() {
   const sql = db();
-  const [row] = await sql<{ ok: number }[]>\`select 1 as ok\`;
+  const [row] = await sql<{ ok: number }[]>`select 1 as ok`;
   return row?.ok === 1;
 }

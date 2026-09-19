@@ -19,6 +19,14 @@ export async function POST(request: Request) {
     if (auth.response) return auth.response;
     const session = auth.session!;
     const input = schema.parse(await request.json());
+
+    if (input.role === "owner" && session.role !== "owner") {
+      return NextResponse.json(
+        { error: "Only an owner can invite another owner." },
+        { status: 403 },
+      );
+    }
+
     const sql = db();
 
     const { token, hash } = createOpaqueToken();

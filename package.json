@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "db:setup": "npm run db:migrate && npm run db:seed"
+    "db:setup": "npm run db:migrate && npm run db:seed",
+    "org:create": "tsx scripts/create-org.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

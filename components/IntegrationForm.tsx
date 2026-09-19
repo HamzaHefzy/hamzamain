@@ -11,49 +11,49 @@ export default function IntegrationForm() {
     event.preventDefault();
     setStatus("Saving…");
     const form = new FormData(event.currentTarget);
-    const provider = String(form.get("provider"));
-    const baseUrl = String(form.get("baseUrl") ?? "");
-    const token = String(form.get("token") ?? "");
 
     const response = await fetch("/api/integrations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        provider,
+        provider: "oneroster",
         name: String(form.get("name")),
-        publicConfig: baseUrl ? { baseUrl } : {},
-        secrets: token ? { token } : undefined,
+        publicConfig: {
+          baseUrl: String(form.get("baseUrl")),
+          tokenUrl: String(form.get("tokenUrl")),
+          scope: String(form.get("scope") ?? ""),
+        },
+        secrets: {
+          clientId: String(form.get("clientId")),
+          clientSecret: String(form.get("clientSecret")),
+        },
       }),
     });
-    const payload = await response.json();
 
+    const payload = await response.json();
     if (!response.ok) {
-      setStatus(payload.error ?? "Unable to save integration.");
+      setStatus(payload.error ?? "Unable to save OneRoster connection.");
       return;
     }
 
-    setStatus("Integration saved. Credentials are encrypted at rest.");
+    setStatus("OneRoster connection saved. Credentials are encrypted at rest.");
     event.currentTarget.reset();
     router.refresh();
   }
 
   return (
     <form className="integration-form" onSubmit={submit}>
-      <label>
-        <span>Provider</span>
-        <select name="provider" defaultValue="csv">
-          <option value="csv">Secure CSV / SFTP feed</option>
-          <option value="canvas">Canvas</option>
-          <option value="oneroster">OneRoster API</option>
-          <option value="powerschool">PowerSchool</option>
-          <option value="infinite_campus">Infinite Campus</option>
-          <option value="skyward">Skyward</option>
-        </select>
-      </label>
-      <label><span>Connection name</span><input name="name" required placeholder="District SIS production" /></label>
-      <label><span>Base URL</span><input name="baseUrl" type="url" placeholder="https://..." /></label>
-      <label><span>API token / secret</span><input name="token" type="password" autoComplete="off" /></label>
-      <button className="secondary-link" type="submit">Save connection</button>
+      <div className="disclaimer">
+        <strong>Enabled connector:</strong> OneRoster roster sync. CSV ingestion remains available under Attendance.
+        PowerSchool, Infinite Campus, Skyward, and LMS-specific adapters are not marketed as live connectors until a tested adapter exists.
+      </div>
+      <label><span>Connection name</span><input name="name" required placeholder="District OneRoster production" /></label>
+      <label><span>OneRoster base URL</span><input name="baseUrl" type="url" required placeholder="https://sis.example.org/ims/oneroster/rostering/v1p2" /></label>
+      <label><span>OAuth token URL</span><input name="tokenUrl" type="url" required placeholder="https://sis.example.org/oauth/token" /></label>
+      <label><span>OAuth scope <small>Optional if your provider does not require it</small></span><input name="scope" placeholder="oneroster.readonly" /></label>
+      <label><span>Client ID</span><input name="clientId" required autoComplete="off" /></label>
+      <label><span>Client secret</span><input name="clientSecret" type="password" required autoComplete="new-password" /></label>
+      <button className="secondary-link" type="submit">Save OneRoster connection</button>
       {status ? <small>{status}</small> : null}
     </form>
   );

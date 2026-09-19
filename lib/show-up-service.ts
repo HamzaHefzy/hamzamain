@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { db } from "@/lib/db";
 import { createCase } from "@/lib/case-service";
+import { localDateString } from "@/lib/time";
 import { sendNotification } from "@/lib/notifications";
 
 const barriers = {
@@ -374,6 +375,9 @@ export async function runShowUpAutomation(orgId: string) {
 
 export async function getShowUpSnapshot(orgId: string) {
   const sql = db();
+  const [org] = await sql<{ timezone: string }[]>`select timezone from organizations where id = ${orgId}`;
+  if (!org) throw new Error("Organization not found.");
+  const schoolDate = localDateString(new Date(), org.timezone);
 
   const [metrics] = await sql<{
     upcoming: string;
@@ -395,14 +399,14 @@ export async function getShowUpSnapshot(orgId: string) {
         from session_participation sp
         where sp.org_id = ${orgId}
           and sp.status = 'missed'
-          and sp.updated_at::date = current_date
+          and (sp.updated_at at time zone ${org.timezone})::date = ${schoolDate}::date
       ) as missed_today,
       (
         select count(*)::text
         from session_participation sp
         where sp.org_id = ${orgId}
           and sp.status = 'recovered'
-          and sp.updated_at::date = current_date
+          and (sp.updated_at at time zone ${org.timezone})::date = ${schoolDate}::date
       ) as recovered_today,
       (
         select count(*)::text

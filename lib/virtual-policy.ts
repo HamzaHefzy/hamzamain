@@ -26,7 +26,8 @@ export function evidenceQualifies(
   if (!policy.qualifyingEvidence.includes(evidence.evidenceType)) return false;
 
   const minimum = policy.minimumMinutes ?? 0;
-  if (minimum > 0 && evidence.minutes !== null && evidence.minutes !== undefined) {
+  if (minimum > 0) {
+    if (evidence.minutes === null || evidence.minutes === undefined) return false;
     return evidence.minutes >= minimum;
   }
 

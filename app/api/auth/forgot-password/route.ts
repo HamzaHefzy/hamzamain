@@ -24,27 +24,27 @@ export async function POST(request: Request) {
       email: string;
       org_id: string;
       org_name: string;
-    }[]>\`
+    }[]>`
       select u.id, u.email, m.org_id, o.name as org_name
       from users u
       join memberships m on m.user_id = u.id
       join organizations o on o.id = m.org_id
-      where lower(u.email) = lower(\${input.email})
+      where lower(u.email) = lower(${input.email})
         and u.active = true
         and o.status in ('active','trial')
       order by m.created_at
       limit 1
-    \`;
+    `;
 
     if (!user) return NextResponse.json({ ok: true });
 
     const { token, hash } = createOpaqueToken();
-    await sql\`
+    await sql`
       insert into password_reset_tokens (
         user_id, org_id, token_hash, expires_at
       )
-      values (\${user.id}, \${user.org_id}, \${hash}, now() + interval '1 hour')
-    \`;
+      values (${user.id}, ${user.org_id}, ${hash}, now() + interval '1 hour')
+    `;
 
     const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin).replace(/\/$/, "");
     const resetUrl = siteUrl + "/reset-password/" + token;

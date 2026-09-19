@@ -199,3 +199,14 @@
   color: var(--text);
 }
 .team-actions small { grid-column: 1 / -1; color: var(--muted); }
+
+.governance-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.governance-message { grid-column: 1 / -1; }
+@media (max-width: 850px) {
+  .governance-grid { grid-template-columns: 1fr; }
+  .governance-message { grid-column: auto; }
+}

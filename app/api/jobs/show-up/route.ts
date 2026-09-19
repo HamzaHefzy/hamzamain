@@ -12,9 +12,9 @@ export async function POST(request: Request) {
   }
 
   const sql = db();
-  const orgs = await sql<{ id: string; slug: string }[]>\`
+  const orgs = await sql<{ id: string; slug: string }[]>`
     select id, slug from organizations where status in ('active','trial')
-  \`;
+  `;
 
   const results: Record<string, unknown> = {};
   for (const org of orgs) {

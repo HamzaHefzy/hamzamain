@@ -7,12 +7,12 @@ if (!url) throw new Error("DATABASE_URL is required.");
 
 const sql = postgres(url, { max: 1, prepare: false });
 
-await sql\`
+await sql`
   create table if not exists schema_migrations (
     filename text primary key,
     applied_at timestamptz not null default now()
   )
-\`;
+`;
 
 const dir = join(process.cwd(), "db", "migrations");
 const files = (await readdir(dir))
@@ -20,9 +20,9 @@ const files = (await readdir(dir))
   .sort();
 
 for (const filename of files) {
-  const [existing] = await sql<{ filename: string }[]>\`
-    select filename from schema_migrations where filename = \${filename}
-  \`;
+  const [existing] = await sql<{ filename: string }[]>`
+    select filename from schema_migrations where filename = ${filename}
+  `;
 
   if (existing) continue;
 
@@ -31,10 +31,10 @@ for (const filename of files) {
 
   await sql.begin(async (tx) => {
     await tx.unsafe(source);
-    await tx\`
+    await tx`
       insert into schema_migrations (filename)
-      values (\${filename})
-    \`;
+      values (${filename})
+    `;
   });
 }
 

@@ -34,19 +34,19 @@ export async function POST(request: Request) {
       org_id: string;
       org_name: string;
       org_slug: string;
-    }[]>\`
+    }[]>`
       select u.id as user_id, u.email, u.name, u.password_hash,
              m.role, o.id as org_id, o.name as org_name, o.slug as org_slug
       from users u
       join memberships m on m.user_id = u.id
       join organizations o on o.id = m.org_id
-      where lower(u.email) = lower(\${input.email})
+      where lower(u.email) = lower(${input.email})
         and u.active = true
         and o.status in ('active','trial')
-        and (\${input.organization ?? null}::text is null or o.slug = \${input.organization ?? null})
+        and (${input.organization ?? null}::text is null or o.slug = ${input.organization ?? null})
       order by o.created_at
       limit 1
-    \`;
+    `;
 
     const row = rows[0];
     if (!row || !(await bcrypt.compare(input.password, row.password_hash))) {
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       orgSlug: row.org_slug,
     });
 
-    await sql\`update users set last_login_at = now() where id = \${row.user_id}\`;
+    await sql`update users set last_login_at = now() where id = ${row.user_id}`;
     await audit({
       orgId: row.org_id,
       actorUserId: row.user_id,

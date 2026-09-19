@@ -36,7 +36,8 @@ await sql.begin(async (tx) => {
   await tx`
     insert into memberships (user_id, org_id, role)
     values (${user.id}, ${org.id}, 'owner')
-    on conflict (user_id, org_id) do update set role = 'owner'
+    on conflict (user_id, org_id) do update
+      set role = 'owner', active = true
   `;
 
   const campuses = [

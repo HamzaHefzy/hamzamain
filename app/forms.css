@@ -172,3 +172,13 @@
 .policy-checks legend { padding: 0 6px; font-size: 12px; font-weight: 750; color: var(--muted-strong); }
 .policy-checks label { display: flex; align-items: center; gap: 9px; font-weight: 500; }
 .policy-checks input { min-height: auto; width: auto; }
+
+.audit-metadata {
+  display: block;
+  max-width: 420px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  color: var(--muted-strong);
+  font-size: 11px;
+  line-height: 1.45;
+}

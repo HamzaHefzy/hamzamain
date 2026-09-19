@@ -22,16 +22,16 @@ export async function POST(request: Request) {
     const sql = db();
 
     const { token, hash } = createOpaqueToken();
-    const [invite] = await sql<{ id: string }[]>\`
+    const [invite] = await sql<{ id: string }[]>`
       insert into invitations (
         org_id, email, role, token_hash, invited_by, expires_at
       )
       values (
-        \${session.orgId}, \${input.email.toLowerCase()}, \${input.role},
-        \${hash}, \${session.userId}, now() + interval '7 days'
+        ${session.orgId}, ${input.email.toLowerCase()}, ${input.role},
+        ${hash}, ${session.userId}, now() + interval '7 days'
       )
       returning id
-    \`;
+    `;
 
     const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin).replace(/\/$/, "");
     const inviteUrl = siteUrl + "/invite/" + token;
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
           " in Anchor as " + input.role + ". Accept your invitation: " + inviteUrl,
       });
     } else if (process.env.NODE_ENV === "production") {
-      await sql\`delete from invitations where id = \${invite.id}\`;
+      await sql`delete from invitations where id = ${invite.id}`;
       return NextResponse.json(
         { error: "Email delivery is not configured for production." },
         { status: 503 },

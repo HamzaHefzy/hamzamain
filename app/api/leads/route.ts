@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
 import { assertSameOrigin, hashIp, requestIp } from "@/lib/security";
+import { deliverSalesLead } from "@/lib/sales-delivery";
 
 const schema = z.object({
   name: z.string().min(2).max(120),
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
 
     const input = schema.parse(await request.json());
     const sql = db();
-    const [lead] = await sql<{ id: string }[]>`
+    const [lead] = await sql<{ id: string; created_at: Date }[]>`
       insert into leads (
         email, name, organization, role, enrollment, state, interest, message
       )
@@ -35,10 +36,34 @@ export async function POST(request: Request) {
         ${input.role ?? null}, ${input.enrollment ?? null}, ${input.state ?? null},
         ${input.interest}, ${input.message ?? null}
       )
-      returning id
+      returning id, created_at
     `;
 
-    return NextResponse.json({ ok: true, id: lead.id }, { status: 201 });
+    let deliveryAttempted = false;
+    try {
+      const deliveries = await deliverSalesLead({
+        id: lead.id,
+        name: input.name,
+        email: input.email.toLowerCase(),
+        organization: input.organization,
+        role: input.role ?? null,
+        enrollment: input.enrollment ?? null,
+        state: input.state ?? null,
+        interest: input.interest,
+        message: input.message ?? null,
+        createdAt: lead.created_at.toISOString(),
+      });
+      deliveryAttempted = deliveries.length > 0;
+    } catch {
+      // The lead is already persisted. Delivery failures are retried by the
+      // protected sales-lead job and must not make the public form look failed.
+    }
+
+    return NextResponse.json({
+      ok: true,
+      id: lead.id,
+      deliveryAttempted,
+    }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unable to submit request." },

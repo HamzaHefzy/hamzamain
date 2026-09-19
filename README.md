@@ -17,7 +17,7 @@ Anchor is an attendance-resolution operating system for school systems. It combi
 - Twilio SMS and Resend email adapters
 - aggregate funding assumptions and scenarios
 - audit logging
-- public pricing and sales lead capture
+- public pricing, persisted sales lead capture, Resend sales alerts, and signed CRM webhooks
 - Docker support and PostgreSQL-backed CI
 
 ## Product guardrail

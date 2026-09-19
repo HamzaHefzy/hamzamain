@@ -34,6 +34,12 @@ Required for SMS:
 - TWILIO_AUTH_TOKEN
 - TWILIO_FROM_NUMBER
 
+Optional commercial lead delivery:
+
+- SALES_ALERT_EMAIL — sends each demo request to this inbox through Resend
+- SALES_WEBHOOK_URL — HTTPS CRM/automation endpoint
+- SALES_WEBHOOK_SECRET — HMAC secret used to sign the exact webhook body
+
 ## Database rollout
 
 Run migrations before starting a new release:
@@ -75,7 +81,11 @@ POST /api/jobs/show-up detects upcoming/missed required virtual sessions, create
 
 POST /api/jobs/virtual-day-close may be called hourly. Each organization is evaluated using its own timezone and active policy close time; the same school date is closed once unless an authenticated operator explicitly forces a rerun from the workspace.
 
-Both scheduled endpoints require an Authorization Bearer header containing CRON_SECRET.
+POST /api/jobs/sales-leads retries failed or previously-undelivered sales lead notifications. Run it every 10–15 minutes if SALES_ALERT_EMAIL or SALES_WEBHOOK_URL is configured.
+
+All scheduled endpoints require an Authorization Bearer header containing CRON_SECRET.
+
+Sales webhook consumers should verify X-Anchor-Signature against the raw request body with SALES_WEBHOOK_SECRET before accepting the event.
 
 ## Health check
 

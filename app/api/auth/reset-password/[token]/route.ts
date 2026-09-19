@@ -20,25 +20,25 @@ export async function POST(request: Request, context: Context) {
         user_id: string;
         expires_at: Date;
         used_at: Date | null;
-      }[]>\`
+      }[]>`
         select id, user_id, expires_at, used_at
         from password_reset_tokens
-        where token_hash = \${hashOpaqueToken(token)}
+        where token_hash = ${hashOpaqueToken(token)}
         for update
-      \`;
+      `;
 
       if (!row || row.expires_at < new Date() || row.used_at) {
         throw new Error("This reset link is invalid or expired.");
       }
 
-      await tx\`
+      await tx`
         update users
-        set password_hash = \${passwordHash}, updated_at = now()
-        where id = \${row.user_id}
-      \`;
-      await tx\`
-        update password_reset_tokens set used_at = now() where id = \${row.id}
-      \`;
+        set password_hash = ${passwordHash}, updated_at = now()
+        where id = ${row.user_id}
+      `;
+      await tx`
+        update password_reset_tokens set used_at = now() where id = ${row.id}
+      `;
     });
 
     return NextResponse.json({ ok: true });

@@ -13,7 +13,8 @@ const navItems = [
   { href: "/virtual", label: "Virtual" },
   { href: "/virtual/show-up", label: "Show-Up" },
   { href: "/funding", label: "Funding" },
-  { href: "/integrations", label: "Integrations" },\n  { href: "/team", label: "Team" },
+  { href: "/integrations", label: "Integrations" },
+  { href: "/team", label: "Team" },
 ];
 
 const publicPaths = new Set(["/", "/login", "/request-demo", "/pricing"]);

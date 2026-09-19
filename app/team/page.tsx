@@ -17,13 +17,13 @@ export default async function TeamPage() {
     expires_at: Date;
     accepted_at: Date | null;
     created_at: Date;
-  }[]>\`
+  }[]>`
     select id, email, role, expires_at, accepted_at, created_at
     from invitations
-    where org_id = \${session.orgId}
+    where org_id = ${session.orgId}
     order by created_at desc
     limit 50
-  \` : [];
+  ` : [];
 
   return (
     <div className="page-stack">

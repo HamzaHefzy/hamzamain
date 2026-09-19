@@ -73,7 +73,7 @@ export async function getDashboardSnapshot(orgId: string): Promise<DashboardSnap
              case ad.status
                when 'present' then 1
                when 'partial' then 0.5
-               when 'excused' then 1
+               when 'excused' then 0
                else 0
              end
            ), 0)::text as present_equivalents
@@ -363,7 +363,7 @@ export async function getAttendanceOverview(orgId: string) {
              case status
                when 'present' then 1
                when 'partial' then 0.5
-               when 'excused' then 1
+               when 'excused' then 0
                else 0
              end
            ), 0)::text as present_equivalents,

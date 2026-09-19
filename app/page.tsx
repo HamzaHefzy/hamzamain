@@ -218,7 +218,7 @@ export default function MarketingHome() {
       <footer className="m-footer">
         <div className="m-container m-footer-grid">
           <div><Logo /><p>Attendance today. Better follow-through tomorrow.</p></div>
-          <nav aria-label="Footer navigation"><a href="#product">Product</a><a href="#solutions">Solutions</a><Link href="/virtual">Virtual schools</Link><Link href="/funding">Funding</Link></nav>
+          <nav aria-label="Footer navigation"><a href="#product">Product</a><a href="#solutions">Solutions</a><Link href="/virtual">Virtual schools</Link><Link href="/funding">Funding</Link><Link href="/security">Security</Link><Link href="/privacy">Privacy</Link></nav>
           <div className="m-footer-note"><span>Student support before surveillance.</span><small>© 2026 Anchor.</small></div>
         </div>
       </footer>

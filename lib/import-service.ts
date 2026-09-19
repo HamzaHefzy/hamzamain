@@ -68,6 +68,8 @@ const studentSchema = z.object({
   campus_code: z.string().min(1),
   email: z.string().email().optional().or(z.literal("")),
   guardian_email: z.string().email().optional().or(z.literal("")),
+  phone: z.string().optional().default(""),
+  guardian_phone: z.string().optional().default(""),
 });
 
 export async function importStudentsCsv(input: {
@@ -95,7 +97,7 @@ export async function importStudentsCsv(input: {
       await sql\`
         insert into students (
           org_id, campus_id, external_id, first_name, last_name, grade,
-          email, guardian_email
+          email, guardian_email, phone, guardian_phone
         )
         values (
           \${input.orgId}, \${campus.id}, \${item.external_id},
@@ -109,6 +111,8 @@ export async function importStudentsCsv(input: {
               grade = excluded.grade,
               email = excluded.email,
               guardian_email = excluded.guardian_email,
+              phone = excluded.phone,
+              guardian_phone = excluded.guardian_phone,
               active = true,
               updated_at = now()
       \`;

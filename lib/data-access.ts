@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { localDateString } from "@/lib/time";
+import type { AnchorRole } from "@/lib/auth";
 
 export type DashboardCampus = {
   id: string;
@@ -495,7 +496,7 @@ export async function getMembers(
     id: string;
     name: string;
     email: string;
-    role: string;
+    role: AnchorRole;
     active: boolean;
   }[]>`
     select u.id, u.name, u.email, m.role, m.active

@@ -6,6 +6,7 @@ import {
   importVirtualEvidenceCsv,
 } from "@/lib/import-service";
 import { audit } from "@/lib/audit";
+import { importVirtualSessionsCsv } from "@/lib/session-import";
 import { assertSameOrigin } from "@/lib/security";
 
 export const runtime = "nodejs";
@@ -46,6 +47,13 @@ export async function POST(request: Request) {
       });
     } else if (kind === "virtual_evidence") {
       result = await importVirtualEvidenceCsv({
+        orgId: session.orgId,
+        userId: session.userId,
+        filename: file.name,
+        csv,
+      });
+    } else if (kind === "virtual_sessions") {
+      result = await importVirtualSessionsCsv({
         orgId: session.orgId,
         userId: session.userId,
         filename: file.name,

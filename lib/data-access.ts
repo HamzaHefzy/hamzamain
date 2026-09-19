@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { localDateString } from "@/lib/time";
 
 export type DashboardCampus = {
   id: string;
@@ -412,6 +413,9 @@ export async function getAttendanceOverview(orgId: string) {
 
 export async function getVirtualSnapshot(orgId: string) {
   const sql = db();
+  const [org] = await sql<{ timezone: string }[]>`select timezone from organizations where id = ${orgId}`;
+  if (!org) throw new Error("Organization not found.");
+  const schoolDate = localDateString(new Date(), org.timezone);
 
   const [enrollment] = await sql<{ count: string }[]>`
     select count(s.id)::text as count
@@ -436,7 +440,7 @@ export async function getVirtualSnapshot(orgId: string) {
         join students s2 on s2.id = vee.student_id
         join campuses c2 on c2.id = s2.campus_id
         where vee.org_id = ${orgId}
-          and vee.evidence_date = current_date
+          and vee.evidence_date = ${schoolDate}::date
           and vee.qualifies = true
           and c2.delivery_model in ('virtual_program','virtual_campus','hybrid')
       ) as evidence_students
@@ -444,7 +448,7 @@ export async function getVirtualSnapshot(orgId: string) {
     join students s on s.id = ad.student_id
     join campuses c on c.id = s.campus_id
     where ad.org_id = ${orgId}
-      and ad.school_date = current_date
+      and ad.school_date = ${schoolDate}::date
       and c.delivery_model in ('virtual_program','virtual_campus','hybrid')
   `;
 
@@ -458,7 +462,7 @@ export async function getVirtualSnapshot(orgId: string) {
            count(distinct student_id)::text as students
     from virtual_evidence_events
     where org_id = ${orgId}
-      and evidence_date = current_date
+      and evidence_date = ${schoolDate}::date
       and qualifies = true
     group by evidence_type
     order by count(*) desc

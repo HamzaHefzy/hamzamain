@@ -39,23 +39,30 @@ export async function POST(request: Request) {
       returning id, created_at
     `;
 
-    const deliveries = await deliverSalesLead({
-      id: lead.id,
-      name: input.name,
-      email: input.email.toLowerCase(),
-      organization: input.organization,
-      role: input.role ?? null,
-      enrollment: input.enrollment ?? null,
-      state: input.state ?? null,
-      interest: input.interest,
-      message: input.message ?? null,
-      createdAt: lead.created_at.toISOString(),
-    });
+    let deliveryAttempted = false;
+    try {
+      const deliveries = await deliverSalesLead({
+        id: lead.id,
+        name: input.name,
+        email: input.email.toLowerCase(),
+        organization: input.organization,
+        role: input.role ?? null,
+        enrollment: input.enrollment ?? null,
+        state: input.state ?? null,
+        interest: input.interest,
+        message: input.message ?? null,
+        createdAt: lead.created_at.toISOString(),
+      });
+      deliveryAttempted = deliveries.length > 0;
+    } catch {
+      // The lead is already persisted. Delivery failures are retried by the
+      // protected sales-lead job and must not make the public form look failed.
+    }
 
     return NextResponse.json({
       ok: true,
       id: lead.id,
-      deliveryConfigured: deliveries.length > 0,
+      deliveryAttempted,
     }, { status: 201 });
   } catch (error) {
     return NextResponse.json(

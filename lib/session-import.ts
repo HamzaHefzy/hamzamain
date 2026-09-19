@@ -33,28 +33,28 @@ export async function importVirtualSessionsCsv(input: {
     bom: true,
   }) as Record<string, string>[];
 
-  const [org] = await sql<{ timezone: string }[]>\`
-    select timezone from organizations where id = \${input.orgId}
-  \`;
+  const [org] = await sql<{ timezone: string }[]>`
+    select timezone from organizations where id = ${input.orgId}
+  `;
   if (!org) throw new Error("Organization not found.");
 
-  const [importRow] = await sql<{ id: string }[]>\`
+  const [importRow] = await sql<{ id: string }[]>`
     insert into imports (org_id, uploaded_by, kind, filename, rows_total)
-    values (\${input.orgId}, \${input.userId}, 'virtual_sessions', \${input.filename}, \${rows.length})
+    values (${input.orgId}, ${input.userId}, 'virtual_sessions', ${input.filename}, ${rows.length})
     returning id
-  \`;
+  `;
 
-  const [policy] = await sql<{ config: VirtualPolicyConfig }[]>\`
+  const [policy] = await sql<{ config: VirtualPolicyConfig }[]>`
     select config
     from attendance_policies
-    where org_id = \${input.orgId}
+    where org_id = ${input.orgId}
       and active = true
       and delivery_model in ('virtual_program','hybrid')
       and effective_from <= current_date
       and (effective_to is null or effective_to >= current_date)
     order by version desc
     limit 1
-  \`;
+  `;
 
   const errors: { row: number; message: string }[] = [];
   let succeeded = 0;
@@ -68,16 +68,16 @@ export async function importVirtualSessionsCsv(input: {
         throw new Error("Invalid session time range.");
       }
 
-      const [student] = await sql<{ id: string; campus_id: string | null }[]>\`
+      const [student] = await sql<{ id: string; campus_id: string | null }[]>`
         select s.id, s.campus_id
         from students s
         join campuses c on c.id = s.campus_id
-        where s.org_id = \${input.orgId}
-          and s.external_id = \${item.student_external_id}
+        where s.org_id = ${input.orgId}
+          and s.external_id = ${item.student_external_id}
           and s.active = true
           and c.delivery_model in ('virtual_program','virtual_campus','hybrid')
         limit 1
-      \`;
+      `;
       if (!student) throw new Error("Unknown virtual student_external_id.");
 
       const minutes = item.minutes ? Number(item.minutes) : null;
@@ -86,16 +86,16 @@ export async function importVirtualSessionsCsv(input: {
       }
 
       await sql.begin(async (tx) => {
-        const [session] = await tx<{ id: string }[]>\`
+        const [session] = await tx<{ id: string }[]>`
           insert into virtual_sessions (
             org_id, campus_id, external_id, title, starts_at, ends_at,
             required, live_url, source
           )
           values (
-            \${input.orgId}, \${student.campus_id}, \${item.session_external_id},
-            \${item.title}, \${startsAt}, \${endsAt},
-            \${item.required.toLowerCase() !== "false"},
-            \${item.live_url || null}, \${item.source}
+            ${input.orgId}, ${student.campus_id}, ${item.session_external_id},
+            ${item.title}, ${startsAt}, ${endsAt},
+            ${item.required.toLowerCase() !== "false"},
+            ${item.live_url || null}, ${item.source}
           )
           on conflict (org_id, source, external_id) do update
             set title = excluded.title,
@@ -105,19 +105,19 @@ export async function importVirtualSessionsCsv(input: {
                 live_url = excluded.live_url,
                 updated_at = now()
           returning id
-        \`;
+        `;
 
-        await tx\`
+        await tx`
           insert into session_participation (
             org_id, session_id, student_id, status,
             joined_at, left_at, minutes, source
           )
           values (
-            \${input.orgId}, \${session.id}, \${student.id},
-            \${item.participation_status},
-            \${item.joined_at ? new Date(item.joined_at) : null},
-            \${item.left_at ? new Date(item.left_at) : null},
-            \${minutes}, \${item.source}
+            ${input.orgId}, ${session.id}, ${student.id},
+            ${item.participation_status},
+            ${item.joined_at ? new Date(item.joined_at) : null},
+            ${item.left_at ? new Date(item.left_at) : null},
+            ${minutes}, ${item.source}
           )
           on conflict (session_id, student_id) do update
             set status = excluded.status,
@@ -126,7 +126,7 @@ export async function importVirtualSessionsCsv(input: {
                 minutes = excluded.minutes,
                 source = excluded.source,
                 updated_at = now()
-        \`;
+        `;
 
         if ((item.participation_status === "joined" || item.participation_status === "recovered") && policy) {
           const qualifies = evidenceQualifies(policy.config, {
@@ -135,33 +135,33 @@ export async function importVirtualSessionsCsv(input: {
           });
           const date = localDateString(startsAt, org.timezone);
 
-          const [evidence] = await tx<{ id: string }[]>\`
+          const [evidence] = await tx<{ id: string }[]>`
             insert into virtual_evidence_events (
               org_id, student_id, evidence_date, evidence_type,
               occurred_at, source, source_ref, minutes, qualifies
             )
             values (
-              \${input.orgId}, \${student.id}, \${date}, 'live_session',
-              \${item.joined_at ? new Date(item.joined_at) : startsAt},
-              \${item.source}, \${item.source + ":" + item.session_external_id + ":" + item.student_external_id},
-              \${minutes}, \${qualifies}
+              ${input.orgId}, ${student.id}, ${date}, 'live_session',
+              ${item.joined_at ? new Date(item.joined_at) : startsAt},
+              ${item.source}, ${item.source + ":" + item.session_external_id + ":" + item.student_external_id},
+              ${minutes}, ${qualifies}
             )
             on conflict do nothing
             returning id
-          \`;
+          `;
 
           if (qualifies) {
-            await tx\`
+            await tx`
               insert into attendance_daily (
                 org_id, student_id, school_date, status, minutes,
                 source, evidence_refs, decision_reason, decided_by
               )
               values (
-                \${input.orgId}, \${student.id}, \${date}, 'present',
-                \${minutes}, 'virtual_policy',
-                \${tx.json(evidence ? [evidence.id] : [])},
+                ${input.orgId}, ${student.id}, ${date}, 'present',
+                ${minutes}, 'virtual_policy',
+                ${tx.json(evidence ? [evidence.id] : [])},
                 'Required live-session participation satisfied the active virtual policy',
-                \${input.userId}
+                ${input.userId}
               )
               on conflict (org_id, student_id, school_date) do update
                 set status = 'present',
@@ -172,7 +172,7 @@ export async function importVirtualSessionsCsv(input: {
                     decided_by = excluded.decided_by,
                     decided_at = now(),
                     updated_at = now()
-            \`;
+            `;
           }
         }
       });
@@ -186,15 +186,15 @@ export async function importVirtualSessionsCsv(input: {
     }
   }
 
-  await sql\`
+  await sql`
     update imports
-    set status = \${errors.length > 0 && succeeded === 0 ? "failed" : "completed"},
-        rows_succeeded = \${succeeded},
-        rows_failed = \${errors.length},
-        error_report = \${sql.json(errors.slice(0, 250))},
+    set status = ${errors.length > 0 && succeeded === 0 ? "failed" : "completed"},
+        rows_succeeded = ${succeeded},
+        rows_failed = ${errors.length},
+        error_report = ${sql.json(errors.slice(0, 250))},
         completed_at = now()
-    where id = \${importRow.id}
-  \`;
+    where id = ${importRow.id}
+  `;
 
   return {
     importId: importRow.id,

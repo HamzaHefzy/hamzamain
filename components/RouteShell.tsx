@@ -4,24 +4,30 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import Logo from "./Logo";
+import LogoutButton from "./LogoutButton";
 
 const navItems = [
   { href: "/dashboard", label: "Overview" },
-  { href: "/funding", label: "Funding" },
+  { href: "/attendance", label: "Attendance" },
+  { href: "/cases", label: "ResolutionOS" },
   { href: "/virtual", label: "Virtual" },
   { href: "/virtual/show-up", label: "Show-Up" },
-  { href: "/cases", label: "ResolutionOS" },
+  { href: "/funding", label: "Funding" },
+  { href: "/integrations", label: "Integrations" },
 ];
+
+const publicPaths = new Set(["/", "/login", "/request-demo", "/pricing"]);
 
 function isActive(pathname: string, href: string) {
   if (href === "/cases") return pathname === href || pathname.startsWith("/cases/");
+  if (href === "/virtual") return pathname === href;
   return pathname === href;
 }
 
 export default function RouteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
-  if (pathname === "/") {
+  if (publicPaths.has(pathname)) {
     return <>{children}</>;
   }
 
@@ -48,16 +54,17 @@ export default function RouteShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="sidebar-note">
-          <strong>Anchor prototype</strong>
-          <span>Synthetic operating data</span>
+          <strong>Secure workspace</strong>
+          <span>Organization-scoped student records</span>
+          <LogoutButton />
         </div>
       </aside>
 
       <main className="main-content">
         {children}
         <footer className="app-footer">
-          <span>© 2026 Anchor. Internal product prototype.</span>
-          <Link href="/">Back to public site</Link>
+          <span>© 2026 Anchor.</span>
+          <Link href="/">Public site</Link>
         </footer>
       </main>
     </div>

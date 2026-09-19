@@ -210,3 +210,12 @@
   .governance-grid { grid-template-columns: 1fr; }
   .governance-message { grid-column: auto; }
 }
+
+.trust-main { padding: 90px 0 110px; }
+.trust-heading { max-width: 780px; margin: 0 auto 48px; }
+.trust-heading h1 { font-size: clamp(42px, 5vw, 64px); margin: 14px 0; letter-spacing: -.045em; }
+.trust-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; }
+.trust-grid article { padding: 24px; border: 1px solid #dce4eb; border-radius: 16px; background: #fff; }
+.trust-grid h2 { margin: 0 0 10px; font-size: 20px; }
+.trust-grid p { margin: 0; color: #657483; line-height: 1.65; }
+@media (max-width: 900px) { .trust-grid { grid-template-columns: 1fr; } }

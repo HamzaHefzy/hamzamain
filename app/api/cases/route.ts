@@ -33,13 +33,13 @@ export async function POST(request: Request) {
     const input = createSchema.parse(await request.json());
     const sql = db();
 
-    const [student] = await sql<{ id: string; campus_id: string | null }[]>\`
+    const [student] = await sql<{ id: string; campus_id: string | null }[]>`
       select id, campus_id from students
-      where org_id = \${session.orgId}
-        and external_id = \${input.studentExternalId}
+      where org_id = ${session.orgId}
+        and external_id = ${input.studentExternalId}
         and active = true
       limit 1
-    \`;
+    `;
     if (!student) {
       return NextResponse.json({ error: "Student not found." }, { status: 404 });
     }

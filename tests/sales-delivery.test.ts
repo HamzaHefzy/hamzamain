@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { signSalesWebhook } from "../lib/sales-delivery";
+import { signSalesWebhook, verifySalesWebhookSignature } from "../lib/sales-webhook";
 
 describe("sales webhook signing", () => {
   it("produces a stable HMAC signature for the exact payload", () => {
@@ -13,5 +13,12 @@ describe("sales webhook signing", () => {
     expect(signSalesWebhook("a", "test-secret")).not.toBe(
       signSalesWebhook("b", "test-secret"),
     );
+  });
+
+  it("verifies exact signatures using a timing-safe comparison", () => {
+    const payload = JSON.stringify({ event: "lead.created", id: "lead-1" });
+    const signature = signSalesWebhook(payload, "test-secret");
+    expect(verifySalesWebhookSignature(payload, "test-secret", signature)).toBe(true);
+    expect(verifySalesWebhookSignature(payload + "x", "test-secret", signature)).toBe(false);
   });
 });

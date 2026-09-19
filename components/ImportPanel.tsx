@@ -3,7 +3,7 @@
 import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Kind = "students" | "attendance" | "virtual_evidence";
+type Kind = "students" | "attendance" | "virtual_evidence" | "virtual_sessions";
 
 const labels: Record<Kind, { title: string; description: string }> = {
   students: {
@@ -17,6 +17,10 @@ const labels: Record<Kind, { title: string; description: string }> = {
   virtual_evidence: {
     title: "Virtual participation evidence",
     description: "CSV columns: student_external_id, date, evidence_type, occurred_at, source, source_ref, minutes",
+  },
+  virtual_sessions: {
+    title: "Virtual class schedule / participation",
+    description: "CSV columns: student_external_id, session_external_id, title, starts_at, ends_at, source, live_url, required, participation_status, joined_at, left_at, minutes",
   },
 };
 

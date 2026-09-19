@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 import { db } from "@/lib/db";
-import { can, type AnchorRole, type Permission } from "@/lib/permissions";
+import type { AnchorRole } from "@/lib/permissions";
 
 export { can } from "@/lib/permissions";
 export type { AnchorRole, Permission } from "@/lib/permissions";

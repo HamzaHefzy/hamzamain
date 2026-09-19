@@ -6,6 +6,7 @@ const run = Boolean(process.env.DATABASE_URL);
 const source = "evidence-api-ci";
 const dateAccepted = "2026-09-18";
 const dateOfficial = "2026-09-17";
+const dateHistorical = "2026-09-05";
 let sql: ReturnType<typeof postgres>;
 let orgId = "";
 let studentId = "";
@@ -32,6 +33,29 @@ describe.skipIf(!run)("inbound virtual evidence service", () => {
     studentId = student.id;
 
     await sql`
+      insert into attendance_policies (
+        org_id, name, delivery_model, version,
+        effective_from, effective_to, config, active
+      )
+      values (
+        ${orgId}, 'Historical evidence API test', 'virtual_program', 99,
+        '2026-09-01', '2026-09-10',
+        ${sql.json({
+          qualifyingEvidence: ["other"],
+          minimumMinutes: 0,
+          allowAnyQualifyingEvidence: true,
+          dayCloseLocalTime: "23:59",
+        })},
+        false
+      )
+      on conflict (org_id, name, version) do update
+        set effective_from = excluded.effective_from,
+            effective_to = excluded.effective_to,
+            config = excluded.config,
+            active = false
+    `;
+
+    await sql`
       delete from virtual_evidence_events
       where org_id = ${orgId}
         and source = ${source}
@@ -40,7 +64,7 @@ describe.skipIf(!run)("inbound virtual evidence service", () => {
       delete from attendance_daily
       where org_id = ${orgId}
         and student_id = ${studentId}
-        and school_date in (${dateAccepted}::date, ${dateOfficial}::date)
+        and school_date in (${dateAccepted}::date, ${dateOfficial}::date, ${dateHistorical}::date)
     `;
   });
 
@@ -55,7 +79,13 @@ describe.skipIf(!run)("inbound virtual evidence service", () => {
       delete from attendance_daily
       where org_id = ${orgId}
         and student_id = ${studentId}
-        and school_date in (${dateAccepted}::date, ${dateOfficial}::date)
+        and school_date in (${dateAccepted}::date, ${dateOfficial}::date, ${dateHistorical}::date)
+    `;
+    await sql`
+      delete from attendance_policies
+      where org_id = ${orgId}
+        and name = 'Historical evidence API test'
+        and version = 99
     `;
     await sql.end();
   });
@@ -141,6 +171,31 @@ describe.skipIf(!run)("inbound virtual evidence service", () => {
     );
     expect(conflict.results[0].status).toBe("rejected");
     expect(conflict.results[0].error).toMatch(/already assigned/i);
+  });
+
+  it("uses the policy version effective on a historical evidence date", async () => {
+    const result = await ingestVirtualEvidenceEvents(
+      {
+        orgId,
+        apiKeyId: "00000000-0000-0000-0000-000000000001",
+        apiKeyPrefix: "ank_live_test",
+      },
+      [{
+        studentExternalId: "VIR-2002",
+        date: dateHistorical,
+        evidenceType: "other",
+        occurredAt: "2026-09-05T10:00:00-05:00",
+        source,
+        sourceRef: "historical-policy-1",
+        minutes: null,
+      }],
+    );
+
+    expect(result.results[0]).toMatchObject({
+      status: "accepted",
+      qualifies: true,
+      attendanceDecision: "present",
+    });
   });
 
   it("records qualifying evidence without overwriting official SIS attendance", async () => {

@@ -16,10 +16,10 @@ export async function GET() {
   const auth = await apiSession("finance");
   if (auth.response) return auth.response;
   const sql = db();
-  const [row] = await sql\`
+  const [row] = await sql`
     select * from funding_assumptions
-    where org_id = \${auth.session!.orgId}
-  \`;
+    where org_id = ${auth.session!.orgId}
+  `;
   return NextResponse.json({ assumptions: row ?? null });
 }
 
@@ -32,13 +32,13 @@ export async function PATCH(request: Request) {
     const input = schema.parse(await request.json());
     const sql = db();
 
-    await sql\`
+    await sql`
       insert into funding_assumptions (
         org_id, school_year, model_type, basic_allotment, budgeted_attendance_rate
       )
       values (
-        \${session.orgId}, \${input.schoolYear}, \${input.modelType},
-        \${input.basicAllotment}, \${input.budgetedAttendanceRate}
+        ${session.orgId}, ${input.schoolYear}, ${input.modelType},
+        ${input.basicAllotment}, ${input.budgetedAttendanceRate}
       )
       on conflict (org_id) do update
         set school_year = excluded.school_year,
@@ -46,7 +46,7 @@ export async function PATCH(request: Request) {
             basic_allotment = excluded.basic_allotment,
             budgeted_attendance_rate = excluded.budgeted_attendance_rate,
             updated_at = now()
-    \`;
+    `;
 
     await audit({
       orgId: session.orgId,

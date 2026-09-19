@@ -1,4 +1,5 @@
 import IntegrationForm from "@/components/IntegrationForm";
+import IntegrationSyncButton from "@/components/IntegrationSyncButton";
 import { can, requireSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 
@@ -28,9 +29,9 @@ export default async function IntegrationsPage() {
       <header className="page-header">
         <div className="page-header-copy">
           <div className="eyebrow">Integrations</div>
-          <h1>Connect the systems schools already use.</h1>
+          <h1>Connect a real roster source without exposing credentials.</h1>
           <p className="lede">
-            Credentials are encrypted before storage. CSV works immediately; vendor API connections can be configured here as credentials and district approvals become available.
+            OneRoster is the enabled API connector. Its OAuth credentials are encrypted before storage. CSV remains the reliable fallback for roster, attendance, virtual evidence, and session participation.
           </p>
         </div>
       </header>
@@ -40,20 +41,22 @@ export default async function IntegrationsPage() {
       ) : (
         <section className="two-column">
           <article className="panel">
-            <div className="panel-heading"><div><div className="eyebrow">New connection</div><h2>Configure a data source</h2></div></div>
+            <div className="panel-heading"><div><div className="eyebrow">OneRoster</div><h2>Configure roster sync</h2></div></div>
             <IntegrationForm />
           </article>
           <article className="panel">
-            <div className="panel-heading"><div><div className="eyebrow">Connections</div><h2>Configured integrations</h2></div></div>
+            <div className="panel-heading"><div><div className="eyebrow">Connections</div><h2>Configured sources</h2></div></div>
             <div className="case-stack">
               {rows.length ? rows.map((row) => (
                 <div className="case-card" key={row.id}>
                   <div className="case-topline"><strong>{row.provider}</strong><span>{row.status}</span></div>
                   <h3>{row.name}</h3>
                   <p>{String(row.public_config?.baseUrl ?? "No public endpoint configured")}</p>
+                  <p>{row.last_sync_at ? "Last sync: " + row.last_sync_at.toLocaleString() : "Not synced yet"}</p>
+                  {row.provider === "oneroster" ? <IntegrationSyncButton id={row.id} provider={row.provider} /> : null}
                   {row.last_error ? <small className="form-error">{row.last_error}</small> : null}
                 </div>
-              )) : <p className="muted-copy">No external integrations are configured yet. CSV imports remain available under Attendance.</p>}
+              )) : <p className="muted-copy">No API integrations are configured yet. CSV imports remain available under Attendance.</p>}
             </div>
           </article>
         </section>

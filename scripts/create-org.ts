@@ -26,43 +26,43 @@ const sql = postgres(url, { max: 1, prepare: false });
 const passwordHash = await bcrypt.hash(required.adminPassword!, 12);
 
 const result = await sql.begin(async (tx) => {
-  const [org] = await tx<{ id: string; slug: string }[]>\`
+  const [org] = await tx<{ id: string; slug: string }[]>`
     insert into organizations (
       name, slug, organization_type, state, timezone, status
     )
     values (
-      \${required.name!}, \${required.slug!}, \${organizationType},
-      \${state}, \${timezone}, 'trial'
+      ${required.name!}, ${required.slug!}, ${organizationType},
+      ${state}, ${timezone}, 'trial'
     )
     returning id, slug
-  \`;
+  `;
 
-  const [user] = await tx<{ id: string }[]>\`
+  const [user] = await tx<{ id: string }[]>`
     insert into users (email, name, password_hash)
     values (
-      \${required.adminEmail!.toLowerCase()},
-      \${required.adminName!},
-      \${passwordHash}
+      ${required.adminEmail!.toLowerCase()},
+      ${required.adminName!},
+      ${passwordHash}
     )
     on conflict (email) do update
       set active = true
     returning id
-  \`;
+  `;
 
-  await tx\`
+  await tx`
     insert into memberships (user_id, org_id, role)
-    values (\${user.id}, \${org.id}, 'owner')
+    values (${user.id}, ${org.id}, 'owner')
     on conflict (user_id, org_id) do update set role = 'owner'
-  \`;
+  `;
 
   if (state === "TX") {
-    await tx\`
+    await tx`
       insert into funding_assumptions (
         org_id, school_year, model_type, basic_allotment
       )
-      values (\${org.id}, '2026-27', 'texas_ada', 6215)
+      values (${org.id}, '2026-27', 'texas_ada', 6215)
       on conflict (org_id) do nothing
-    \`;
+    `;
   }
 
   return org;

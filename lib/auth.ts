@@ -73,6 +73,7 @@ export async function getSession(): Promise<AnchorSession | null> {
     where u.id = ${session.userId}
       and o.id = ${session.orgId}
       and u.active = true
+      and m.active = true
       and o.status in ('active','trial')
     limit 1
   `;

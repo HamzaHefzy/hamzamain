@@ -5,6 +5,7 @@ import { audit } from "@/lib/audit";
 import { encryptSecret } from "@/lib/crypto";
 import { db } from "@/lib/db";
 import { assertSameOrigin } from "@/lib/security";
+import { toJson } from "@/lib/json";
 
 const schema = z.object({
   provider: z.literal("oneroster"),
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
       )
       values (
         ${session.orgId}, ${input.provider}, ${input.name},
-        ${sql.json(input.publicConfig)}, ${encrypted}, 'configured'
+        ${sql.json(toJson(input.publicConfig))}, ${encrypted}, 'configured'
       )
       on conflict (org_id, provider, name) do update
         set public_config = excluded.public_config,

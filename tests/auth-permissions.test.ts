@@ -1,12 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { can, type AnchorRole } from "../lib/auth";
+import { can, canInviteRole, type AnchorRole } from "../lib/permissions";
 
 describe("role permissions", () => {
   const roles: AnchorRole[] = ["owner","admin","attendance","finance","support","viewer"];
 
   it("limits admin-only operations to owner and admin roles", () => {
     expect(roles.filter((role) => can(role, "admin"))).toEqual(["owner","admin"]);
+    it("allows only owners to invite another owner", () => {
+    expect(canInviteRole("owner", "owner")).toBe(true);
+    expect(canInviteRole("admin", "owner")).toBe(false);
+    expect(canInviteRole("admin", "attendance")).toBe(true);
+    expect(canInviteRole("viewer", "attendance")).toBe(false);
   });
+});
 
   it("does not grant finance access to attendance or support roles", () => {
     expect(can("attendance", "finance")).toBe(false);

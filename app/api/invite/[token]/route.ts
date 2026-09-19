@@ -33,12 +33,12 @@ export async function POST(request: Request, context: Context) {
         role: "owner" | "admin" | "attendance" | "finance" | "support" | "viewer";
         accepted_at: Date | null;
         expires_at: Date;
-      }[]>\`
+      }[]>`
         select id, org_id, email, role, accepted_at, expires_at
         from invitations
-        where token_hash = \${hashOpaqueToken(token)}
+        where token_hash = ${hashOpaqueToken(token)}
         for update
-      \`;
+      `;
 
       if (!invite || invite.expires_at < new Date()) {
         throw new Error("This invitation is invalid or expired.");
@@ -47,38 +47,38 @@ export async function POST(request: Request, context: Context) {
         throw new Error("This invitation has already been accepted.");
       }
 
-      const [existing] = await tx<{ id: string }[]>\`
-        select id from users where lower(email) = lower(\${invite.email}) limit 1
-      \`;
+      const [existing] = await tx<{ id: string }[]>`
+        select id from users where lower(email) = lower(${invite.email}) limit 1
+      `;
 
       let userId: string;
       if (existing) {
         userId = existing.id;
-        await tx\`
+        await tx`
           update users
           set active = true,
-              name = case when length(name) = 0 then \${input.name} else name end,
+              name = case when length(name) = 0 then ${input.name} else name end,
               updated_at = now()
-          where id = \${userId}
-        \`;
+          where id = ${userId}
+        `;
       } else {
-        const [user] = await tx<{ id: string }[]>\`
+        const [user] = await tx<{ id: string }[]>`
           insert into users (email, name, password_hash)
-          values (\${invite.email}, \${input.name}, \${passwordHash})
+          values (${invite.email}, ${input.name}, ${passwordHash})
           returning id
-        \`;
+        `;
         userId = user.id;
       }
 
-      await tx\`
+      await tx`
         insert into memberships (user_id, org_id, role)
-        values (\${userId}, \${invite.org_id}, \${invite.role})
+        values (${userId}, ${invite.org_id}, ${invite.role})
         on conflict (user_id, org_id) do update set role = excluded.role
-      \`;
+      `;
 
-      await tx\`
-        update invitations set accepted_at = now() where id = \${invite.id}
-      \`;
+      await tx`
+        update invitations set accepted_at = now() where id = ${invite.id}
+      `;
 
       return { email: invite.email, existingUser: Boolean(existing) };
     });

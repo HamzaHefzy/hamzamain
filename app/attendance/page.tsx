@@ -30,7 +30,7 @@ export default async function AttendancePage() {
         <div className="import-grid">
           <ImportPanel kind="students" />
           <ImportPanel kind="attendance" />
-          <ImportPanel kind="virtual_evidence" />
+          <ImportPanel kind="virtual_evidence" />\n          <ImportPanel kind="virtual_sessions" />
         </div>
       </section>
 

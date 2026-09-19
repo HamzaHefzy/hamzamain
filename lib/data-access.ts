@@ -43,16 +43,16 @@ export async function getDashboardSnapshot(orgId: string): Promise<DashboardSnap
     school_year: string | null;
     basic_allotment: string | null;
     budgeted_attendance_rate: string | null;
-  }[]>\`
+  }[]>`
     select o.id, o.name, o.state,
            f.school_year,
            f.basic_allotment,
            f.budgeted_attendance_rate
     from organizations o
     left join funding_assumptions f on f.org_id = o.id
-    where o.id = \${orgId}
+    where o.id = ${orgId}
     limit 1
-  \`;
+  `;
 
   if (!org) throw new Error("Organization not found.");
 
@@ -64,7 +64,7 @@ export async function getDashboardSnapshot(orgId: string): Promise<DashboardSnap
     enrollment: string;
     recorded_days: string;
     present_equivalents: string | null;
-  }[]>\`
+  }[]>`
     select c.id, c.name, c.code, c.delivery_model,
            count(distinct s.id) filter (where s.active = true)::text as enrollment,
            count(ad.id)::text as recorded_days,
@@ -85,11 +85,11 @@ export async function getDashboardSnapshot(orgId: string): Promise<DashboardSnap
       on ad.student_id = s.id
       and ad.org_id = c.org_id
       and ad.school_date >= current_date - interval '29 days'
-    where c.org_id = \${orgId}
+    where c.org_id = ${orgId}
       and c.active = true
     group by c.id, c.name, c.code, c.delivery_model
     order by c.name
-  \`;
+  `;
 
   const campuses = campusesRaw.map((row) => {
     const recorded = Number(row.recorded_days);
@@ -124,7 +124,7 @@ export async function getDashboardSnapshot(orgId: string): Promise<DashboardSnap
     open_cases: string;
     stuck_cases: string;
     due_today: string;
-  }[]>\`
+  }[]>`
     select
       count(*) filter (where status not in ('resolved','closed'))::text as open_cases,
       count(*) filter (where queue = 'stuck' and status not in ('resolved','closed'))::text as stuck_cases,
@@ -133,8 +133,8 @@ export async function getDashboardSnapshot(orgId: string): Promise<DashboardSnap
           and status not in ('resolved','closed')
       )::text as due_today
     from cases
-    where org_id = \${orgId}
-  \`;
+    where org_id = ${orgId}
+  `;
 
   return {
     org: { id: org.id, name: org.name, state: org.state },
@@ -194,7 +194,7 @@ export async function getCases(orgId: string): Promise<ResolutionCaseRow[]> {
     due_at: Date | null;
     opened_at: Date;
     resolved_at: Date | null;
-  }[]>\`
+  }[]>`
     select c.id, c.case_number,
            s.external_id as external_student_id,
            concat(s.first_name, ' ', s.last_name) as student_name,
@@ -207,7 +207,7 @@ export async function getCases(orgId: string): Promise<ResolutionCaseRow[]> {
     join students s on s.id = c.student_id and s.org_id = c.org_id
     left join campuses cp on cp.id = c.campus_id
     left join users u on u.id = c.owner_user_id
-    where c.org_id = \${orgId}
+    where c.org_id = ${orgId}
     order by
       case c.priority
         when 'urgent' then 1
@@ -217,7 +217,7 @@ export async function getCases(orgId: string): Promise<ResolutionCaseRow[]> {
       end,
       c.due_at nulls last,
       c.opened_at
-  \`;
+  `;
 
   return rows.map((row) => ({
     id: row.id,
@@ -261,7 +261,7 @@ export async function getCase(orgId: string, caseNumber: string) {
     due_at: Date | null;
     opened_at: Date;
     resolved_at: Date | null;
-  }[]>\`
+  }[]>`
     select c.id, c.case_number, c.student_id,
            s.external_id as external_student_id,
            concat(s.first_name, ' ', s.last_name) as student_name,
@@ -273,9 +273,9 @@ export async function getCase(orgId: string, caseNumber: string) {
     join students s on s.id = c.student_id and s.org_id = c.org_id
     left join campuses cp on cp.id = c.campus_id
     left join users u on u.id = c.owner_user_id
-    where c.org_id = \${orgId} and c.case_number = \${caseNumber}
+    where c.org_id = ${orgId} and c.case_number = ${caseNumber}
     limit 1
-  \`;
+  `;
   const item = rows[0];
   if (!item) return null;
 
@@ -288,14 +288,14 @@ export async function getCase(orgId: string, caseNumber: string) {
     verification_note: string | null;
     owner_name: string | null;
     created_at: Date;
-  }[]>\`
+  }[]>`
     select cm.id, cm.description, cm.status, cm.due_at, cm.verified_at,
            cm.verification_note, u.name as owner_name, cm.created_at
     from commitments cm
     left join users u on u.id = cm.owner_user_id
-    where cm.org_id = \${orgId} and cm.case_id = \${item.id}
+    where cm.org_id = ${orgId} and cm.case_id = ${item.id}
     order by cm.created_at desc
-  \`;
+  `;
 
   const events = await sql<{
     id: string;
@@ -305,15 +305,15 @@ export async function getCase(orgId: string, caseNumber: string) {
     to_status: string | null;
     actor_name: string | null;
     created_at: Date;
-  }[]>\`
+  }[]>`
     select ce.id, ce.event_type, ce.note, ce.from_status, ce.to_status,
            u.name as actor_name, ce.created_at
     from case_events ce
     left join users u on u.id = ce.actor_user_id
-    where ce.org_id = \${orgId} and ce.case_id = \${item.id}
+    where ce.org_id = ${orgId} and ce.case_id = ${item.id}
     order by ce.created_at desc
     limit 100
-  \`;
+  `;
 
   return {
     id: item.id,
@@ -355,7 +355,7 @@ export async function getAttendanceOverview(orgId: string) {
     total: string;
     present_equivalents: string;
     absences: string;
-  }[]>\`
+  }[]>`
     select school_date::text,
            count(*)::text as total,
            coalesce(sum(
@@ -368,11 +368,11 @@ export async function getAttendanceOverview(orgId: string) {
            ), 0)::text as present_equivalents,
            count(*) filter (where status = 'absent')::text as absences
     from attendance_daily
-    where org_id = \${orgId}
+    where org_id = ${orgId}
       and school_date >= current_date - interval '29 days'
     group by school_date
     order by school_date desc
-  \`;
+  `;
 
   const imports = await sql<{
     id: string;
@@ -383,14 +383,14 @@ export async function getAttendanceOverview(orgId: string) {
     rows_succeeded: number;
     rows_failed: number;
     created_at: Date;
-  }[]>\`
+  }[]>`
     select id, kind, filename, status, rows_total, rows_succeeded,
            rows_failed, created_at
     from imports
-    where org_id = \${orgId}
+    where org_id = ${orgId}
     order by created_at desc
     limit 15
-  \`;
+  `;
 
   return {
     daily: daily.map((row) => {
@@ -413,20 +413,20 @@ export async function getAttendanceOverview(orgId: string) {
 export async function getVirtualSnapshot(orgId: string) {
   const sql = db();
 
-  const [enrollment] = await sql<{ count: string }[]>\`
+  const [enrollment] = await sql<{ count: string }[]>`
     select count(s.id)::text as count
     from students s
     join campuses c on c.id = s.campus_id
-    where s.org_id = \${orgId}
+    where s.org_id = ${orgId}
       and s.active = true
       and c.delivery_model in ('virtual_program','virtual_campus','hybrid')
-  \`;
+  `;
 
   const [today] = await sql<{
     attendance_total: string;
     present_count: string;
     evidence_students: string;
-  }[]>\`
+  }[]>`
     select
       count(ad.id)::text as attendance_total,
       count(ad.id) filter (where ad.status in ('present','partial','excused'))::text as present_count,
@@ -435,7 +435,7 @@ export async function getVirtualSnapshot(orgId: string) {
         from virtual_evidence_events vee
         join students s2 on s2.id = vee.student_id
         join campuses c2 on c2.id = s2.campus_id
-        where vee.org_id = \${orgId}
+        where vee.org_id = ${orgId}
           and vee.evidence_date = current_date
           and vee.qualifies = true
           and c2.delivery_model in ('virtual_program','virtual_campus','hybrid')
@@ -443,26 +443,26 @@ export async function getVirtualSnapshot(orgId: string) {
     from attendance_daily ad
     join students s on s.id = ad.student_id
     join campuses c on c.id = s.campus_id
-    where ad.org_id = \${orgId}
+    where ad.org_id = ${orgId}
       and ad.school_date = current_date
       and c.delivery_model in ('virtual_program','virtual_campus','hybrid')
-  \`;
+  `;
 
   const evidenceSources = await sql<{
     evidence_type: string;
     records: string;
     students: string;
-  }[]>\`
+  }[]>`
     select evidence_type,
            count(*)::text as records,
            count(distinct student_id)::text as students
     from virtual_evidence_events
-    where org_id = \${orgId}
+    where org_id = ${orgId}
       and evidence_date = current_date
       and qualifies = true
     group by evidence_type
     order by count(*) desc
-  \`;
+  `;
 
   const virtualEnrollment = Number(enrollment?.count ?? 0);
   const attendanceTotal = Number(today?.attendance_total ?? 0);
@@ -489,12 +489,12 @@ export async function getMembers(orgId: string) {
     name: string;
     email: string;
     role: string;
-  }[]>\`
+  }[]>`
     select u.id, u.name, u.email, m.role
     from memberships m
     join users u on u.id = m.user_id
-    where m.org_id = \${orgId} and u.active = true
+    where m.org_id = ${orgId} and u.active = true
     order by u.name
-  \`;
+  `;
   return rows;
 }

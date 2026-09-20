@@ -66,6 +66,7 @@ See:
 
 - docs/DEPLOYMENT.md
 - docs/CUSTOMER_ONBOARDING.md
+- docs/ATTENDANCE_RECOVERY_STRATEGY.md
 - docs/SECURITY.md
 - docs/PRODUCT_GUARDRAILS.md
 - examples/imports/

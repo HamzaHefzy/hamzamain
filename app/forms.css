@@ -219,3 +219,38 @@
 .trust-grid h2 { margin: 0 0 10px; font-size: 20px; }
 .trust-grid p { margin: 0; color: #657483; line-height: 1.65; }
 @media (max-width: 900px) { .trust-grid { grid-template-columns: 1fr; } }
+
+.recovery-protocol {
+  border-top: 1px solid var(--line-strong);
+}
+.recovery-protocol > div {
+  display: grid;
+  grid-template-columns: 92px 180px 1fr;
+  gap: 18px;
+  align-items: start;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+.recovery-protocol time {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+.recovery-protocol strong {
+  color: var(--text-strong);
+  font-size: 13px;
+}
+.recovery-protocol span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+@media (max-width: 760px) {
+  .recovery-protocol > div {
+    grid-template-columns: 72px 1fr;
+  }
+  .recovery-protocol span {
+    grid-column: 2;
+  }
+}

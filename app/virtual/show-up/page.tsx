@@ -14,8 +14,8 @@ export default async function VirtualShowUpPage() {
       <header className="page-header">
         <div className="page-header-copy">
           <div className="eyebrow">Anchor Virtual · Show-Up Engine</div>
-          <h1>Recover the student before the missed class becomes a pattern.</h1>
-          <p className="lede">This view is driven by scheduled virtual sessions, recorded participation, missed-session automation, student barrier check-ins, and ResolutionOS follow-through.</p>
+          <h1>Act while the class is still happening.</h1>
+          <p className="lede">Anchor removes pre-class friction, opens a live rescue window when a student has not joined, escalates persistent misses to a human owner, and verifies the student returns.</p>
         </div>
         <Link href="/attendance" className="secondary-link">Import class schedule</Link>
       </header>
@@ -24,8 +24,8 @@ export default async function VirtualShowUpPage() {
 
       <section className="metric-grid">
         <article className="metric-card"><span>Sessions in next 2 hours</span><strong>{data.upcoming}</strong><small>Scheduled students awaiting participation</small></article>
-        <article className="metric-card"><span>Missed today</span><strong>{data.missedToday}</strong><small>Scheduled participation marked missed after session close</small></article>
-        <article className="metric-card accent"><span>Recovered today</span><strong>{data.recoveredToday}</strong><small>Participation restored after a miss</small></article>
+        <article className="metric-card accent"><span>Live rescue now</span><strong>{data.liveRescueNow}</strong><small>Required sessions in progress with an urgent recovery case</small></article>
+        <article className="metric-card"><span>Recovered today</span><strong>{data.recoveredToday}</strong><small>Participation restored after a miss</small></article>
         <article className="metric-card"><span>Human action overdue</span><strong>{data.humanDue}</strong><small>Virtual recovery cases past their current SLA</small></article>
       </section>
 
@@ -46,11 +46,17 @@ export default async function VirtualShowUpPage() {
         </div>
       </section>
 
-      <section className="scenario-grid">
-        <article className="scenario-card"><span>Before class</span><strong>Remove friction</strong><small>Use actual scheduled sessions to deliver one useful reminder with the class link when messaging is configured.</small></article>
-        <article className="scenario-card"><span>After a miss</span><strong>Ask why</strong><small>Create a case and secure check-in link so the student can name the barrier without exposing records.</small></article>
-        <article className="scenario-card"><span>Barrier known</span><strong>Route support</strong><small>Technology, routines, academic overwhelm, caregiving, motivation, and other barriers receive different next actions.</small></article>
-        <article className="scenario-card"><span>Outcome</span><strong>Verify return</strong><small>Session participation and qualifying evidence confirm whether the student actually re-engaged.</small></article>
+      <section className="panel">
+        <div className="panel-heading">
+          <div><div className="eyebrow">Recovery protocol</div><h2>What happens around a live class</h2></div>
+        </div>
+        <div className="recovery-protocol">
+          <div><time>T−30</time><strong>Remove friction</strong><span>Send the class link and a clear reminder before the session begins.</span></div>
+          <div><time>T+5</time><strong>Join-now rescue</strong><span>If the student is still marked scheduled, send a direct join-now message and a secure help link.</span></div>
+          <div><time>T+10</time><strong>Human escalation</strong><span>Open an urgent case so a navigator or school staff member can make live contact while instruction is still underway.</span></div>
+          <div><time>Same day</time><strong>Resolve the barrier</strong><span>Route technology, academic overwhelm, caregiving, health, routine, or belonging issues to a specific next action.</span></div>
+          <div><time>Next sessions</time><strong>Verify return</strong><span>Use participation and approved evidence to confirm re-engagement rather than counting outreach as success.</span></div>
+        </div>
       </section>
 
       <section className="disclaimer"><strong>Operating rule:</strong> missing one synchronous session is not automatically equivalent to missing an instructional day. Anchor can route another approved participation pathway when the school’s active policy permits it, while preserving the evidence used for the decision.</section>

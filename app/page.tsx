@@ -51,10 +51,10 @@ function ProductPreview() {
           <div><strong>Good morning, Jordan.</strong><span>Here&apos;s what needs attention across the network.</span></div>
           <small>Illustrative product view</small>
         </div>
-        <div className="m-preview-metrics">
-          <article><span>Funding impact</span><strong>$621K</strong><small>gross +1 point scenario</small></article>
-          <article><span>ResolutionOS</span><strong>4</strong><small>active demo cases</small></article>
-          <article><span>Virtual Show-Up</span><strong>94%</strong><small>verified participation</small></article>
+        <div className="m-preview-recovery">
+          <div><span className="m-preview-live-dot" />9:00 AM recovery window</div>
+          <strong>3 students need action before instruction is lost.</strong>
+          <small>Reminder → live rescue → named adult → verified return</small>
         </div>
         <div className="m-preview-table">
           <div className="m-preview-table-head"><strong>Students needing attention</strong><span>Next action</span></div>
@@ -92,16 +92,16 @@ export default function MarketingHome() {
         <section className="m-hero" id="product">
           <div className="m-container m-hero-grid">
             <div className="m-hero-copy">
-              <div className="m-kicker">Higher attendance. Stronger schools.</div>
-              <h1>Attendance that<br />actually gets solved.</h1>
+              <div className="m-kicker">Attendance recovery, not attendance monitoring</div>
+              <h1>Get students back<br />into class.</h1>
               <p>
-                Anchor helps districts and virtual schools turn attendance data into barrier resolution, verified support, and clearer funding impact.
+                Anchor works in the moments that decide attendance: before class, when a student does not show, and when a barrier needs a real person to resolve it.
               </p>
               <div className="m-hero-actions">
                 <Link href="/request-demo" className="m-button dark">Request demo <ArrowIcon /></Link>
                 <Link href="/virtual" className="m-button light">Explore virtual schools</Link>
               </div>
-              <div className="m-hero-proof">More students present. Fewer barriers. Better follow-through.</div>
+              <div className="m-hero-proof">Before class → live rescue → barrier resolution → verified return</div>
             </div>
             <ProductPreview />
           </div>
@@ -131,32 +131,37 @@ export default function MarketingHome() {
           </div>
         </section>
 
-        <section className="m-engine-section">
-          <div className="m-container">
-            <div className="m-section-heading centered">
-              <div className="m-kicker">One operating system</div>
-              <h2>Three engines. One attendance outcome.</h2>
-              <p>Finance can see exposure. Student-support teams can see unresolved barriers. Virtual programs can see who is actually participating.</p>
+        <section className="m-recovery-section">
+          <div className="m-container m-recovery-layout">
+            <div className="m-recovery-intro">
+              <div className="m-kicker">The attendance recovery window</div>
+              <h2>The product should act before an absence becomes a pattern.</h2>
+              <p>
+                Anchor combines low-friction reminders with a real escalation path. Automation handles the easy misses. A named adult takes over when the student still does not show.
+              </p>
+              <Link href="/virtual/show-up" className="m-button dark">See the recovery workflow <ArrowIcon /></Link>
             </div>
-            <div className="m-engine-grid">
-              <Link href="/funding" className="m-engine-card">
-                <span className="m-engine-label">Funding Impact</span>
-                <h3>Translate attendance movement into an understandable planning scenario.</h3>
-                <p>Aggregate ADA, campus contribution, and gross formula exposure—without assigning a dollar value to an individual student.</p>
-                <b>Open funding model <ArrowIcon /></b>
-              </Link>
-              <Link href="/cases" className="m-engine-card featured">
-                <span className="m-engine-label">ResolutionOS</span>
-                <h3>Give every attendance barrier an owner and a next action.</h3>
-                <p>Move from “student absent” to barrier, commitment, deadline, verification, and measured outcome.</p>
-                <b>Open ResolutionOS <ArrowIcon /></b>
-              </Link>
-              <Link href="/virtual/show-up" className="m-engine-card">
-                <span className="m-engine-label">Virtual Show-Up</span>
-                <h3>Recover participation before disengagement becomes a pattern.</h3>
-                <p>Use approved evidence, same-day exception resolution, and targeted human outreach instead of surveillance.</p>
-                <b>Open Show-Up Engine <ArrowIcon /></b>
-              </Link>
+            <div className="m-recovery-rail" aria-label="Attendance recovery workflow">
+              <div className="m-recovery-row">
+                <time>T−30</time>
+                <div><strong>Remove friction</strong><span>Personalized reminder, one-click class link, and a simple “I’ll be there / I need help” choice.</span></div>
+              </div>
+              <div className="m-recovery-row">
+                <time>T+5</time>
+                <div><strong>Rescue the miss</strong><span>If the student has not joined, Anchor sends a direct join-now prompt and opens a live recovery window.</span></div>
+              </div>
+              <div className="m-recovery-row">
+                <time>T+10</time>
+                <div><strong>Put a human on it</strong><span>Persistent misses move to a named attendance navigator or school staff owner instead of another automated message.</span></div>
+              </div>
+              <div className="m-recovery-row">
+                <time>Same day</time>
+                <div><strong>Resolve the barrier</strong><span>Technology, academic overwhelm, caregiving, health, anxiety, and routine problems route to different support paths.</span></div>
+              </div>
+              <div className="m-recovery-row">
+                <time>Next 5</time>
+                <div><strong>Verify the return</strong><span>Anchor checks the next attendance events so “contact made” is never confused with “student re-engaged.”</span></div>
+              </div>
             </div>
           </div>
         </section>
@@ -165,9 +170,9 @@ export default function MarketingHome() {
           <div className="m-container m-virtual-card">
             <div className="m-virtual-copy">
               <div className="m-kicker">Built for virtual schools</div>
-              <h2>Real participation.<br />Real recovery.</h2>
+              <h2>If they do not join,<br />Anchor does something.</h2>
               <p>
-                Anchor helps virtual programs go beyond logins: verify approved participation evidence, resolve attendance exceptions, and re-engage students before they disappear from instruction.
+                Virtual schools need more than evidence after the fact. Anchor removes pre-class friction, detects the live miss, escalates to a human, identifies the barrier, and verifies the student returns.
               </p>
               <Link href="/virtual" className="m-button dark">Explore Anchor Virtual <ArrowIcon /></Link>
             </div>
@@ -194,7 +199,7 @@ export default function MarketingHome() {
         <section className="m-metrics-section">
           <div className="m-container m-metrics-row">
             <article><strong>1 dashboard</strong><span>Attendance operations through funding impact.</span></article>
-            <article><strong>3 operating engines</strong><span>Funding, ResolutionOS, and Virtual Show-Up.</span></article>
+            <article><strong>5-minute rescue trigger</strong><span>Act while the class is still happening.</span></article>
             <article><strong>Same-day intervention</strong><span>Shorten the gap between signal and action.</span></article>
             <article><strong>Verified follow-through</strong><span>Measure support delivered, not messages sent.</span></article>
           </div>
@@ -205,7 +210,7 @@ export default function MarketingHome() {
             <div>
               <div className="m-kicker">See the operating model</div>
               <h2>Start with the problem your attendance team already has.</h2>
-              <p>Explore the working prototype for district attendance, virtual participation, funding scenarios, and barrier resolution.</p>
+              <p>See how Anchor moves from a missed class to a real recovery action, then proves whether the student came back.</p>
             </div>
             <div className="m-final-actions">
               <Link href="/login" className="m-button dark">Sign in to workspace <ArrowIcon /></Link>

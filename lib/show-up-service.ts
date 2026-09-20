@@ -232,6 +232,8 @@ export async function runShowUpAutomation(orgId: string) {
   const sql = db();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   let reminders = 0;
+  let liveRescues = 0;
+  let liveCasesCreated = 0;
   let misses = 0;
   let casesCreated = 0;
   let checkinsSent = 0;
@@ -281,6 +283,93 @@ export async function runShowUpAutomation(orgId: string) {
       body,
     });
     if (sent) reminders += 1;
+  }
+
+  const liveMissing = await sql<{
+    participation_id: string;
+    session_id: string;
+    session_title: string;
+    starts_at: Date;
+    ends_at: Date;
+    live_url: string | null;
+    student_id: string;
+    campus_id: string | null;
+    first_name: string;
+    email: string | null;
+    phone: string | null;
+  }[]>`
+    select sp.id as participation_id, vs.id as session_id,
+           vs.title as session_title, vs.starts_at, vs.ends_at, vs.live_url,
+           s.id as student_id, s.campus_id, s.first_name, s.email, s.phone
+    from session_participation sp
+    join virtual_sessions vs on vs.id = sp.session_id
+    join students s on s.id = sp.student_id
+    where sp.org_id = ${orgId}
+      and sp.status = 'scheduled'
+      and vs.required = true
+      and vs.starts_at <= now() - interval '5 minutes'
+      and vs.ends_at > now()
+      and vs.starts_at >= now() - interval '2 hours'
+  `;
+
+  for (const item of liveMissing) {
+    const [existing] = await sql<{ id: string }[]>`
+      select id from cases
+      where org_id = ${orgId}
+        and student_id = ${item.student_id}
+        and status not in ('resolved','closed')
+        and metadata ->> 'sessionId' = ${item.session_id}
+      limit 1
+    `;
+
+    let caseId = existing?.id;
+    if (!caseId) {
+      const created = await createCase({
+        orgId,
+        studentId: item.student_id,
+        campusId: item.campus_id,
+        barrierCode: "virtual_live_rescue",
+        barrierLabel: "Student has not joined live class",
+        priority: "urgent",
+        nextAction:
+          "Attempt live contact now. Help the student join the current session or identify the barrier before the instructional window closes.",
+        dueAt: new Date(Date.now() + 15 * 60 * 1000),
+        metadata: {
+          sessionId: item.session_id,
+          source: "show_up_live_rescue",
+          sessionEndsAt: item.ends_at.toISOString(),
+        },
+      });
+      caseId = created.id;
+      liveCasesCreated += 1;
+    }
+
+    const key = "virtual_live_rescue:" + item.session_id;
+    if (!(await hasNotification(orgId, item.student_id, key))) {
+      const token = await createCheckinToken({
+        orgId,
+        studentId: item.student_id,
+        sessionId: item.session_id,
+        caseId,
+      });
+      const helpLink = siteUrl.replace(/\/$/, "") + "/check-in/" + token;
+      const body =
+        item.first_name + ", " + item.session_title + " is happening now." +
+        (item.live_url ? " Join now: " + item.live_url : "") +
+        " If something is stopping you, tell us here so we can help: " + helpLink;
+
+      const sent = await tryNotify({
+        orgId,
+        studentId: item.student_id,
+        caseId,
+        templateKey: key,
+        phone: item.phone,
+        email: item.email,
+        subject: "Join " + item.session_title + " now",
+        body,
+      });
+      if (sent) liveRescues += 1;
+    }
   }
 
   const missed = await sql<{
@@ -370,7 +459,14 @@ export async function runShowUpAutomation(orgId: string) {
     }
   }
 
-  return { reminders, misses, casesCreated, checkinsSent };
+  return {
+    reminders,
+    liveRescues,
+    liveCasesCreated,
+    misses,
+    casesCreated,
+    checkinsSent,
+  };
 }
 
 export async function getShowUpSnapshot(orgId: string) {
@@ -383,6 +479,7 @@ export async function getShowUpSnapshot(orgId: string) {
     upcoming: string;
     missed_today: string;
     recovered_today: string;
+    live_rescue_now: string;
     human_due: string;
   }[]>`
     select
@@ -408,6 +505,21 @@ export async function getShowUpSnapshot(orgId: string) {
           and sp.status = 'recovered'
           and (sp.updated_at at time zone ${org.timezone})::date = ${schoolDate}::date
       ) as recovered_today,
+      (
+        select count(*)::text
+        from cases c
+        join session_participation sp
+          on sp.org_id = c.org_id
+          and sp.student_id = c.student_id
+        join virtual_sessions vs
+          on vs.id = sp.session_id
+        where c.org_id = ${orgId}
+          and c.barrier_code = 'virtual_live_rescue'
+          and c.status not in ('resolved','closed')
+          and c.metadata ->> 'sessionId' = vs.id::text
+          and vs.starts_at <= now()
+          and vs.ends_at > now()
+      ) as live_rescue_now,
       (
         select count(*)::text
         from cases c
@@ -437,7 +549,7 @@ export async function getShowUpSnapshot(orgId: string) {
     join students s on s.id = c.student_id
     where c.org_id = ${orgId}
       and c.barrier_code in (
-        'virtual_missed_session','virtual_nonparticipation',
+        'virtual_live_rescue','virtual_missed_session','virtual_nonparticipation',
         'technology','forgot','behind','caregiving','motivation','health','other'
       )
       and c.status not in ('resolved','closed')
@@ -449,6 +561,7 @@ export async function getShowUpSnapshot(orgId: string) {
     upcoming: Number(metrics?.upcoming ?? 0),
     missedToday: Number(metrics?.missed_today ?? 0),
     recoveredToday: Number(metrics?.recovered_today ?? 0),
+    liveRescueNow: Number(metrics?.live_rescue_now ?? 0),
     humanDue: Number(metrics?.human_due ?? 0),
     queue: queue.map((row) => ({
       caseNumber: row.case_number,

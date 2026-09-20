@@ -20,8 +20,10 @@ export default function OperationsPanel() {
     const result = payload.result ?? {};
     setStatus(
       job === "show-up"
-        ? "Show-Up complete: " + (result.reminders ?? 0) + " reminders, " +
-          (result.misses ?? 0) + " misses, " + (result.casesCreated ?? 0) + " cases."
+        ? "Show-Up complete: " + (result.reminders ?? 0) + " pre-class reminders, " +
+          (result.liveRescues ?? 0) + " live rescue messages, " +
+          (result.liveCasesCreated ?? 0) + " urgent live cases, " +
+          (result.misses ?? 0) + " completed misses."
         : "Day close complete: " + (result.adjudicated ?? 0) + " adjudicated, " +
           (result.unresolved ?? 0) + " unresolved.",
     );

@@ -524,7 +524,7 @@ export async function getShowUpSnapshot(orgId: string) {
         select count(*)::text
         from cases c
         where c.org_id = ${orgId}
-          and c.barrier_code in ('virtual_missed_session','virtual_nonparticipation')
+          and c.barrier_code in ('virtual_live_rescue','virtual_missed_session','virtual_nonparticipation')
           and c.status not in ('resolved','closed')
           and c.due_at <= now()
       ) as human_due

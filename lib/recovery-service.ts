@@ -1,3 +1,4 @@
+import type { Sql, TransactionSql } from "postgres";
 import { db } from "@/lib/db";
 import { toJson } from "@/lib/json";
 
@@ -69,7 +70,7 @@ export async function getRecoverySettings(orgId: string): Promise<RecoverySettin
   };
 }
 
-async function leastLoadedNavigator(tx: ReturnType<typeof db>, orgId: string) {
+async function leastLoadedNavigator(tx: Sql | TransactionSql, orgId: string) {
   const [row] = await tx<{ user_id: string; active_episodes: string }[]>`
     select m.user_id,
            count(re.id) filter (

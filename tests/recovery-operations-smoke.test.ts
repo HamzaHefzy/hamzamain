@@ -34,10 +34,11 @@ describe.skipIf(!run)("attendance recovery operations", () => {
     `;
 
     const [user] = await sql<{ id: string }[]>`
-      insert into users (email, name, active)
+      insert into users (email, name, password_hash, active)
       values (
         ${"navigator-" + suffix + "@example.invalid"},
         'Recovery Navigator',
+        'ci-only-not-a-login-hash',
         true
       )
       returning id

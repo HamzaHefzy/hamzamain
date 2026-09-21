@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { createCase } from "@/lib/case-service";
 import { localDateString } from "@/lib/time";
 import { sendNotification } from "@/lib/notifications";
+import { ensureRecoveryEpisode, evaluateReturnPlans } from "@/lib/recovery-service";
+import { detectSessionIncidents, getSessionIncidents } from "@/lib/session-incidents";
 
 const barriers = {
   technology: {
@@ -237,6 +239,7 @@ export async function runShowUpAutomation(orgId: string) {
   let misses = 0;
   let casesCreated = 0;
   let checkinsSent = 0;
+  const incidentDetection = await detectSessionIncidents(orgId);
 
   const upcoming = await sql<{
     participation_id: string;

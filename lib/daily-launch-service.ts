@@ -182,7 +182,13 @@ export async function runDailyLaunch(
         ${sql.json(toJson(student.sessions))},
         now() + interval '18 hours'
       )
-      on conflict (org_id, student_id, school_date) do nothing
+      on conflict (org_id, student_id, school_date) do update
+      set token_hash = excluded.token_hash,
+          schedule_snapshot = excluded.schedule_snapshot,
+          expires_at = excluded.expires_at,
+          updated_at = now()
+      where daily_launches.sent_at is null
+        and daily_launches.responded_at is null
       returning id
     `;
 
@@ -252,12 +258,15 @@ export async function getDailyLaunchContext(token: string) {
     }[];
     responded_at: Date | null;
     expires_at: Date;
+    timezone: string;
   }[]>`
     select dl.id, s.first_name, dl.school_date::text, dl.status,
-           dl.schedule_snapshot, dl.responded_at, dl.expires_at
+           dl.schedule_snapshot, dl.responded_at, dl.expires_at,
+           o.timezone
     from daily_launches dl
     join students s
       on s.org_id = dl.org_id and s.id = dl.student_id
+    join organizations o on o.id = dl.org_id
     where dl.token_hash = ${tokenHash(token)}
     limit 1
   `;
@@ -270,6 +279,7 @@ export async function getDailyLaunchContext(token: string) {
     schoolDate: row.school_date,
     status: row.status,
     responded: Boolean(row.responded_at),
+    timezone: row.timezone,
     schedule: row.schedule_snapshot,
   };
 }

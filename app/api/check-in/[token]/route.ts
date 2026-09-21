@@ -7,7 +7,7 @@ import { hashIp, requestIp } from "@/lib/security";
 type Context = { params: Promise<{ token: string }> };
 
 const schema = z.object({
-  barrier: z.enum(["technology","forgot","behind","caregiving","motivation","health","other"]),
+  barrier: z.enum(["technology","forgot","behind","caregiving","motivation","health","anxiety","transportation","other"]),
   note: z.string().max(1000).optional(),
 });
 

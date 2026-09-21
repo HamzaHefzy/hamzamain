@@ -51,7 +51,9 @@ export async function detectSessionIncidents(orgId: string) {
     `;
 
     if (qualifies) {
-      incidentSessionIds.add(row.session_id);
+      if (existing?.status !== "dismissed") {
+        incidentSessionIds.add(row.session_id);
+      }
       const result = await sql<{ id: string }[]>`
         insert into session_incidents (
           org_id, session_id, campus_id, status, incident_type,
@@ -67,9 +69,12 @@ export async function detectSessionIncidents(orgId: string) {
               scheduled_count = excluded.scheduled_count,
               missing_rate = excluded.missing_rate,
               status = case
-                when session_incidents.status in ('resolved','dismissed')
-                  then session_incidents.status
-                else session_incidents.status
+                when session_incidents.status = 'dismissed' then 'dismissed'
+                else 'open'
+              end,
+              resolved_at = case
+                when session_incidents.status = 'dismissed' then session_incidents.resolved_at
+                else null
               end,
               updated_at = now()
         returning id

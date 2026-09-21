@@ -267,6 +267,8 @@ export async function getCase(orgId: string, caseNumber: string) {
     due_at: Date | null;
     opened_at: Date;
     resolved_at: Date | null;
+    recovery_episode_id: string | null;
+    recovery_episode_number: string | null;
   }[]>`
     select c.id, c.case_number, c.student_id,
            s.external_id as external_student_id,
@@ -274,11 +276,13 @@ export async function getCase(orgId: string, caseNumber: string) {
            s.grade, cp.name as campus_name,
            c.barrier_code, c.barrier_label, c.status, c.queue, c.priority,
            u.name as owner_name, c.owner_user_id,
-           c.next_action, c.due_at, c.opened_at, c.resolved_at
+           c.next_action, c.due_at, c.opened_at, c.resolved_at,
+           c.recovery_episode_id, re.episode_number as recovery_episode_number
     from cases c
     join students s on s.id = c.student_id and s.org_id = c.org_id
     left join campuses cp on cp.id = c.campus_id
     left join users u on u.id = c.owner_user_id
+    left join recovery_episodes re on re.org_id = c.org_id and re.id = c.recovery_episode_id
     where c.org_id = ${orgId} and c.case_number = ${caseNumber}
     limit 1
   `;
@@ -340,6 +344,8 @@ export async function getCase(orgId: string, caseNumber: string) {
     dueAt: item.due_at?.toISOString() ?? null,
     openedAt: item.opened_at.toISOString(),
     resolvedAt: item.resolved_at?.toISOString() ?? null,
+    recoveryEpisodeId: item.recovery_episode_id,
+    recoveryEpisodeNumber: item.recovery_episode_number,
     commitments: commitments.map((row) => ({
       ...row,
       due_at: row.due_at?.toISOString() ?? null,

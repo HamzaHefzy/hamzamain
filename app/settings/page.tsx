@@ -1,4 +1,6 @@
 import SettingsManager from "@/components/SettingsManager";
+import RecoverySettingsForm from "@/components/RecoverySettingsForm";
+import { getRecoverySettings } from "@/lib/recovery-service";
 import { can, requireSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 
@@ -22,7 +24,7 @@ export default async function SettingsPage() {
   }
 
   const sql = db();
-  const [campuses, policyRows] = await Promise.all([
+  const [campuses, policyRows, recoverySettings] = await Promise.all([
     sql<{
       id: string;
       name: string;
@@ -54,6 +56,7 @@ export default async function SettingsPage() {
       order by version desc
       limit 1
     `,
+    getRecoverySettings(session.orgId),
   ]);
 
   return (
@@ -68,6 +71,7 @@ export default async function SettingsPage() {
         </div>
       </header>
       <SettingsManager campuses={campuses} policy={policyRows[0] ?? null} />
+      <RecoverySettingsForm settings={recoverySettings} />
     </div>
   );
 }

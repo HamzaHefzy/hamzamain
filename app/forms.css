@@ -359,3 +359,18 @@
   .incident-actions { grid-template-columns: 1fr; }
   .incident-actions input, .incident-actions small { grid-column: auto; }
 }
+
+.settings-check {
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: center;
+  gap: 10px !important;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-subtle);
+}
+.settings-check input {
+  width: auto !important;
+  min-height: auto !important;
+}

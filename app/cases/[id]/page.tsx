@@ -36,6 +36,7 @@ export default async function CaseDetailPage({ params }: Props) {
             <div><dt>Priority</dt><dd>{item.priority}</dd></div>
             <div><dt>Owner</dt><dd>{item.ownerName ?? "Unassigned"}</dd></div>
             <div><dt>Due</dt><dd>{item.dueAt ? new Date(item.dueAt).toLocaleString() : "Not set"}</dd></div>
+            <div><dt>Recovery Episode</dt><dd>{item.recoveryEpisodeId ? <Link className="text-link" href={"/recovery/" + item.recoveryEpisodeId}>{item.recoveryEpisodeNumber ?? "Open trajectory"}</Link> : "Not linked"}</dd></div>
           </dl>
         </article>
         <article className="detail-card">

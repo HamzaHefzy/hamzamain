@@ -30,7 +30,7 @@ export default async function DailyLaunchPage({ params }: Props) {
           {context.schedule.length ? context.schedule.map((session) => (
             <article key={session.id} className="daily-session">
               <time>
-                {new Date(session.startsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                {new Date(session.startsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", timeZone: context.timezone })}
               </time>
               <div>
                 <strong>{session.title}</strong>

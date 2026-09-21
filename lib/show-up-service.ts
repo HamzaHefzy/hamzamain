@@ -5,47 +5,9 @@ import { localDateString } from "@/lib/time";
 import { sendNotification } from "@/lib/notifications";
 import { ensureRecoveryEpisode, evaluateReturnPlans, getRecoverySettings } from "@/lib/recovery-service";
 import { detectSessionIncidents, getSessionIncidents } from "@/lib/session-incidents";
+import { recoveryPlaybooks, type RecoveryBarrier } from "@/lib/recovery-playbooks";
 
-const barriers = {
-  technology: {
-    label: "Technology / access",
-    nextAction: "Restore device or connectivity access and provide an approved same-day fallback.",
-    priority: "high" as const,
-  },
-  forgot: {
-    label: "Routine / forgot",
-    nextAction: "Confirm the next session, provide one-click access, and add a calendar/reminder plan.",
-    priority: "medium" as const,
-  },
-  behind: {
-    label: "Academic overwhelm",
-    nextAction: "Create a minimum viable catch-up plan and a teacher check-in before the next session.",
-    priority: "high" as const,
-  },
-  caregiving: {
-    label: "Work / caregiving",
-    nextAction: "Review the participation schedule and route an approved asynchronous or schedule-adjustment option.",
-    priority: "high" as const,
-  },
-  motivation: {
-    label: "Disengagement / belonging",
-    nextAction: "Assign a named success contact for a short re-engagement conversation and next-step commitment.",
-    priority: "high" as const,
-  },
-  health: {
-    label: "Health / wellness",
-    nextAction: "Route to the school’s approved attendance and support process without requesting sensitive details in Anchor.",
-    priority: "high" as const,
-  },
-  other: {
-    label: "Other participation barrier",
-    nextAction: "Human follow-up is required to identify and resolve the barrier.",
-    priority: "medium" as const,
-  },
-};
-
-export type CheckinBarrier = keyof typeof barriers;
-
+export type CheckinBarrier = RecoveryBarrier;
 function tokenHash(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
@@ -104,7 +66,7 @@ export async function submitCheckin(input: {
   note?: string | null;
 }) {
   const sql = db();
-  const config = barriers[input.barrier];
+  const config = recoveryPlaybooks[input.barrier];
 
   const result = await sql.begin(async (tx) => {
     const [tokenRow] = await tx<{

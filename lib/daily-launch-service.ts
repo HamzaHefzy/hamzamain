@@ -322,18 +322,20 @@ export async function submitDailyLaunch(input: {
   }
 
   if (input.response === "ready") {
-    await sql`
+    const updated = await sql<{ id: string }[]>`
       update daily_launches
       set status = 'ready', responded_at = now(),
           note = ${input.note ?? null}, updated_at = now()
       where id = ${launch.id}
         and responded_at is null
+      returning id
     `;
+    if (!updated.length) throw new Error("Today's Daily Launch has already been submitted.");
     return { status: "ready" as const };
   }
 
   const playbook = recoveryPlaybooks[input.response];
-  await sql`
+  const claimed = await sql<{ id: string }[]>`
     update daily_launches
     set status = 'help_requested',
         barrier_code = ${input.response},
@@ -342,7 +344,9 @@ export async function submitDailyLaunch(input: {
         updated_at = now()
     where id = ${launch.id}
       and responded_at is null
+    returning id
   `;
+  if (!claimed.length) throw new Error("Today's Daily Launch has already been submitted.");
 
   const episode = await ensureRecoveryEpisode({
     orgId: launch.org_id,

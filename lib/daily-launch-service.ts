@@ -103,29 +103,28 @@ export async function runDailyLaunch(
     phone: string | null;
     guardian_email: string | null;
     guardian_phone: string | null;
-    session_id: string;
-    title: string;
-    starts_at: Date;
-    ends_at: Date;
+    session_id: string | null;
+    title: string | null;
+    starts_at: Date | null;
+    ends_at: Date | null;
     live_url: string | null;
   }[]>`
     select s.id as student_id, s.first_name, s.email, s.phone,
            s.guardian_email, s.guardian_phone,
            vs.id as session_id, vs.title, vs.starts_at, vs.ends_at, vs.live_url
     from students s
-    join campuses c
-      on c.org_id = s.org_id and c.id = s.campus_id
-    join session_participation sp
-      on sp.org_id = s.org_id and sp.student_id = s.id
-    join virtual_sessions vs
-      on vs.org_id = sp.org_id and vs.id = sp.session_id
-    where s.org_id = ${orgId}
-      and s.active = true
-      and c.delivery_model in ('virtual_program','virtual_campus','hybrid')
+    left join session_participation sp
+      on sp.org_id = s.org_id
+      and sp.student_id = s.id
+    left join virtual_sessions vs
+      on vs.org_id = sp.org_id
+      and vs.id = sp.session_id
       and vs.required = true
       and (vs.starts_at at time zone ${org.timezone})::date = ${schoolDate}::date
       and vs.ends_at > now()
-    order by s.id, vs.starts_at
+    where s.org_id = ${orgId}
+      and s.active = true
+    order by s.id, vs.starts_at nulls last
   `;
 
   const byStudent = new Map<string, {
@@ -154,13 +153,15 @@ export async function runDailyLaunch(
       guardianPhone: row.guardian_phone,
       sessions: [],
     };
-    current.sessions.push({
-      id: row.session_id,
-      title: row.title,
-      startsAt: row.starts_at.toISOString(),
-      endsAt: row.ends_at.toISOString(),
-      liveUrl: row.live_url,
-    });
+    if (row.session_id && row.title && row.starts_at && row.ends_at) {
+      current.sessions.push({
+        id: row.session_id,
+        title: row.title,
+        startsAt: row.starts_at.toISOString(),
+        endsAt: row.ends_at.toISOString(),
+        liveUrl: row.live_url,
+      });
+    }
     byStudent.set(row.student_id, current);
   }
 
@@ -196,16 +197,20 @@ export async function runDailyLaunch(
     created += 1;
 
     const first = student.sessions[0];
-    const firstTime = new Intl.DateTimeFormat("en-US", {
-      timeZone: org.timezone,
-      hour: "numeric",
-      minute: "2-digit",
-    }).format(new Date(first.startsAt));
+    const firstTime = first
+      ? new Intl.DateTimeFormat("en-US", {
+          timeZone: org.timezone,
+          hour: "numeric",
+          minute: "2-digit",
+        }).format(new Date(first.startsAt))
+      : null;
 
     const link = siteUrl + "/launch/" + token;
-    const body =
-      "Good morning, " + student.firstName + ". Your first class is " +
-      first.title + " at " + firstTime + ". See today's schedule or tell us now if something may stop you: " + link;
+    const body = first
+      ? "Good morning, " + student.firstName + ". Your first class is " +
+        first.title + " at " + firstTime + ". See today's schedule or tell us now if something may stop you: " + link
+      : "Good morning, " + student.firstName +
+        ". Your school day is coming up. Tell us now if transportation, health, schedule, anxiety, or something else may stop you: " + link;
 
     const delivered = await tryLaunchNotification({
       orgId,

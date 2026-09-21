@@ -1,6 +1,7 @@
 import Link from "next/link";
 import IncidentActions from "@/components/IncidentActions";
-import { requireSession } from "@/lib/auth";
+import { can, requireSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { getMembers } from "@/lib/data-access";
 import { getDailyLaunchSnapshot } from "@/lib/daily-launch-service";
 import { getRecoveryDesk } from "@/lib/recovery-service";
@@ -10,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function RecoveryDeskPage() {
   const session = await requireSession();
+  if (!can(session.role, "attendance_write") && !can(session.role, "support_write")) redirect("/dashboard");
   const [desk, launch, incidents, members] = await Promise.all([
     getRecoveryDesk(session.orgId),
     getDailyLaunchSnapshot(session.orgId),

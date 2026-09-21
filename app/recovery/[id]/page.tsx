@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import RecoveryEpisodeControls from "@/components/RecoveryEpisodeControls";
-import { requireSession } from "@/lib/auth";
+import { can, requireSession } from "@/lib/auth";
 import { getMembers } from "@/lib/data-access";
 import { getRecoveryEpisode } from "@/lib/recovery-detail";
 
@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function RecoveryEpisodePage({ params }: Props) {
   const session = await requireSession();
+  if (!can(session.role, "attendance_write") && !can(session.role, "support_write")) redirect("/dashboard");
   const { id } = await params;
   const [episode, members] = await Promise.all([
     getRecoveryEpisode(session.orgId, id),

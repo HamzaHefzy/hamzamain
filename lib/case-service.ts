@@ -22,6 +22,7 @@ export async function createCase(input: {
   nextAction?: string | null;
   dueAt?: Date | null;
   actorUserId?: string | null;
+  recoveryEpisodeId?: string | null;
   metadata?: Record<string, unknown>;
 }) {
   const sql = db();
@@ -31,14 +32,15 @@ export async function createCase(input: {
       insert into cases (
         org_id, student_id, campus_id, case_number,
         barrier_code, barrier_label, priority,
-        owner_user_id, next_action, due_at, metadata
+        owner_user_id, next_action, due_at, recovery_episode_id, metadata
       )
       values (
         ${input.orgId}, ${input.studentId}, ${input.campusId ?? null},
         concat('CASE-', upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8))),
         ${input.barrierCode}, ${input.barrierLabel}, ${input.priority ?? "medium"},
         ${input.ownerUserId ?? null}, ${input.nextAction ?? null},
-        ${input.dueAt ?? null}, ${tx.json(toJson(input.metadata ?? {}))}
+        ${input.dueAt ?? null}, ${input.recoveryEpisodeId ?? null},
+        ${tx.json(toJson(input.metadata ?? {}))}
       )
       returning id, case_number
     `;

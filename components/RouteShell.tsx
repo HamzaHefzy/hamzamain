@@ -27,6 +27,7 @@ const publicPaths = new Set(["/", "/login", "/request-demo", "/pricing", "/secur
 
 function isActive(pathname: string, href: string) {
   if (href === "/cases") return pathname === href || pathname.startsWith("/cases/");
+  if (href === "/recovery") return pathname === href || pathname.startsWith("/recovery/");
   if (href === "/virtual") return pathname === href;
   return pathname === href;
 }

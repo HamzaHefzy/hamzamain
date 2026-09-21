@@ -135,6 +135,12 @@ export async function ensureRecoveryEpisode(input: {
   const sql = db();
 
   return sql.begin(async (tx) => {
+    await tx`
+      select pg_advisory_xact_lock(
+        hashtextextended(${input.orgId} || ':' || ${input.studentId}, 0)
+      )
+    `;
+
     const [active] = await tx<{
       id: string;
       episode_number: string;

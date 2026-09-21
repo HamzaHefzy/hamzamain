@@ -223,6 +223,9 @@ describe.skipIf(!run)("attendance recovery operations", () => {
     });
 
     expect(help.status).toBe("help_requested");
+    if (help.status !== "help_requested") {
+      throw new Error("Expected Daily Launch help request to create recovery work.");
+    }
     expect(help.episodeNumber).toMatch(/^REC-/);
     expect(help.caseNumber).toMatch(/^CASE-/);
 

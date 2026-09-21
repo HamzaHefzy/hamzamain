@@ -6,6 +6,7 @@ import { updateCase } from "@/lib/case-service";
 import { getCase } from "@/lib/data-access";
 import { db } from "@/lib/db";
 import { assertSameOrigin } from "@/lib/security";
+import { startReturnPlan } from "@/lib/recovery-service";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -58,6 +59,27 @@ export async function PATCH(request: Request, context: Context) {
       actorUserId: session.userId,
       patch,
     });
+
+    if (patch.status === "resolved") {
+      const sql = db();
+      const [episode] = await sql<{ recovery_episode_id: string | null }[]>`
+        select recovery_episode_id
+        from cases
+        where id = ${resolved.id} and org_id = ${session.orgId}
+      `;
+      if (episode?.recovery_episode_id) {
+        await startReturnPlan({
+          orgId: session.orgId,
+          episodeId: episode.recovery_episode_id,
+          actorUserId: session.userId,
+          plan: {
+            source: "case_resolution",
+            caseNumber: resolved.case_number,
+            objective: "Verify attendance stabilizes after the barrier intervention.",
+          },
+        });
+      }
+    }
 
     await audit({
       orgId: session.orgId,

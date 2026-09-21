@@ -3,6 +3,7 @@ import { apiSession } from "@/lib/api";
 import { audit } from "@/lib/audit";
 import { runVirtualDayClose } from "@/lib/jobs";
 import { runShowUpAutomation } from "@/lib/show-up-service";
+import { runDailyLaunch } from "@/lib/daily-launch-service";
 import { assertSameOrigin } from "@/lib/security";
 
 type Context = { params: Promise<{ job: string }> };
@@ -18,6 +19,8 @@ export async function POST(request: Request, context: Context) {
     let result: unknown;
     if (job === "show-up") {
       result = await runShowUpAutomation(session.orgId);
+    } else if (job === "daily-launch") {
+      result = await runDailyLaunch(session.orgId, { force: true });
     } else if (job === "virtual-day-close") {
       result = await runVirtualDayClose(session.orgId, { force: true });
     } else {

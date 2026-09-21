@@ -10,6 +10,7 @@ const navItems = [
   { href: "/dashboard", label: "Overview" },
   { href: "/attendance", label: "Attendance" },
   { href: "/cases", label: "ResolutionOS" },
+  { href: "/recovery", label: "Recovery Desk" },
   { href: "/evidence", label: "Evidence" },
   { href: "/value", label: "Value" },
   { href: "/virtual", label: "Virtual" },
@@ -26,6 +27,7 @@ const publicPaths = new Set(["/", "/login", "/request-demo", "/pricing", "/secur
 
 function isActive(pathname: string, href: string) {
   if (href === "/cases") return pathname === href || pathname.startsWith("/cases/");
+  if (href === "/recovery") return pathname === href || pathname.startsWith("/recovery/");
   if (href === "/virtual") return pathname === href;
   return pathname === href;
 }
@@ -33,7 +35,7 @@ function isActive(pathname: string, href: string) {
 export default function RouteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
-  if (publicPaths.has(pathname) || pathname === "/forgot-password" || pathname.startsWith("/check-in/") || pathname.startsWith("/invite/") || pathname.startsWith("/reset-password/")) {
+  if (publicPaths.has(pathname) || pathname === "/forgot-password" || pathname.startsWith("/check-in/") || pathname.startsWith("/launch/") || pathname.startsWith("/invite/") || pathname.startsWith("/reset-password/")) {
     return <>{children}</>;
   }
 

@@ -9,6 +9,8 @@ const options = [
   ["caregiving", "Work, caregiving, or schedule conflict"],
   ["motivation", "I didn’t feel able or motivated to join"],
   ["health", "Health or wellness"],
+  ["anxiety", "Anxiety or school avoidance"],
+  ["transportation", "Transportation"],
   ["other", "Something else"],
 ] as const;
 

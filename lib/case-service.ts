@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { toJson } from "@/lib/json";
+import { startReturnPlan } from "@/lib/recovery-service";
 
 export type CasePatch = {
   status?: "open" | "in_progress" | "waiting" | "resolved" | "closed";
@@ -22,6 +23,7 @@ export async function createCase(input: {
   nextAction?: string | null;
   dueAt?: Date | null;
   actorUserId?: string | null;
+  recoveryEpisodeId?: string | null;
   metadata?: Record<string, unknown>;
 }) {
   const sql = db();
@@ -31,14 +33,15 @@ export async function createCase(input: {
       insert into cases (
         org_id, student_id, campus_id, case_number,
         barrier_code, barrier_label, priority,
-        owner_user_id, next_action, due_at, metadata
+        owner_user_id, next_action, due_at, recovery_episode_id, metadata
       )
       values (
         ${input.orgId}, ${input.studentId}, ${input.campusId ?? null},
         concat('CASE-', upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8))),
         ${input.barrierCode}, ${input.barrierLabel}, ${input.priority ?? "medium"},
         ${input.ownerUserId ?? null}, ${input.nextAction ?? null},
-        ${input.dueAt ?? null}, ${tx.json(toJson(input.metadata ?? {}))}
+        ${input.dueAt ?? null}, ${input.recoveryEpisodeId ?? null},
+        ${tx.json(toJson(input.metadata ?? {}))}
       )
       returning id, case_number
     `;
@@ -66,7 +69,7 @@ export async function updateCase(input: {
 }) {
   const sql = db();
 
-  return sql.begin(async (tx) => {
+  const result = await sql.begin(async (tx) => {
     const [current] = await tx<{
       id: string;
       status: string;
@@ -75,8 +78,10 @@ export async function updateCase(input: {
       owner_user_id: string | null;
       next_action: string | null;
       due_at: Date | null;
+      recovery_episode_id: string | null;
     }[]>`
-      select id, status, queue, priority, owner_user_id, next_action, due_at
+      select id, status, queue, priority, owner_user_id, next_action,
+             due_at, recovery_episode_id
       from cases
       where id = ${input.caseId} and org_id = ${input.orgId}
       for update
@@ -135,8 +140,32 @@ export async function updateCase(input: {
       )
     `;
 
-    return updated;
+    return {
+      updated,
+      previousStatus: current.status,
+      status,
+      recoveryEpisodeId: current.recovery_episode_id,
+    };
   });
+
+  if (
+    result.recoveryEpisodeId &&
+    result.status === "resolved" &&
+    !["resolved","closed"].includes(result.previousStatus)
+  ) {
+    await startReturnPlan({
+      orgId: input.orgId,
+      episodeId: result.recoveryEpisodeId,
+      actorUserId: input.actorUserId,
+      plan: {
+        source: "case_resolution",
+        caseId: input.caseId,
+        resolutionNote: input.patch.note ?? null,
+      },
+    });
+  }
+
+  return result.updated;
 }
 
 export async function addCommitment(input: {

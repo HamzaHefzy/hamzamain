@@ -54,7 +54,7 @@ export async function createCheckinToken(input: {
   orgId: string;
   studentId: string;
   sessionId: string;
-  caseId: string;
+  caseId?: string | null;
 }) {
   const sql = db();
   const token = randomBytes(32).toString("base64url");
@@ -64,7 +64,7 @@ export async function createCheckinToken(input: {
     )
     values (
       ${input.orgId}, ${input.studentId}, ${input.sessionId},
-      ${input.caseId}, ${tokenHash(token)}, now() + interval '24 hours'
+      ${input.caseId ?? null}, ${tokenHash(token)}, now() + interval '24 hours'
     )
   `;
   return token;
@@ -106,19 +106,23 @@ export async function submitCheckin(input: {
   const sql = db();
   const config = barriers[input.barrier];
 
-  return sql.begin(async (tx) => {
+  const result = await sql.begin(async (tx) => {
     const [tokenRow] = await tx<{
       id: string;
       org_id: string;
       student_id: string;
+      campus_id: string | null;
       session_id: string | null;
       case_id: string | null;
       used_at: Date | null;
       expires_at: Date;
     }[]>`
-      select id, org_id, student_id, session_id, case_id, used_at, expires_at
-      from checkin_tokens
-      where token_hash = ${tokenHash(input.token)}
+      select ct.id, ct.org_id, ct.student_id, s.campus_id,
+             ct.session_id, ct.case_id, ct.used_at, ct.expires_at
+      from checkin_tokens ct
+      join students s
+        on s.org_id = ct.org_id and s.id = ct.student_id
+      where ct.token_hash = ${tokenHash(input.token)}
       for update
     `;
 
@@ -129,7 +133,7 @@ export async function submitCheckin(input: {
       throw new Error("This check-in has already been submitted.");
     }
 
-    await tx`
+    const [response] = await tx<{ id: string }[]>`
       insert into checkin_responses (
         org_id, student_id, session_id, case_id,
         barrier_code, barrier_label, note
@@ -138,10 +142,13 @@ export async function submitCheckin(input: {
         ${tokenRow.org_id}, ${tokenRow.student_id}, ${tokenRow.session_id},
         ${tokenRow.case_id}, ${input.barrier}, ${config.label}, ${input.note ?? null}
       )
+      returning id
     `;
 
     await tx`
-      update checkin_tokens set used_at = now() where id = ${tokenRow.id}
+      update checkin_tokens
+      set used_at = now()
+      where id = ${tokenRow.id}
     `;
 
     if (tokenRow.case_id) {
@@ -153,10 +160,28 @@ export async function submitCheckin(input: {
             status = 'in_progress',
             queue = 'do_now',
             next_action = ${config.nextAction},
-            due_at = least(coalesce(due_at, now() + interval '2 hours'), now() + interval '2 hours'),
+            due_at = least(
+              coalesce(due_at, now() + interval '2 hours'),
+              now() + interval '2 hours'
+            ),
             updated_at = now()
         where id = ${tokenRow.case_id}
           and org_id = ${tokenRow.org_id}
+      `;
+
+      await tx`
+        update recovery_episodes re
+        set barrier_code = ${input.barrier},
+            barrier_label = ${config.label},
+            tier = case when re.tier = 'automated' then 'navigator' else re.tier end,
+            status = 'open',
+            last_signal_at = now(),
+            updated_at = now()
+        from cases c
+        where c.org_id = ${tokenRow.org_id}
+          and c.id = ${tokenRow.case_id}
+          and re.org_id = c.org_id
+          and re.id = c.recovery_episode_id
       `;
 
       await tx`
@@ -171,8 +196,99 @@ export async function submitCheckin(input: {
       `;
     }
 
-    return config;
+    return {
+      tokenRow,
+      responseId: response.id,
+    };
   });
+
+  let caseId = result.tokenRow.case_id;
+
+  if (!caseId) {
+    const episode = await ensureRecoveryEpisode({
+      orgId: result.tokenRow.org_id,
+      studentId: result.tokenRow.student_id,
+      campusId: result.tokenRow.campus_id,
+      source: "student_live_checkin",
+      barrierCode: input.barrier,
+      barrierLabel: config.label,
+      tier: "navigator",
+      requireHumanOwner: true,
+      metadata: {
+        sessionId: result.tokenRow.session_id,
+        note: input.note ?? null,
+      },
+    });
+
+    const [existing] = await sql<{ id: string }[]>`
+      select id
+      from cases
+      where org_id = ${result.tokenRow.org_id}
+        and recovery_episode_id = ${episode.id}
+        and status not in ('resolved','closed')
+      order by opened_at desc
+      limit 1
+    `;
+
+    if (existing) {
+      caseId = existing.id;
+      await sql`
+        update cases
+        set barrier_code = ${input.barrier},
+            barrier_label = ${config.label},
+            priority = ${config.priority},
+            owner_user_id = coalesce(owner_user_id, ${episode.owner_user_id}),
+            next_action = ${config.nextAction},
+            status = 'in_progress',
+            queue = 'do_now',
+            due_at = least(
+              coalesce(due_at, now() + interval '2 hours'),
+              now() + interval '2 hours'
+            ),
+            updated_at = now()
+        where id = ${caseId}
+          and org_id = ${result.tokenRow.org_id}
+      `;
+    } else {
+      const created = await createCase({
+        orgId: result.tokenRow.org_id,
+        studentId: result.tokenRow.student_id,
+        campusId: result.tokenRow.campus_id,
+        recoveryEpisodeId: episode.id,
+        ownerUserId: episode.owner_user_id,
+        barrierCode: input.barrier,
+        barrierLabel: config.label,
+        priority: config.priority,
+        nextAction: config.nextAction,
+        dueAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
+        metadata: {
+          source: "student_live_checkin",
+          sessionId: result.tokenRow.session_id,
+          episodeNumber: episode.episode_number,
+        },
+      });
+      caseId = created.id;
+    }
+
+    await sql`
+      update checkin_responses
+      set case_id = ${caseId}
+      where id = ${result.responseId}
+        and org_id = ${result.tokenRow.org_id}
+    `;
+
+    await sql`
+      update checkin_tokens
+      set case_id = ${caseId}
+      where id = ${result.tokenRow.id}
+        and org_id = ${result.tokenRow.org_id}
+    `;
+  }
+
+  return {
+    ...config,
+    caseId,
+  };
 }
 
 async function hasNotification(orgId: string, studentId: string, templateKey: string) {

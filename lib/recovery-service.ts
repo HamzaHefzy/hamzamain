@@ -153,6 +153,19 @@ export async function ensureRecoveryEpisode(input: {
     `;
 
     if (active) {
+      const relapse = active.status === "stabilizing";
+      if (relapse) {
+        await tx`
+          update return_plans
+          set status = 'failed',
+              failed_at = now(),
+              updated_at = now()
+          where org_id = ${input.orgId}
+            and episode_id = ${active.id}
+            and status = 'active'
+        `;
+      }
+
       const owner = input.requireHumanOwner && !active.owner_user_id
         ? await leastLoadedNavigator(tx, input.orgId)
         : active.owner_user_id;
@@ -169,6 +182,7 @@ export async function ensureRecoveryEpisode(input: {
             owner_user_id = ${owner},
             tier = ${nextTier},
             status = case when status = 'stabilizing' then 'open' else status end,
+            relapse_count = relapse_count + ${relapse ? 1 : 0},
             metadata = metadata || ${tx.json(toJson(input.metadata ?? {}))},
             updated_at = now()
         where id = ${active.id} and org_id = ${input.orgId}
@@ -179,8 +193,8 @@ export async function ensureRecoveryEpisode(input: {
           org_id, episode_id, event_type, note, metadata
         )
         values (
-          ${input.orgId}, ${active.id}, 'attendance_signal',
-          ${input.barrierLabel ?? input.source},
+          ${input.orgId}, ${active.id}, ${relapse ? "relapse" : "attendance_signal"},
+          ${relapse ? "Attendance broke down during the active Return Plan." : input.barrierLabel ?? input.source},
           ${tx.json(toJson({ source: input.source, ...input.metadata }))}
         )
       `;

@@ -37,7 +37,8 @@ export default function RouteShell({ children }: { children: ReactNode }) {
   if (
     publicPaths.has(pathname) ||
     pathname === "/forgot-password" ||
-    pathname.startsWith("/reset-password/")
+    pathname.startsWith("/reset-password/") ||
+    pathname.startsWith("/verify-email/")
   ) {
     return <>{children}</>;
   }

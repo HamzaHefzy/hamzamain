@@ -1,6 +1,8 @@
 import type { ExecutionResult, OperatorStepKind } from "@/lib/operator/types";
 import { fetchWithTimeout } from "@/lib/http";
 import { runPipedreamAppAction } from "@/lib/operator/pipedream";
+import { getGooglePlaceDetails, searchGooglePlaces } from "@/lib/operator/places";
+import { getOperatorProfile } from "@/lib/operator/profile";
 
 type ExecuteInput = {
   orgId: string;
@@ -59,6 +61,55 @@ async function postExecutor(
   };
 }
 
+
+
+async function googlePlacesRunner(input: ExecuteInput): Promise<ExecutionResult> {
+  if (!process.env.GOOGLE_MAPS_API_KEY) {
+    return {
+      state: "waiting_external",
+      provider: "google-places",
+      message: "Connect Google Maps Platform to search live local businesses.",
+      data: { connector: "GOOGLE_MAPS_API_KEY", noDispatch: true },
+    };
+  }
+
+  try {
+    const profile = await getOperatorProfile(input.orgId);
+    const query =
+      typeof input.request.query === "string"
+        ? input.request.query
+        : typeof input.request.objective === "string"
+          ? input.request.objective
+          : input.summary;
+    const places = await searchGooglePlaces({
+      query,
+      homeBase: profile?.home_base ?? null,
+      maxResults: 5,
+    });
+
+    const includeContact = input.request.includeContact === true;
+    const results = includeContact
+      ? await Promise.all(places.map((place) => getGooglePlaceDetails(place.id)))
+      : places;
+
+    return {
+      state: "completed",
+      provider: "google-places",
+      message:
+        results.length > 0
+          ? "Found " + results.length + " matching places on Google Maps."
+          : "No matching places were found on Google Maps.",
+      data: { query, places: results },
+    };
+  } catch (error) {
+    return {
+      state: "failed",
+      provider: "google-places",
+      message:
+        error instanceof Error ? error.message : "Google Maps search failed.",
+    };
+  }
+}
 
 async function connectedAppRunner(input: ExecuteInput): Promise<ExecutionResult> {
   const actionId =
@@ -307,6 +358,7 @@ export async function executeOperatorStep(input: ExecuteInput): Promise<Executio
       },
     };
   }
+  if (input.provider === "google-places") return googlePlacesRunner(input);
   if (input.kind === "voice") return callWithVoiceProvider(input);
   if (input.kind === "api" && (input.provider === "pipedream" || input.provider === "app-agent" || input.request.pipedreamActionId || input.request.app)) return connectedAppRunner(input);
   if (input.kind === "email") return sendWithResend(input);

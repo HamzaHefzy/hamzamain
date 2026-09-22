@@ -5,6 +5,7 @@ import { db, hasDatabase } from "@/lib/db";
 import { SESSION_COOKIE, signSession } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { assertSameOrigin, hashIp, requestIp } from "@/lib/security";
+import { emailVerificationConfigured, issueEmailVerification } from "@/lib/email-verification";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -34,6 +35,18 @@ export async function POST(request: Request) {
     }
 
     const input = schema.parse(await request.json());
+    const mailConfigured = emailVerificationConfigured();
+    const autoVerify = process.env.NODE_ENV !== "production" && !mailConfigured;
+    if (process.env.NODE_ENV === "production" && !mailConfigured) {
+      return NextResponse.json(
+        {
+          error: "Email verification delivery is not configured for this deployment.",
+          code: "email_verification_unavailable",
+        },
+        { status: 503 },
+      );
+    }
+
     const sql = db();
     const normalizedEmail = input.email.toLowerCase();
     const [existing] = await sql<{ id: string }[]>`
@@ -54,8 +67,14 @@ export async function POST(request: Request) {
         returning id, name, slug
       `;
       const [user] = await tx<{ id: string; email: string; name: string }[]>`
-        insert into users (email, name, password_hash, last_login_at)
-        values (${normalizedEmail}, ${input.name}, ${passwordHash}, now())
+        insert into users (
+          email, name, password_hash, email_verified_at, last_login_at
+        )
+        values (
+          ${normalizedEmail}, ${input.name}, ${passwordHash},
+          case when ${autoVerify} then now() else null end,
+          now()
+        )
         returning id, email, name
       `;
       await tx`
@@ -73,6 +92,20 @@ export async function POST(request: Request) {
       return { org, user };
     });
 
+    let verificationDelivery: "not_required" | "sent" | "failed" =
+      autoVerify ? "not_required" : "sent";
+    if (!autoVerify) {
+      try {
+        await issueEmailVerification({
+          userId: created.user.id,
+          orgId: created.org.id,
+          email: created.user.email,
+        });
+      } catch {
+        verificationDelivery = "failed";
+      }
+    }
+
     const token = await signSession({
       userId: created.user.id,
       orgId: created.org.id,
@@ -81,10 +114,16 @@ export async function POST(request: Request) {
       role: "owner",
       orgName: created.org.name,
       orgSlug: created.org.slug,
+      emailVerified: autoVerify,
     });
 
     const response = NextResponse.json(
-      { ok: true, workspace: { name: created.org.name, slug: created.org.slug } },
+      {
+        ok: true,
+        workspace: { name: created.org.name, slug: created.org.slug },
+        verificationRequired: !autoVerify,
+        verificationDelivery,
+      },
       { status: 201 },
     );
     response.cookies.set(SESSION_COOKIE, token, {

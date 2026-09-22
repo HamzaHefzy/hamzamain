@@ -32,7 +32,7 @@ export default function VerificationBanner({ email }: { email: string }) {
     <div className="operator-verification-banner" role="status">
       <div>
         <strong>Verify {email} to unlock execution.</strong>
-        <span>You can browse the workspace, but Operator will not execute tasks or change authority until the email is verified.</span>
+        <span>You can browse the workspace, but Wafira will not execute tasks or change authority until the email is verified.</span>
         {message ? <small>{message}</small> : null}
       </div>
       <button type="button" onClick={resend} disabled={busy}>

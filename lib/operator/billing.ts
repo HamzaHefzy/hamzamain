@@ -95,12 +95,12 @@ export async function applyStripeEvent(event: {
   data: { object: Record<string, unknown> };
 }) {
   const sql = db();
-  const [fresh] = await sql<{ event_id: string }[]>\`
+  const [fresh] = await sql<{ event_id: string }[]>`
     insert into operator_billing_events (event_id, event_type)
-    values (\${event.id}, \${event.type})
+    values (${event.id}, ${event.type})
     on conflict (event_id) do nothing
     returning event_id
-  \`;
+  `;
   if (!fresh) return { duplicate: true };
 
   const object = event.data.object;
@@ -111,18 +111,18 @@ export async function applyStripeEvent(event: {
     const customerId = asString(object.customer);
     const subscriptionId = asString(object.subscription);
     if (orgId) {
-      await sql\`
+      await sql`
         insert into operator_subscriptions (
           org_id, customer_id, subscription_id, plan, status
         )
-        values (\${orgId}, \${customerId}, \${subscriptionId}, \${plan}, 'active')
+        values (${orgId}, ${customerId}, ${subscriptionId}, ${plan}, 'active')
         on conflict (org_id) do update set
           customer_id = excluded.customer_id,
           subscription_id = excluded.subscription_id,
           plan = excluded.plan,
           status = excluded.status,
           updated_at = now()
-      \`;
+      `;
     }
   }
 
@@ -142,11 +142,11 @@ export async function applyStripeEvent(event: {
       : null;
 
     if (orgId) {
-      await sql\`
+      await sql`
         insert into operator_subscriptions (
           org_id, customer_id, subscription_id, plan, status, current_period_end
         )
-        values (\${orgId}, \${customerId}, \${subscriptionId}, \${plan}, \${status}, \${periodEnd})
+        values (${orgId}, ${customerId}, ${subscriptionId}, ${plan}, ${status}, ${periodEnd})
         on conflict (org_id) do update set
           customer_id = excluded.customer_id,
           subscription_id = excluded.subscription_id,
@@ -154,7 +154,7 @@ export async function applyStripeEvent(event: {
           status = excluded.status,
           current_period_end = excluded.current_period_end,
           updated_at = now()
-      \`;
+      `;
     }
   }
 

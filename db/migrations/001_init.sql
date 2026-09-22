@@ -128,6 +128,7 @@ CREATE TABLE operator_steps (
   requires_approval boolean NOT NULL DEFAULT false,
   request jsonb NOT NULL DEFAULT '{}'::jsonb,
   response jsonb NOT NULL DEFAULT '{}'::jsonb,
+  callback_token_hash text,
   error text,
   started_at timestamptz,
   completed_at timestamptz,

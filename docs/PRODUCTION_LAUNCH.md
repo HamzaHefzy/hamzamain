@@ -14,7 +14,7 @@ This checklist is deliberately operational: passing it means the application is 
 ## Billing
 
 - Stripe secret and webhook secrets are configured.
-- Assistant, Wafira, and Concierge price IDs point to recurring prices in the intended Stripe account.
+- Assistant, Yumna, and Concierge price IDs point to recurring prices in the intended Stripe account.
 - Stripe posts signed events to `/api/billing/webhook`.
 - The billing portal is enabled in Stripe so customers can manage or cancel subscriptions.
 
@@ -33,7 +33,7 @@ Each asynchronous executor receives a per-step callback credential. It must retu
 
 ## Communications
 
-- Link the owner phone from Connections before enabling text-to-Wafira.
+- Link the owner phone from Connections before enabling text-to-Yumna.
 - Configure Twilio Messaging to post to `/api/operator/inbound/sms`.
 - Configure Twilio Voice intake to post to `/api/operator/inbound/voice`.
 - Keep SMS task notifications opt-in.

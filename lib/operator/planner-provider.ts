@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { planOperatorTask } from "@/lib/operator/planner";
 import type { TaskPlan } from "@/lib/operator/types";
+import { fetchWithTimeout } from "@/lib/http";
 
 const stepSchema = z.object({
   kind: z.enum(["research", "api", "browser", "voice", "email", "calendar", "payment", "human"]),
@@ -26,7 +27,7 @@ export async function planOperatorTaskWithProvider(request: string, context?: Re
   if (!url) return planOperatorTask(request);
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

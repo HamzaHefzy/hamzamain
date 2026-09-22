@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: operator
       POSTGRES_PASSWORD: operator
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
       - operator_postgres:/var/lib/postgresql/data
     healthcheck:

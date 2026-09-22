@@ -26,7 +26,7 @@ export default async function AuthorityPage() {
       <header className="operator-page-header">
         <div>
           <span className="operator-kicker">Authority wallet</span>
-          <h1>You decide where Operator can act alone.</h1>
+          <h1>You decide where Wafira can act alone.</h1>
           <p>Default-deny for money and consequential actions. Add explicit permissions for routine work, pause them instantly, or delete them entirely.</p>
         </div>
       </header>
@@ -40,7 +40,7 @@ export default async function AuthorityPage() {
 
       <section className="operator-section">
         <div className="operator-section-heading">
-          <div><span className="operator-kicker">Current permissions</span><h2>What Operator may do</h2></div>
+          <div><span className="operator-kicker">Current permissions</span><h2>What Wafira may do</h2></div>
         </div>
         <div className="operator-rule-list">
           {rules.length ? rules.map((rule) => (
@@ -62,7 +62,7 @@ export default async function AuthorityPage() {
           )) : (
             <div className="operator-empty">
               <strong>No delegated authority yet.</strong>
-              <span>Operator will ask before consequential actions.</span>
+              <span>Wafira will ask before consequential actions.</span>
             </div>
           )}
         </div>

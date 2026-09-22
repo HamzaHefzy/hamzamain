@@ -40,6 +40,10 @@ if (process.env.OPERATOR_DEMO_MODE === "true") {
   failures.push("OPERATOR_DEMO_MODE must not be true in production.");
 }
 
+const hasPlanner =
+  Boolean(process.env.OPERATOR_PLANNER_URL?.trim()) ||
+  Boolean(process.env.OPENAI_API_KEY?.trim());
+
 const hasActionRunner = Boolean(process.env.OPERATOR_ACTION_RUNNER_URL?.trim());
 const hasVapi =
   Boolean(process.env.VAPI_API_KEY?.trim()) &&
@@ -50,6 +54,9 @@ const hasVapi =
 const hasConversationalVoice =
   hasVapi || Boolean(process.env.OPERATOR_VOICE_AGENT_URL?.trim());
 
+if (!hasPlanner) {
+  failures.push("Connect OPENAI_API_KEY or OPERATOR_PLANNER_URL before selling arbitrary-task planning.");
+}
 if (!hasActionRunner) {
   failures.push("Connect OPERATOR_ACTION_RUNNER_URL before selling browser/API execution.");
 }

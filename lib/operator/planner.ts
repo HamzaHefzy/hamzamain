@@ -57,6 +57,15 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
   const explicitPayment = includesAny(text, [
     "pay", "charge my", "use my card",
   ]);
+  const needsWebResearch = includesAny(text, [
+    "search the web", "search online", "look up", "research", "latest",
+    "today", "recent", "compare", "reviews", "what are the best",
+    "find information", "find out", "news",
+  ]);
+  const freshness =
+    includesAny(text, ["today", "latest", "right now"]) ? "pd" :
+    includesAny(text, ["this week", "recent"]) ? "pw" :
+    undefined;
 
   const transactionIntent = isPurchase || isBookingIntent || explicitPayment;
   const isCalendar =
@@ -72,11 +81,16 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
 
   steps.push(step({
     kind: "research",
-    summary: "Understand the request, constraints, and best path to completion",
+    summary: needsWebResearch
+      ? "Search the live web for current information and sources"
+      : "Understand the request, constraints, and best path to completion",
     domain: category,
-    action: "research",
+    action: needsWebResearch ? "web_search" : "research",
     requiresApproval: false,
-    request: { userRequest: request },
+    provider: needsWebResearch ? "brave-search" : undefined,
+    request: needsWebResearch
+      ? { query: request, ...(freshness ? { freshness } : {}) }
+      : { userRequest: request },
   }));
 
   const needsAppointmentCall =
@@ -164,7 +178,7 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
     }));
   }
 
-  if (steps.length === 1) {
+  if (steps.length === 1 && !needsWebResearch) {
     steps.push(step({
       kind: "browser",
       summary: "Execute the task using the connected action runner",

@@ -10,6 +10,19 @@ export async function apiSession(permission: Permission = "view") {
     };
   }
 
+  if (permission !== "view" && !session.emailVerified) {
+    return {
+      session: null,
+      response: NextResponse.json(
+        {
+          error: "Verify your email before Operator can execute tasks or change workspace settings.",
+          code: "email_verification_required",
+        },
+        { status: 403 },
+      ),
+    };
+  }
+
   if (!can(session.role, permission)) {
     return {
       session: null,

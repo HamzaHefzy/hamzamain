@@ -34,7 +34,7 @@ export async function updateOperatorProfileSettings(input: {
 }) {
   const sql = db();
   const current = await getOperatorProfile(input.orgId);
-  if (!current) throw new Error("Wafira profile not found.");
+  if (!current) throw new Error("Yumna profile not found.");
 
   const rawNotifications =
     current.preferences.notifications &&
@@ -66,7 +66,7 @@ export async function updateOperatorProfileSettings(input: {
     returning org_id, assistant_name, timezone, assistant_phone, owner_phone,
               assistant_email, home_base, preferences
   `;
-  if (!profile) throw new Error("Wafira profile not found.");
+  if (!profile) throw new Error("Yumna profile not found.");
   return profile;
 }
 

@@ -7,6 +7,7 @@ const schema = z.object({
   ownerPhone: z.string().trim().regex(/^\+[1-9]\d{7,14}$/).nullable().optional(),
   notifyEmail: z.boolean().optional(),
   notifySms: z.boolean().optional(),
+  homeBase: z.string().trim().max(240).nullable().optional(),
 });
 
 export async function GET() {
@@ -25,6 +26,7 @@ export async function PUT(request: Request) {
       ownerPhone: input.ownerPhone,
       notifyEmail: input.notifyEmail,
       notifySms: input.notifySms,
+      homeBase: input.homeBase,
     });
     return NextResponse.json({ profile });
   } catch (error) {

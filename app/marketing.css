@@ -12,7 +12,7 @@
   --line-strong: #cfd9e1;
 }
 
-.anchor-logo {
+.operator-logo {
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -20,13 +20,13 @@
   line-height: 1;
 }
 
-.anchor-logo-mark {
+.operator-logo-mark {
   width: 30px;
   height: 25px;
   flex: 0 0 auto;
 }
 
-.anchor-logo-word {
+.operator-logo-word {
   font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
   font-size: 23px;
   font-weight: 700;
@@ -231,7 +231,7 @@
   background: #fbfcfd;
 }
 
-.m-preview-sidebar .anchor-logo { transform: scale(.77); transform-origin: left center; color: #162232; }
+.m-preview-sidebar .operator-logo { transform: scale(.77); transform-origin: left center; color: #162232; }
 .m-preview-nav { margin-top: 24px; display: grid; gap: 4px; }
 .m-preview-nav span {
   display: block;
@@ -561,7 +561,7 @@
 
 .m-footer { background: #111c29; color: #dce4eb; }
 .m-footer-grid { min-height: 150px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 40px; align-items: center; }
-.m-footer .anchor-logo { color: #ffffff; }
+.m-footer .operator-logo { color: #ffffff; }
 .m-footer p { margin: 10px 0 0; color: #8295a6; font-size: 11px; }
 .m-footer nav { display: flex; gap: 24px; }
 .m-footer nav a { color: #a8b6c2; font-size: 11px; }
@@ -591,7 +591,7 @@
 @media (max-width: 820px) {
   .m-container { width: min(100% - 32px, 720px); }
   .m-nav-secondary { display: none; }
-  .m-header .anchor-logo-word { font-size: 21px; }
+  .m-header .operator-logo-word { font-size: 21px; }
   .m-hero-grid { min-height: 0; padding-top: 56px; padding-bottom: 48px; }
   .m-hero h1 { font-size: clamp(44px, 12vw, 64px); }
   .m-hero-copy > p { font-size: 17px; }

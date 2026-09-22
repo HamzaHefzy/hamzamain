@@ -1699,7 +1699,7 @@
 .y-integration-note { margin-top: 15px; color: #90939b; font-size: 10px; }
 .y-integration-three {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
+  grid-template-columns: repeat(4,minmax(0,1fr));
   gap: 10px;
 }
 .y-integration-three article {
@@ -1910,4 +1910,11 @@
   .y-public-actions { gap: 7px; }
   .yumna-logo-word { font-size: 19px; }
   .yumna-logo-mark { width: 31px; height: 31px; }
+}
+
+@media (max-width: 980px) {
+  .y-integration-three { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 620px) {
+  .y-integration-three { grid-template-columns: 1fr; }
 }

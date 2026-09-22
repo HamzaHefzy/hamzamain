@@ -45,18 +45,22 @@ jobs:
       - name: Production configuration contract
         env:
           AUTH_SECRET: ci-production-auth-secret-with-more-than-thirty-two-characters
-          NEXT_PUBLIC_SITE_URL: https://operator.example
+          NEXT_PUBLIC_SITE_URL: https://yumna.example
           OPERATOR_DEMO_MODE: "false"
           RESEND_API_KEY: re_ci_placeholder
-          RESEND_FROM_EMAIL: Operator <operator@example.invalid>
+          RESEND_FROM_EMAIL: Yumna <yumna@example.invalid>
           CRON_SECRET: ci-cron-secret-value
           STRIPE_SECRET_KEY: sk_test_placeholder
           STRIPE_WEBHOOK_SECRET: whsec_placeholder
           STRIPE_PRICE_ASSISTANT: price_assistant
           STRIPE_PRICE_OPERATOR: price_operator
           STRIPE_PRICE_CONCIERGE: price_concierge
-          OPERATOR_ACTION_RUNNER_URL: https://actions.operator.example
-          OPERATOR_VOICE_AGENT_URL: https://voice.operator.example
+          GOOGLE_MAPS_API_KEY: google_maps_ci_placeholder
+          PIPEDREAM_PROJECT_ID: pd_project_ci
+          PIPEDREAM_CLIENT_ID: pd_client_ci
+          PIPEDREAM_CLIENT_SECRET: pd_secret_ci
+          OPERATOR_ACTION_RUNNER_URL: https://actions.yumna.example
+          OPERATOR_VOICE_AGENT_URL: https://voice.yumna.example
         run: npm run check:production
       - name: Typecheck
         run: npm run typecheck
@@ -66,8 +70,8 @@ jobs:
         env:
           SEED_ADMIN_EMAIL: ci-admin@example.invalid
           SEED_ADMIN_PASSWORD: ci-only-password-value
-          SEED_ORG_NAME: Operator CI
-          SEED_ORG_SLUG: operator-ci
+          SEED_ORG_NAME: Yumna CI
+          SEED_ORG_SLUG: yumna-ci
         run: npm run db:seed
       - name: Test
         run: npm test

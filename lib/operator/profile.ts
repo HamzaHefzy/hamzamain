@@ -13,6 +13,9 @@ export type OperatorProfile = {
 
 export async function getOperatorProfile(orgId: string) {
   const sql = db();
+  const provisionedAssistantPhone = provisionedAssistantPhone === undefined
+    ? process.env.TWILIO_FROM_NUMBER ?? undefined
+    : input.assistantPhone;
   const [profile] = await sql<OperatorProfile[]>`
     select org_id, assistant_name, timezone, assistant_phone, owner_phone,
            assistant_email, home_base, preferences
@@ -33,8 +36,8 @@ export async function updateOperatorPhoneIdentity(input: {
     update operator_profiles
     set owner_phone = ${input.ownerPhone},
         assistant_phone = case
-          when ${input.assistantPhone === undefined}::boolean then assistant_phone
-          else ${input.assistantPhone ?? null}
+          when ${provisionedAssistantPhone === undefined}::boolean then assistant_phone
+          else ${provisionedAssistantPhone ?? null}
         end,
         updated_at = now()
     where org_id = ${input.orgId}

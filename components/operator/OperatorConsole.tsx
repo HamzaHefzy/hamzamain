@@ -105,7 +105,7 @@ export default function OperatorConsole({
         <div>
           <span className="operator-kicker">Delegate anything</span>
           <h2>What do you want off your plate?</h2>
-          <p>Give Wafira the outcome. It plans the work, asks only when your authority is needed, and keeps ownership until the task is finished.</p>
+          <p>Give Yumna the outcome. It plans the work, asks only when your authority is needed, and keeps ownership until the task is finished.</p>
           <div className="operator-suggestions" aria-label="Example tasks">
             {suggestions.map((suggestion) => (
               <button type="button" key={suggestion} onClick={() => setDraft(suggestion)}>
@@ -123,8 +123,8 @@ export default function OperatorConsole({
             maxLength={4000}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="Tell Wafira the outcome you want..."
-            aria-label="Task for Wafira"
+            placeholder="Tell Yumna the outcome you want..."
+            aria-label="Task for Yumna"
           />
           <div className="operator-command-row">
             <label>
@@ -176,7 +176,7 @@ export default function OperatorConsole({
 
       <section className="operator-section">
         <div className="operator-section-heading">
-          <div><span className="operator-kicker">Owned by Wafira</span><h2>Current work</h2></div>
+          <div><span className="operator-kicker">Owned by Yumna</span><h2>Current work</h2></div>
           <Link href="/assistant/activity">View activity</Link>
         </div>
         <div className="operator-task-list">

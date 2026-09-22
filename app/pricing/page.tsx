@@ -10,20 +10,35 @@ const plans = [
   {
     name: "Assistant",
     price: "$39",
-    detail: "For personal planning and lighter execution.",
-    items: ["Task planning and memory", "Reminders and follow-ups", "Calendar coordination", "Light connected actions"],
+    detail: "Digital personal operations for planning and connected app work.",
+    items: [
+      "100 tasks per month",
+      "5 active proactive routines",
+      "Browser/API, email, and calendar execution",
+      "Personal memory and audit history",
+    ],
   },
   {
     name: "Operator",
     price: "$99",
-    detail: "The core personal-operations product.",
-    items: ["Everything in Assistant", "Outbound calls and hold time", "Bookings and browser actions", "Authority wallet and audit trail"],
+    detail: "The core real-world personal operations product.",
+    items: [
+      "500 tasks per month",
+      "20 active proactive routines",
+      "Everything in Assistant",
+      "Outbound calls, bookings, and authorized payment steps",
+    ],
   },
   {
     name: "Concierge",
     price: "$249",
-    detail: "For complex workflows and higher task volume.",
-    items: ["Everything in Operator", "Human exception escalation", "Complex travel and coordination", "Priority operations queue"],
+    detail: "For complex workflows that sometimes need a person to finish.",
+    items: [
+      "2,000 tasks per month",
+      "100 active proactive routines",
+      "Everything in Operator",
+      "Human exception escalation and priority operations",
+    ],
   },
 ];
 
@@ -32,13 +47,17 @@ export default function PricingPage() {
     <div className="operator-marketing">
       <header className="operator-public-nav">
         <Link href="/" aria-label="Operator home"><Logo /></Link>
-        <nav><Link href="/">Product</Link><Link href="/login">Sign in</Link><Link href="/signup" className="operator-nav-cta">Start delegating</Link></nav>
+        <nav>
+          <Link href="/">Product</Link>
+          <Link href="/login">Sign in</Link>
+          <Link href="/signup" className="operator-nav-cta">Start delegating</Link>
+        </nav>
       </header>
       <main className="operator-public-pricing">
         <header>
-          <span className="operator-kicker">Simple subscription pricing</span>
+          <span className="operator-kicker">Subscription pricing</span>
           <h1>Pay Operator to work for you.</h1>
-          <p>The subscription is the alignment model. Operator is designed to serve the user rather than optimize for advertisements or merchant placement.</p>
+          <p>The subscription is the alignment model. Plans control actual execution capacity and capabilities—not just which buttons appear in the interface.</p>
         </header>
         <section className="operator-pricing-grid">
           {plans.map((plan) => (

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { acceptSafeOperatorCallback, callbackIdFromRaw } from "@/lib/operator/callbacks";
+import { verifyOperatorStepCallbackToken } from "@/lib/operator/callback-auth";
 
 const schema = z.object({
   eventId: z.string().min(1).max(200).optional(),
@@ -11,20 +12,28 @@ const schema = z.object({
   data: z.record(z.unknown()).optional(),
 });
 
-function authorized(request: Request) {
-  const expected = process.env.OPERATOR_WEBHOOK_SECRET;
-  if (!expected) return false;
-  return request.headers.get("authorization") === "Bearer " + expected;
+function bearerToken(request: Request) {
+  const header = request.headers.get("authorization") ?? "";
+  return header.startsWith("Bearer ") ? header.slice(7).trim() : "";
 }
 
 export async function POST(request: Request) {
-  if (!authorized(request)) {
-    return NextResponse.json({ error: "Invalid callback credentials." }, { status: 401 });
-  }
-
   try {
     const raw = await request.text();
     const input = schema.parse(JSON.parse(raw));
+    const token = bearerToken(request);
+    const authorized =
+      Boolean(token) &&
+      await verifyOperatorStepCallbackToken({
+        taskId: input.taskId,
+        stepId: input.stepId,
+        token,
+      });
+
+    if (!authorized) {
+      return NextResponse.json({ error: "Invalid or expired callback credentials." }, { status: 401 });
+    }
+
     const callbackId = callbackIdFromRaw(
       raw,
       request.headers.get("x-operator-event-id") ?? input.eventId ?? null,

@@ -21,7 +21,7 @@ const planSchema = z.object({
   assumptions: z.array(z.string().max(500)).max(20),
 });
 
-export async function planOperatorTaskWithProvider(request: string): Promise<TaskPlan> {
+export async function planOperatorTaskWithProvider(request: string, context?: Record<string, unknown>): Promise<TaskPlan> {
   const url = process.env.OPERATOR_PLANNER_URL;
   if (!url) return planOperatorTask(request);
 
@@ -36,6 +36,7 @@ export async function planOperatorTaskWithProvider(request: string): Promise<Tas
       },
       body: JSON.stringify({
         request,
+        context: context ?? {},
         contract: {
           goal: "Create the smallest safe sequence of auditable actions that fully owns this user request.",
           approvalRule: "Consequential communications, account changes, sensitive actions, and spending require explicit approval unless a stored authority rule covers them.",

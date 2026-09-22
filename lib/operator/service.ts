@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { toJson } from "@/lib/json";
 import { planOperatorTaskWithProvider } from "@/lib/operator/planner-provider";
 import { executeOperatorStep } from "@/lib/operator/executors";
+import { plannerContext } from "@/lib/operator/context";
 
 type TaskRow = {
   id: string;
@@ -83,7 +84,8 @@ export async function createOperatorTask(input: {
   budgetLimit?: number | null;
   source?: "web" | "sms" | "email" | "voice" | "automation" | "api";
 }) {
-  const plan = await planOperatorTaskWithProvider(input.request);
+  const context = await plannerContext(input.orgId);
+  const plan = await planOperatorTaskWithProvider(input.request, context);
   const sql = db();
 
   const [task] = await sql<TaskRow[]>`

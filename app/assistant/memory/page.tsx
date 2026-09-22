@@ -13,7 +13,7 @@ export default async function MemoryPage() {
       <header className="operator-page-header">
         <div>
           <span className="operator-kicker">Personal context</span>
-          <h1>Teach Wafira how your life works.</h1>
+          <h1>Teach Yumna how your life works.</h1>
           <p>Store durable preferences and constraints once instead of repeating them in every request. Privacy levels control what can leave the core application for planning.</p>
         </div>
       </header>
@@ -34,7 +34,7 @@ export default async function MemoryPage() {
               </div>
               <DeleteMemoryButton id={memory.id} />
             </article>
-          )) : <div className="operator-empty"><strong>Wafira has no saved preferences yet.</strong><span>Add the things you never want to repeat.</span></div>}
+          )) : <div className="operator-empty"><strong>Yumna has no saved preferences yet.</strong><span>Add the things you never want to repeat.</span></div>}
         </div>
       </section>
     </div>

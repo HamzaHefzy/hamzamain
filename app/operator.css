@@ -1758,3 +1758,176 @@ button.ghost:hover,
   border-color: #c9c5f4;
   color: #39319d;
 }
+
+
+/* Material-inspired application refinement */
+.operator-page {
+  width: min(1120px, 100%);
+  padding: 34px 0 72px;
+}
+.operator-page-header,
+.operator-task-header {
+  margin-bottom: 22px;
+}
+.operator-page-header h1,
+.operator-task-header h1 {
+  max-width: 760px;
+  font-size: clamp(28px,3.4vw,44px);
+  line-height: 1.08;
+  letter-spacing: -.035em;
+}
+.operator-page-header p,
+.operator-task-header p {
+  max-width: 700px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.operator-kicker {
+  letter-spacing: .08em;
+  font-size: 10px;
+  color: #70757a;
+}
+
+.operator-command,
+.operator-section {
+  border-color: #dde2e8;
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(31,35,40,.035);
+}
+.operator-command {
+  gap: 30px;
+  padding: 26px;
+}
+.operator-command h2,
+.operator-section h2 {
+  font-size: 22px;
+  line-height: 1.2;
+}
+.operator-command textarea {
+  min-height: 142px;
+  border-color: #cfd5dd;
+  background: #fbfcfe;
+  font-size: 14px;
+}
+.operator-command-row > button,
+.operator-approval-actions button,
+.operator-authority-form button,
+.operator-memory-form button,
+.operator-routine-form button,
+.operator-contact-form button,
+.operator-phone-form button {
+  border-radius: 999px !important;
+  box-shadow: none !important;
+}
+.operator-command-row > button {
+  min-height: 44px;
+  background: var(--wf-primary);
+}
+.operator-command-row > button:hover { background: var(--wf-primary-hover); }
+
+.operator-suggestions button {
+  border-color: #dde2e8;
+  background: #fff;
+  color: #4b5157;
+}
+.operator-suggestions button:hover {
+  border-color: #cfcbea;
+  background: var(--wf-primary-soft);
+  color: #352d9f;
+}
+
+.operator-metrics {
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+.operator-metrics article {
+  min-height: 112px;
+  border: 1px solid #dde2e8 !important;
+  border-radius: 16px;
+  background: white;
+  padding: 18px;
+}
+.operator-metrics strong { font-size: 29px; }
+
+.operator-section { overflow: hidden; }
+.operator-section-heading {
+  min-height: 68px;
+  padding: 17px 20px !important;
+  border-bottom: 1px solid #e7eaee;
+}
+.operator-task,
+.operator-approval {
+  transition: background .12s ease, transform .12s ease;
+}
+.operator-task:hover { background: #f8fafd; }
+.operator-task:active { transform: scale(.998); }
+.operator-task-state > span,
+.operator-status-pill {
+  text-transform: capitalize;
+}
+
+.operator-empty {
+  min-height: 150px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+  gap: 6px;
+  color: #70757a;
+}
+.operator-empty strong { color: #3c4043; }
+
+.operator-connection-grid article,
+.operator-pricing-grid article,
+.operator-memory-list article,
+.operator-routine-list article,
+.operator-contact-list article,
+.operator-place-results article {
+  border-color: #dde2e8;
+  box-shadow: 0 1px 2px rgba(31,35,40,.025);
+}
+.operator-connection-grid article:hover,
+.operator-place-results article:hover {
+  border-color: #cfd5dd;
+  box-shadow: 0 3px 10px rgba(31,35,40,.06);
+}
+
+input, select, textarea {
+  accent-color: var(--wf-primary);
+}
+.operator-command input,
+.operator-command select,
+.operator-authority-form input,
+.operator-authority-form select,
+.operator-memory-form input,
+.operator-memory-form select,
+.operator-routine-form input,
+.operator-routine-form select,
+.operator-contact-form input,
+.operator-phone-form input {
+  border-color: #cfd5dd;
+}
+.operator-error {
+  border: 1px solid #f1c9c5;
+  border-radius: 10px;
+  background: #fff4f3;
+  color: #9b2c25;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .operator-page { padding-top: 24px; }
+  .operator-command { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .operator-page-header,
+  .operator-task-header {
+    gap: 16px;
+    flex-direction: column;
+  }
+  .operator-command { padding: 18px; }
+  .operator-metrics { grid-template-columns: 1fr 1fr; }
+}

@@ -24,9 +24,9 @@ For real-world execution, connect the capabilities you plan to sell:
 
 - Google Maps Platform with Places API (New) enabled for local discovery and phone resolution.
 - Pipedream Connect for managed app authentication and connected-app actions.
-
-- Browser/API worker through `OPERATOR_ACTION_RUNNER_URL`.
-- Conversational voice service through `OPERATOR_VOICE_AGENT_URL`, or Twilio for the basic phone fallback.
+- Brave Search through `BRAVE_SEARCH_API_KEY` for live web research and sources.
+- Browser/API worker through `OPERATOR_ACTION_RUNNER_URL` for web workflows without a direct API path.
+- Vapi through `VAPI_API_KEY`, `VAPI_ASSISTANT_ID`, `VAPI_PHONE_NUMBER_ID`, and `VAPI_WEBHOOK_SECRET`, or another conversational provider through `OPERATOR_VOICE_AGENT_URL`. Twilio alone is only the basic telephony fallback.
 - Human exception queue for Concierge through `OPERATOR_HUMAN_QUEUE_URL`.
 
 Each asynchronous executor receives a per-step callback credential. It must return completion or failure to the callback URL supplied with that step and should send a stable `x-operator-event-id` for retry deduplication.

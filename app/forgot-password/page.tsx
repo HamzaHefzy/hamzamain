@@ -12,7 +12,7 @@ export default function ForgotPasswordPage() {
       <main className="auth-card">
         <div className="m-kicker">Account recovery</div>
         <h1>Reset your password</h1>
-        <p>Enter your email. If it belongs to an active Wafira account, we&apos;ll send a one-hour reset link.</p>
+        <p>Enter your email. If it belongs to an active Yumna account, we&apos;ll send a one-hour reset link.</p>
         <ForgotPasswordForm />
       </main>
     </div>

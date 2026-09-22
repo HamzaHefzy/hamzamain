@@ -18,11 +18,12 @@ The codebase is intentionally a **modular monolith**, not a monorepo. The core a
 - Approval queue and default-deny authority wallet
 - Spend-cap enforcement for delegated purchasing authority
 - First-party Google Places search and business-phone resolution
+- Brave-backed live web research with source results attached to tasks
 - Private contact directory resolved only at execution time
 - Pipedream Connect gateway for managed app authentication and long-tail app actions
 - Connected-app tool discovery so the planner can select exact actions without receiving credentials
 - Browser/API execution contract
-- Conversational voice-agent contract plus Twilio fallback
+- Built-in Vapi conversational outbound calling with transcript callbacks, plus provider-neutral voice contract and Twilio fallback
 - Signed inbound Twilio SMS and voice task intake
 - Resend email execution
 - Deduplicated email/SMS alerts for approvals, completion, and failures
@@ -67,8 +68,10 @@ Production capability is activated with credentials rather than product rewrites
 - `GOOGLE_MAPS_API_KEY`: Places API (New) for canonical business search, addresses, ratings, websites, Maps links, and phone numbers.
 - `PIPEDREAM_PROJECT_ID`, `PIPEDREAM_CLIENT_ID`, `PIPEDREAM_CLIENT_SECRET`: managed per-workspace OAuth and actions across thousands of applications.
 - `OPERATOR_PLANNER_URL`: optional reasoning planner. Yumna keeps the deterministic safe planner as fallback.
+- `BRAVE_SEARCH_API_KEY`: live web research and current source retrieval.
 - `OPERATOR_ACTION_RUNNER_URL`: browser/API worker for web workflows that do not have a direct app/API path.
-- `OPERATOR_VOICE_AGENT_URL`: conversational outbound voice provider. Twilio credentials provide a basic fallback.
+- `VAPI_API_KEY`, `VAPI_ASSISTANT_ID`, `VAPI_PHONE_NUMBER_ID`, `VAPI_WEBHOOK_SECRET`: preferred conversational outbound calls and end-of-call transcript reports. The saved Vapi assistant should reference the `{{objective}}` variable in its system prompt.
+- `OPERATOR_VOICE_AGENT_URL`: optional alternate conversational voice provider. Twilio remains the basic fallback.
 - `TWILIO_FROM_NUMBER` + `/api/operator/inbound/sms`: inbound text-to-Yumna.
 - `/api/operator/inbound/voice`: disclosed automated call intake.
 - `RESEND_API_KEY` / `RESEND_FROM_EMAIL`: transactional email and verification delivery.

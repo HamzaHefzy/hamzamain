@@ -34,4 +34,12 @@ describe("Operator planner", () => {
     expect(plan.steps.some((step) => step.provider === "google-places")).toBe(true);
     expect(plan.steps.some((step) => step.kind === "voice")).toBe(false);
   });
+
+  it("routes current web research through live search instead of browser automation", () => {
+    const plan = planOperatorTask("Search the web for the latest carry-on baggage rules this week");
+    const research = plan.steps.find((step) => step.kind === "research");
+    expect(research?.provider).toBe("brave-search");
+    expect(research?.request?.freshness).toBe("pw");
+    expect(plan.steps.some((step) => step.kind === "browser")).toBe(false);
+  });
 });

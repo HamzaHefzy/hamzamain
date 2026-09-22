@@ -26,7 +26,7 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
   const isPurchase = includesAny(text, ["buy", "purchase", "order", "book", "reserve"]);
   const isCancel = includesAny(text, ["cancel", "subscription", "refund", "return"]);
   const isCall = includesAny(text, ["call", "phone", "hold", "speak to", "ask them"]);
-  const isCalendar = includesAny(text, ["calendar", "schedule", "reschedule", "appointment", "reservation", "meeting"]);
+  const isCalendar = isRestaurant || isAppointment || isTravel || includesAny(text, ["calendar", "schedule", "reschedule", "reservation", "meeting"]);
   const isEmail = includesAny(text, ["email", "send", "reply", "message"]);
   const involvesSpend = isPurchase || isRestaurant || isTravel || includesAny(text, ["pay", "quote", "price", "$"]);
 

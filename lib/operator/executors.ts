@@ -274,6 +274,7 @@ async function callWithVoiceProvider(input: ExecuteInput): Promise<ExecutionResu
           typeof input.request.contactName === "string"
             ? input.request.contactName
             : null,
+        callbackToken: input.callbackToken ?? "",
       });
       return {
         state: "waiting_external",
@@ -322,6 +323,9 @@ async function callWithVoiceProvider(input: ExecuteInput): Promise<ExecutionResu
   const statusCallback = new URL(siteUrl() + "/api/operator/voice/status");
   statusCallback.searchParams.set("taskId", input.taskId);
   statusCallback.searchParams.set("stepId", input.stepId);
+  if (input.callbackToken) {
+    statusCallback.searchParams.set("callbackToken", input.callbackToken);
+  }
 
   const body = new URLSearchParams({
     To: to,

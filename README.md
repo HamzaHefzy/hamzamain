@@ -6,7 +6,8 @@ The codebase is intentionally a **modular monolith**, not a monorepo. The core a
 
 ## What is implemented
 
-- Google-grade responsive application shell and public product experience
+- Google-grade responsive application shell plus real Product, Demo, Use Cases, Integrations, Pricing, Security, and Privacy pages
+- Interactive phone demo with live task progression, approval gating, replay, and multiple scenarios
 - Self-service signup, login, password recovery, and production email verification
 - PostgreSQL-backed multi-tenant workspaces and signed sessions
 - Natural-language task delegation with a deterministic safe planner and optional reasoning planner

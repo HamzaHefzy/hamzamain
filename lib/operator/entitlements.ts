@@ -88,7 +88,7 @@ function assertExecutionEnabled(
 ) {
   if (entitlement.executionEnabled) return;
   throw new Error(
-    "Operator execution is paused because this workspace subscription is " +
+    "Wafira execution is paused because this workspace subscription is " +
     entitlement.status +
     ". Update billing to resume new tasks and routines.",
   );
@@ -114,7 +114,7 @@ export function assertPlanSupportsSteps(
   const blocked = steps.find((step) => !entitlement.allowedKinds.has(step.kind));
   if (!blocked) return;
 
-  const upgrade = blocked.kind === "human" ? "Concierge" : "Operator";
+  const upgrade = blocked.kind === "human" ? "Concierge" : "Wafira";
   throw new Error(
     blocked.kind +
     " execution is not included in the " +

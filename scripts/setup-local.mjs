@@ -28,9 +28,13 @@ function randomPassword() {
 }
 
 const existing = existsSync(envPath) ? parseEnv(readFileSync(envPath, "utf8")) : {};
+const previousGeneratedDbUrl = "postgres://operator:operator@localhost:5432/operator";
+const defaultDbUrl = "postgres://operator:operator@localhost:55432/operator";
 const values = {
   ...existing,
-  DATABASE_URL: existing.DATABASE_URL || "postgres://operator:operator@localhost:5432/operator",
+  DATABASE_URL: !existing.DATABASE_URL || existing.DATABASE_URL === previousGeneratedDbUrl
+    ? defaultDbUrl
+    : existing.DATABASE_URL,
   DATABASE_SSL: existing.DATABASE_SSL || "false",
   AUTH_SECRET: existing.AUTH_SECRET || randomBytes(48).toString("base64url"),
   NEXT_PUBLIC_SITE_URL: existing.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",

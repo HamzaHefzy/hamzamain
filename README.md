@@ -7,7 +7,7 @@ Operator is a production-shaped personal operations system: a user delegates an 
 - Public product site, pricing, sign-in, and self-service signup
 - PostgreSQL-backed multi-tenant workspaces and signed sessions
 - Command center for natural-language task delegation
-- Deterministic task planner with explicit execution steps
+- Pluggable reasoning planner with deterministic safe fallback and explicit execution steps
 - Durable task/step state machine that survives external waits
 - Approval queue and default-deny authority wallet
 - Spend-cap enforcement for delegated purchasing authority
@@ -49,6 +49,7 @@ GitHub Actions also provisions PostgreSQL, applies every migration, seeds the da
 
 The application code is intentionally provider-neutral. Production deployment needs credentials/endpoints rather than another product rewrite:
 
+- `OPERATOR_PLANNER_URL`: optional reasoning/planning service for arbitrary requests; the safe local planner remains the fallback.
 - `OPERATOR_ACTION_RUNNER_URL`: browser/API worker that accepts a step and calls `/api/operator/callback` when asynchronous work finishes.
 - `OPERATOR_VOICE_AGENT_URL`: conversational outbound voice service. The existing Twilio variables provide a simpler fallback.
 - `OPERATOR_HUMAN_QUEUE_URL`: human exception/escalation service.

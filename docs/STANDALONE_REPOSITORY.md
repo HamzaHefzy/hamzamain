@@ -1,8 +1,8 @@
 # Standalone repository publication
 
-Yumna is developed on the isolated `operator/standalone-staging` branch only because the connected GitHub capability cannot create a new repository directly. Anchor's `main` branch remains restored to its pre-Yumna state.
+Yumna is developed on the isolated `operator/standalone-staging` branch only because the connected GitHub capability cannot create a new repository directly. The legacy application's `main` branch remains unchanged by Yumna development.
 
-The publication process copies the validated tree into a brand-new Git history, so unrelated Anchor history never follows Yumna.
+The publication process copies the validated tree into a brand-new Git history, so unrelated legacy history never follows Yumna.
 
 ## Publish with a clean root commit
 

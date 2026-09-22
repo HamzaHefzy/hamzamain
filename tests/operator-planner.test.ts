@@ -19,4 +19,13 @@ describe("Operator planner", () => {
   it("rejects empty requests", () => {
     expect(() => planOperatorTask("  ")).toThrow();
   });
+
+  it("keeps restaurant discovery non-transactional until the user asks to book", () => {
+    const plan = planOperatorTask("Find three restaurants near downtown");
+    expect(plan.category).toBe("dining");
+    expect(plan.steps.some((step) => step.kind === "browser")).toBe(true);
+    expect(plan.steps.some((step) => step.kind === "payment")).toBe(false);
+    expect(plan.steps.some((step) => step.kind === "calendar")).toBe(false);
+  });
+
 });

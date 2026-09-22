@@ -4,6 +4,7 @@ import "./globals.css";
 import "./marketing.css";
 import "./forms.css";
 import "./operator.css";
+import "./polish.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 

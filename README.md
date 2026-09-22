@@ -17,6 +17,9 @@ Operator is a production-shaped personal operations system: a user delegates an 
 - Human-operator exception queue contract
 - Signed asynchronous provider callbacks and automatic task resume
 - Task-level audit/activity history
+- Personal memory with normal/private/restricted privacy tiers
+- Daily and weekly proactive routines that create normal governed tasks
+- Signed inbound Twilio SMS that turns a text into an Operator task
 - Connection-health UI
 - Stripe Checkout subscriptions and signed webhook processing
 - Docker/local bootstrap and PostgreSQL-backed GitHub CI
@@ -51,6 +54,7 @@ The application code is intentionally provider-neutral. Production deployment ne
 
 - `OPERATOR_PLANNER_URL`: optional reasoning/planning service for arbitrary requests; the safe local planner remains the fallback.
 - `OPERATOR_ACTION_RUNNER_URL`: browser/API worker that accepts a step and calls `/api/operator/callback` when asynchronous work finishes.
+- `TWILIO_FROM_NUMBER` + `/api/operator/inbound/sms`: optional inbound text-to-Operator channel. Link the owner's E.164 phone number in Connections and configure Twilio's webhook to this route.
 - `OPERATOR_VOICE_AGENT_URL`: conversational outbound voice service. The existing Twilio variables provide a simpler fallback.
 - `OPERATOR_HUMAN_QUEUE_URL`: human exception/escalation service.
 - `OPERATOR_WEBHOOK_SECRET`: bearer token required by external executor callbacks.
@@ -67,6 +71,6 @@ Every material state transition is persisted. The user can see what Operator att
 
 ## Deployment
 
-The repository includes a Dockerfile and can run anywhere that provides Node.js plus PostgreSQL. Set `NEXT_PUBLIC_SITE_URL` to the deployed HTTPS origin and keep all secrets server-side. Stripe should post to `/api/billing/webhook`; external action/voice/human workers should post signed completion events to `/api/operator/callback`.
+The repository includes a Dockerfile and can run anywhere that provides Node.js plus PostgreSQL. Set `NEXT_PUBLIC_SITE_URL` to the deployed HTTPS origin and keep all secrets server-side. Stripe should post to `/api/billing/webhook`; external action/voice/human workers should post signed completion events to `/api/operator/callback`; a scheduler should invoke `/api/jobs/operator-routines` with `Authorization: Bearer $CRON_SECRET` at least once per hour.
 
 "Operator" is currently a working product name and should receive trademark/domain diligence before commercial launch.

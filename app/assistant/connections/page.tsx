@@ -81,7 +81,7 @@ export default async function ConnectionsPage() {
       <header className="operator-page-header">
         <div>
           <span className="operator-kicker">Connections</span>
-          <h1>The outside world, connected.</h1>
+          <h1>Your world, connected.</h1>
           <p>Provider contracts are isolated from the core task engine. Credentials turn capabilities live without changing the product architecture.</p>
         </div>
       </header>

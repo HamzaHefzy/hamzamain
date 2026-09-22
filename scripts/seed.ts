@@ -12,7 +12,7 @@ async function main() {
     throw new Error("SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD (12+ chars) are required.");
   }
 
-  const orgName = process.env.SEED_ORG_NAME ?? "Wafira Demo";
+  const orgName = process.env.SEED_ORG_NAME ?? "Yumna Demo";
   const orgSlug = process.env.SEED_ORG_SLUG ?? "operator-demo";
   const sql = postgres(url, { max: 1, prepare: false });
   const passwordHash = await bcrypt.hash(password, 12);
@@ -27,7 +27,7 @@ async function main() {
 
     const [user] = await tx<{ id: string }[]>`
       insert into users (email, name, password_hash, email_verified_at)
-      values (${email.toLowerCase()}, 'Wafira Owner', ${passwordHash}, now())
+      values (${email.toLowerCase()}, 'Yumna Owner', ${passwordHash}, now())
       on conflict (email) do update
         set password_hash = excluded.password_hash,
             name = excluded.name,
@@ -45,7 +45,7 @@ async function main() {
 
     await tx`
       insert into operator_profiles (org_id, assistant_name, timezone)
-      values (${org.id}, 'Wafira', 'America/New_York')
+      values (${org.id}, 'Yumna', 'America/New_York')
       on conflict (org_id) do nothing
     `;
 

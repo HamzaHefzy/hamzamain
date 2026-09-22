@@ -1,42 +1,32 @@
-import Link from "next/link";
-import Logo from "@/components/Logo";
+import PublicNav from "@/components/marketing/PublicNav";
+import PublicFooter from "@/components/marketing/PublicFooter";
 
 export const metadata = {
   title: "Security",
-  description: "Anchor security and student-data design principles.",
+  description: "Yumna security architecture and trust controls.",
 };
 
 export default function SecurityPage() {
   return (
-    <div className="marketing-site trust-site">
-      <header className="m-header">
-        <div className="m-container m-nav-wrap">
-          <Link href="/" className="m-brand"><Logo /></Link>
-          <nav className="m-nav"><Link href="/pricing">Pricing</Link><Link href="/privacy">Privacy</Link></nav>
-          <div className="m-nav-actions"><Link href="/login" className="m-nav-secondary">Sign in</Link><Link href="/request-demo" className="m-button dark compact">Request demo</Link></div>
-        </div>
-      </header>
-
-      <main className="m-container trust-main">
-        <div className="m-section-heading centered trust-heading">
-          <div className="m-kicker">Security by operating design</div>
-          <h1>Student support data deserves a narrow blast radius.</h1>
-          <p>Anchor is built around organization isolation, least-privilege access, auditability, and explicit evidence rather than surveillance.</p>
-        </div>
-
-        <div className="trust-grid">
-          <article><h2>Organization isolation</h2><p>Customer records are scoped by organization across users, students, campuses, attendance, cases, imports, integrations, and audit events.</p></article>
-          <article><h2>Role-based access</h2><p>Owner, admin, attendance, finance, support, and viewer roles separate operational responsibilities. Membership revocation applies to one organization rather than globally disabling a multi-organization user.</p></article>
-          <article><h2>Credential protection</h2><p>Integration secrets are encrypted before database storage. Authentication sessions use signed HTTP-only cookies, and passwords are stored as bcrypt hashes.</p></article>
-          <article><h2>Auditability</h2><p>Administrative and operational mutations are written to an organization-scoped audit ledger. Student exports are audited, and source IPs are stored only as salted hashes.</p></article>
-          <article><h2>Safer virtual attendance</h2><p>Anchor relies on approved instructional evidence, not webcam monitoring, keystroke logging, facial recognition, GPS tracking, or continuous device surveillance.</p></article>
-          <article><h2>Deployment boundary</h2><p>Production customers still require an approved DPA/privacy review, retention terms, authorized SIS/LMS credentials, HTTPS, encrypted database backups, and customer-approved messaging configuration.</p></article>
-        </div>
-
-        <section className="pricing-note">
-          Security documentation in the repository describes the implementation baseline. Contractual compliance representations must match the customer deployment and completed review; Anchor does not claim certifications that have not been obtained.
+    <div className="y-public-site">
+      <PublicNav />
+      <main className="y-content-page">
+        <section className="y-page-hero centered">
+          <span className="y-eyebrow">Security</span>
+          <h1>Useful autonomy needs a small blast radius.</h1>
+          <p>Yumna separates identity, authority, execution, and audit so completing more work does not require silently handing over unlimited permission.</p>
         </section>
+        <section className="trust-grid y-trust-grid">
+          <article><h2>Workspace isolation</h2><p>Tasks, steps, approvals, authority rules, memories, contacts, connections, events, and subscriptions are workspace scoped.</p></article>
+          <article><h2>Scoped callback credentials</h2><p>External execution steps receive one opaque callback token, hashed at rest and revoked as soon as the step reaches a terminal state.</p></article>
+          <article><h2>Default-deny authority</h2><p>Spending and consequential commitments pause when authorization is missing. Stored rules can grant only the narrow authority you choose.</p></article>
+          <article><h2>Private contact resolution</h2><p>Your address book stays in the core application. The planner receives the resolved destination only when execution requires it.</p></article>
+          <article><h2>Server-side secrets</h2><p>Provider credentials stay server-side. Managed app authentication is injected during execution rather than exposed to browser or planning prompts.</p></article>
+          <article><h2>Continuous verification</h2><p>CI audits dependencies, source boundaries, strict TypeScript, fresh PostgreSQL migrations, integration tests, and the production build.</p></article>
+        </section>
+        <div className="y-legal-note">This architecture is not a security certification. A commercial launch still requires production secret management, HTTPS, backups, monitoring, vendor review, incident response, and independent security testing.</div>
       </main>
+      <PublicFooter />
     </div>
   );
 }

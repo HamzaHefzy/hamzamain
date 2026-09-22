@@ -39,19 +39,17 @@ export default function LoginForm() {
       if (!response.ok) {
         setError(
           payload.code === "database_unavailable"
-            ? "This Anchor workspace has not been connected to its database yet. If you are running Anchor locally, run npm run setup:local in the project terminal, then refresh this page."
+            ? "This Operator workspace has not been connected to its database yet. For local development, run npm run setup:local and refresh."
             : payload.error ?? "Unable to sign in.",
         );
         return;
       }
 
       const next = search.get("next");
-      router.push(next && next.startsWith("/") ? next : "/dashboard");
+      router.push(next && next.startsWith("/") ? next : "/assistant");
       router.refresh();
     } catch {
-      setError(
-        "The sign-in service could not be reached. Confirm the Anchor server is running, then try again.",
-      );
+      setError("The sign-in service could not be reached. Confirm the Operator server is running and try again.");
     } finally {
       setBusy(false);
     }
@@ -60,7 +58,7 @@ export default function LoginForm() {
   return (
     <form className="auth-form" onSubmit={submit}>
       <label>
-        <span>Work email</span>
+        <span>Email</span>
         <input name="email" type="email" autoComplete="email" required />
       </label>
       <label>
@@ -68,7 +66,7 @@ export default function LoginForm() {
         <input name="password" type="password" autoComplete="current-password" required />
       </label>
       <label>
-        <span>Organization slug <small>Optional if your account belongs to one organization</small></span>
+        <span>Workspace slug <small>Optional if your account belongs to one workspace</small></span>
         <input name="organization" autoComplete="organization" />
       </label>
       {error ? <div className="form-error" role="alert">{error}</div> : null}

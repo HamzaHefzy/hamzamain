@@ -13,42 +13,51 @@ export default function Image() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#f8fafc",
-          color: "#111b26",
+          background:
+            "radial-gradient(circle at 82% 8%, rgba(91,76,227,.15), transparent 30%), #fbfbfd",
+          color: "#15161b",
           padding: 68,
           fontFamily: "Arial, sans-serif",
-          border: "1px solid #e2e8ee",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 30, fontWeight: 700 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 31, fontWeight: 700 }}>
           <div
             style={{
-              width: 44,
-              height: 38,
-              borderRadius: 14,
+              position: "relative",
+              width: 48,
+              height: 48,
+              borderRadius: 15,
+              background: "#5b4ce3",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              background: "#152232",
-              color: "#ffffff",
-              fontSize: 20,
             }}
           >
-            A
+            <div style={{ position: "absolute", left: 11, top: 10, width: 8, height: 8, borderRadius: 999, background: "#fff" }} />
+            <div style={{ position: "absolute", right: 9, top: 9, width: 10, height: 10, borderRadius: 999, background: "#70e2b1" }} />
+            <div style={{ position: "absolute", left: 20, bottom: 7, width: 8, height: 8, borderRadius: 999, background: "#fff" }} />
+            <div style={{ position: "absolute", left: 16, top: 16, width: 22, height: 5, borderRadius: 999, background: "#fff", transform: "rotate(-42deg)" }} />
+            <div style={{ position: "absolute", left: 11, top: 16, width: 20, height: 5, borderRadius: 999, background: "#fff", transform: "rotate(42deg)" }} />
+            <div style={{ position: "absolute", left: 22, top: 25, width: 5, height: 15, borderRadius: 999, background: "#fff" }} />
           </div>
-          Anchor
+          Yumna
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 22, maxWidth: 980 }}>
-          <div style={{ fontSize: 76, lineHeight: 1.02, letterSpacing: -3, fontWeight: 700 }}>
-            Attendance that actually gets solved.
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 980 }}>
+          <div style={{ fontSize: 76, lineHeight: 1.01, letterSpacing: -3.4, fontWeight: 700 }}>
+            Say what you need done. Yumna handles the rest.
           </div>
-          <div style={{ fontSize: 28, lineHeight: 1.4, color: "#566675", maxWidth: 930 }}>
-            Barrier resolution, virtual participation recovery, and clearer funding impact in one operating system for schools.
+          <div style={{ fontSize: 27, lineHeight: 1.4, color: "#6a6d76", maxWidth: 930 }}>
+            Find the place. Get the number. Make the call. Work across your apps. Finish the task.
           </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 19, color: "#1769aa", fontWeight: 700 }}>
-          <span>Detect → Resolve → Verify</span>
-          <span>Anchor</span>
+
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, color: "#5b4ce3", fontWeight: 700 }}>
+          <span>Maps → Apps → Voice → Follow-through</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 999, background: "#70e2b1" }} />
+            yumna
+          </span>
         </div>
       </div>
     ),

@@ -5,30 +5,27 @@ type LogoProps = {
 
 export default function Logo({ className = "", markOnly = false }: LogoProps) {
   return (
-    <span className={`anchor-logo ${className}`.trim()} aria-label="Anchor">
+    <span className={`yumna-logo ${className}`.trim()} aria-label="Yumna">
       <svg
-        className="anchor-logo-mark"
-        viewBox="0 0 48 40"
+        className="yumna-logo-mark"
+        viewBox="0 0 48 48"
         role="img"
         aria-hidden="true"
         fill="none"
       >
+        <rect x="2" y="2" width="44" height="44" rx="14" fill="#5B4CE3" />
         <path
-          d="M7.5 24.5 17.8 7.2c2.8-4.6 9.5-4.6 12.2 0l10.4 17.3"
-          stroke="currentColor"
-          strokeWidth="5.6"
+          d="M13.5 14.5 24 24.7l10.5-10.2M24 24.7V36"
+          stroke="white"
+          strokeWidth="5.2"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path
-          d="M7.5 24.5c4.2-6.2 10.4-6.7 15.5-1.5l4.7 4.7c4.4 4.4 9.1 3.4 12.7-3.2"
-          stroke="currentColor"
-          strokeWidth="5.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        <circle cx="13.5" cy="14.5" r="3.2" fill="white" />
+        <circle cx="34.5" cy="14.5" r="4.2" fill="#70E2B1" />
+        <circle cx="24" cy="36" r="3.2" fill="white" />
       </svg>
-      {!markOnly && <span className="anchor-logo-word">Anchor</span>}
+      {!markOnly && <span className="yumna-logo-word">Yumna</span>}
     </span>
   );
 }

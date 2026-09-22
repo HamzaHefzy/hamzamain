@@ -2,18 +2,18 @@ services:
   postgres:
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: anchor
-      POSTGRES_USER: anchor
-      POSTGRES_PASSWORD: anchor
+      POSTGRES_DB: operator
+      POSTGRES_USER: operator
+      POSTGRES_PASSWORD: operator
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
-      - anchor_postgres:/var/lib/postgresql/data
+      - operator_postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U anchor -d anchor"]
+      test: ["CMD-SHELL", "pg_isready -U operator -d operator"]
       interval: 5s
       timeout: 5s
       retries: 10
 
 volumes:
-  anchor_postgres:
+  operator_postgres:

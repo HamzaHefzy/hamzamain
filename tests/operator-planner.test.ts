@@ -1,0 +1,45 @@
+import { describe, expect, it } from "vitest";
+import { planOperatorTask } from "@/lib/operator/planner";
+
+describe("Operator planner", () => {
+  it("plans a dinner reservation with transaction controls", () => {
+    const plan = planOperatorTask("Book dinner for four Friday at 7 near downtown under $100 per person");
+    expect(plan.category).toBe("dining");
+    expect(plan.steps.some((step) => step.kind === "browser")).toBe(true);
+    expect(plan.steps.some((step) => step.kind === "payment" && step.requiresApproval)).toBe(true);
+    expect(plan.steps.some((step) => step.kind === "calendar")).toBe(true);
+  });
+
+  it("plans administrative phone work", () => {
+    const plan = planOperatorTask("Call my internet provider, wait on hold, and cancel the old plan");
+    expect(plan.category).toBe("administration");
+    expect(plan.steps.some((step) => step.kind === "voice")).toBe(true);
+  });
+
+  it("rejects empty requests", () => {
+    expect(() => planOperatorTask("  ")).toThrow();
+  });
+
+  it("keeps restaurant discovery non-transactional until the user asks to book", () => {
+    const plan = planOperatorTask("Find three restaurants near downtown");
+    expect(plan.category).toBe("dining");
+    expect(plan.steps.some((step) => step.kind === "api" && step.provider === "google-places")).toBe(true);
+    expect(plan.steps.some((step) => step.kind === "payment")).toBe(false);
+    expect(plan.steps.some((step) => step.kind === "calendar")).toBe(false);
+  });
+
+
+  it("uses Google Places for a phone-number lookup without accidentally placing a call", () => {
+    const plan = planOperatorTask("Find the phone number for Triangle Dental near me");
+    expect(plan.steps.some((step) => step.provider === "google-places")).toBe(true);
+    expect(plan.steps.some((step) => step.kind === "voice")).toBe(false);
+  });
+
+  it("routes current web research through live search instead of browser automation", () => {
+    const plan = planOperatorTask("Search the web for the latest carry-on baggage rules this week");
+    const research = plan.steps.find((step) => step.kind === "research");
+    expect(research?.provider).toBe("brave-search");
+    expect(research?.request?.freshness).toBe("pw");
+    expect(plan.steps.some((step) => step.kind === "browser")).toBe(false);
+  });
+});

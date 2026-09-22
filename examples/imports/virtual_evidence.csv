@@ -1,3 +1,0 @@
-student_external_id,date,evidence_type,occurred_at,source,source_ref,minutes
-S10002,2026-09-18,lms_progress,2026-09-18T09:12:00-05:00,canvas,LMS-20001,24
-S10002,2026-09-18,teacher_interaction,2026-09-18T11:05:00-05:00,teacher-log,TI-20001,10

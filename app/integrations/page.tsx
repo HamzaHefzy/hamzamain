@@ -1,66 +1,44 @@
-import IntegrationForm from "@/components/IntegrationForm";
-import IntegrationSyncButton from "@/components/IntegrationSyncButton";
-import { can, requireSession } from "@/lib/auth";
-import { db } from "@/lib/db";
+import Link from "next/link";
+import PublicNav from "@/components/marketing/PublicNav";
+import PublicFooter from "@/components/marketing/PublicFooter";
 
-export const dynamic = "force-dynamic";
+export const metadata = {
+  title: "Integrations",
+  description: "Google Maps, communications, and thousands of connected apps available to Yumna.",
+};
 
-export default async function IntegrationsPage() {
-  const session = await requireSession();
-  const allowed = can(session.role, "admin");
-  const sql = db();
-  const rows = allowed ? await sql<{
-    id: string;
-    provider: string;
-    name: string;
-    status: string;
-    public_config: Record<string, unknown>;
-    last_sync_at: Date | null;
-    last_error: string | null;
-  }[]>`
-    select id, provider, name, status, public_config, last_sync_at, last_error
-    from integrations
-    where org_id = ${session.orgId}
-    order by created_at desc
-  ` : [];
+const apps = ["Google Maps","Brave Search","Gmail","Google Calendar","Google Drive","Google Sheets","Google Docs","Slack","Notion","Outlook","OneDrive","Microsoft Teams","Dropbox","GitHub","Airtable","Todoist"];
 
+export default function IntegrationsPage() {
   return (
-    <div className="page-stack">
-      <header className="page-header">
-        <div className="page-header-copy">
-          <div className="eyebrow">Integrations</div>
-          <h1>Connect a real roster source without exposing credentials.</h1>
-          <p className="lede">
-            OneRoster is the enabled API connector. Its OAuth credentials are encrypted before storage. CSV remains the reliable fallback for roster, attendance, virtual evidence, and session participation.
-          </p>
-        </div>
-      </header>
-
-      {!allowed ? (
-        <section className="disclaimer">Administrator access is required to manage integrations.</section>
-      ) : (
-        <section className="two-column">
-          <article className="panel">
-            <div className="panel-heading"><div><div className="eyebrow">OneRoster</div><h2>Configure roster sync</h2></div></div>
-            <IntegrationForm />
-          </article>
-          <article className="panel">
-            <div className="panel-heading"><div><div className="eyebrow">Connections</div><h2>Configured sources</h2></div></div>
-            <div className="case-stack">
-              {rows.length ? rows.map((row) => (
-                <div className="case-card" key={row.id}>
-                  <div className="case-topline"><strong>{row.provider}</strong><span>{row.status}</span></div>
-                  <h3>{row.name}</h3>
-                  <p>{String(row.public_config?.baseUrl ?? "No public endpoint configured")}</p>
-                  <p>{row.last_sync_at ? "Last sync: " + row.last_sync_at.toLocaleString() : "Not synced yet"}</p>
-                  {row.provider === "oneroster" ? <IntegrationSyncButton id={row.id} provider={row.provider} /> : null}
-                  {row.last_error ? <small className="form-error">{row.last_error}</small> : null}
-                </div>
-              )) : <p className="muted-copy">No API integrations are configured yet. CSV imports remain available under Attendance.</p>}
-            </div>
-          </article>
+    <div className="y-public-site">
+      <PublicNav />
+      <main className="y-content-page">
+        <section className="y-page-hero">
+          <span className="y-eyebrow">Integrations</span>
+          <h1>Yumna should work where your life already happens.</h1>
+          <p>Critical real-world identity is first-party through Google Maps / Places. The long tail of app connections uses managed per-user authentication so the core product does not become a pile of brittle OAuth code.</p>
         </section>
-      )}
+
+        <section className="y-integration-feature">
+          <div><span className="y-eyebrow">Core connector</span><h2>Google Maps + Places</h2><p>Find real businesses, canonical addresses, ratings, websites, Maps links, and phone numbers before a call or booking. This is a first-class execution provider, not a decorative search box.</p><Link href="/demo" className="y-inline-cta">See it in the demo →</Link></div>
+          <div className="y-maps-card"><div className="y-map-grid"/><span className="y-map-pin one">1</span><span className="y-map-pin two">2</span><span className="y-map-pin three">3</span><div className="y-map-result"><strong>Triangle Dental</strong><span>4.8 ★ · 0.9 mi</span><small>Verified phone + website</small></div></div>
+        </section>
+
+        <section className="y-app-network">
+          <div className="y-section-heading"><span className="y-eyebrow">Managed app network</span><h2>Connect once. Use the app inside real workflows.</h2><p>Yumna exposes only the relevant connected tools to the planner and injects the managed account credential at execution time.</p></div>
+          <div className="y-app-grid">{apps.map((app,index) => <article key={app}><span>{app.slice(0,1)}</span><strong>{app}</strong><small>{index < 6 ? "Google" : index < 8 ? "Work" : "Connected app"}</small></article>)}</div>
+          <p className="y-integration-note">The current gateway is designed for thousands of APIs and tools. Exact availability depends on the connected provider and account permissions.</p>
+        </section>
+
+        <section className="y-integration-three">
+          <article><span>⌕</span><h3>Live web search</h3><p>Fresh web results and sources through Brave Search for research, reviews, comparisons, and current information.</p></article>
+          <article><span>☎</span><h3>Voice + SMS</h3><p>Vapi handles natural outbound conversations and returns transcripts; Twilio powers inbound identity and the basic telephony fallback.</p></article>
+          <article><span>✉</span><h3>Email</h3><p>Transactional delivery, notifications, and account verification without exposing provider secrets to the browser.</p></article>
+          <article><span>↗</span><h3>Browser / API runner</h3><p>A provider-neutral contract for sites and systems that do not expose the right API directly.</p></article>
+        </section>
+      </main>
+      <PublicFooter />
     </div>
   );
 }

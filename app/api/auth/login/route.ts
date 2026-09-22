@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db, hasDatabase } from "@/lib/db";
-import { SESSION_COOKIE, signSession, type AnchorRole } from "@/lib/auth";
+import { SESSION_COOKIE, signSession, type OperatorRole } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { rateLimit } from "@/lib/rate-limit";
 import { assertSameOrigin, hashIp, requestIp } from "@/lib/security";
@@ -16,7 +16,7 @@ const schema = z.object({
 export async function POST(request: Request) {
   if (!hasDatabase()) {
     return NextResponse.json(
-      { error: "This Anchor workspace is not connected to its database yet.", code: "database_unavailable" },
+      { error: "This Operator workspace is not connected to its database yet.", code: "database_unavailable" },
       { status: 503 },
     );
   }
@@ -37,12 +37,13 @@ export async function POST(request: Request) {
       email: string;
       name: string;
       password_hash: string;
-      role: AnchorRole;
+      role: OperatorRole;
       org_id: string;
       org_name: string;
       org_slug: string;
+      email_verified_at: string | null;
     }[]>`
-      select u.id as user_id, u.email, u.name, u.password_hash,
+      select u.id as user_id, u.email, u.name, u.password_hash, u.email_verified_at,
              m.role, o.id as org_id, o.name as org_name, o.slug as org_slug
       from users u
       join memberships m on m.user_id = u.id
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
       where lower(u.email) = lower(${input.email})
         and u.active = true
         and m.active = true
-        and o.status in ('active','trial')
+        and o.status in ('active','trial','past_due')
         and (${input.organization ?? null}::text is null or o.slug = ${input.organization ?? null})
       order by o.created_at
       limit 1
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
       role: row.role,
       orgName: row.org_name,
       orgSlug: row.org_slug,
+      emailVerified: Boolean(row.email_verified_at),
     });
 
     await sql`update users set last_login_at = now() where id = ${row.user_id}`;
@@ -83,7 +85,12 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({
       ok: true,
-      user: { name: row.name, email: row.email, role: row.role },
+      user: {
+        name: row.name,
+        email: row.email,
+        role: row.role,
+        emailVerified: Boolean(row.email_verified_at),
+      },
       organization: { name: row.org_name, slug: row.org_slug },
     });
 

@@ -28,7 +28,25 @@ export default function MarketingHome() {
             </div>
           </div>
           <div className="y-home-demo">
-            <LivePhoneDemo />
+            <div className="y-demo-stage">
+              <div className="y-stage-glow" aria-hidden />
+              <div className="y-floating-proof maps">
+                <span className="y-float-icon">M</span>
+                <div><small>Google Maps</small><strong>Phone verified</strong></div>
+                <em>4.8 ★</em>
+              </div>
+              <div className="y-floating-proof call">
+                <span className="y-float-icon">☎</span>
+                <div><small>Live call</small><strong>Tuesday · 3:30 PM</strong></div>
+                <em>02:14</em>
+              </div>
+              <div className="y-floating-proof app">
+                <span className="y-float-icon">▣</span>
+                <div><small>Calendar</small><strong>Ready after approval</strong></div>
+                <em>next</em>
+              </div>
+              <LivePhoneDemo />
+            </div>
           </div>
         </section>
 

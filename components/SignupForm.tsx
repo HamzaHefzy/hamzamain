@@ -41,10 +41,10 @@ export default function SignupForm() {
       <label><span>Your name</span><input name="name" autoComplete="name" required /></label>
       <label><span>Email</span><input name="email" type="email" autoComplete="email" required /></label>
       <label><span>Password <small>12+ characters</small></span><input name="password" type="password" minLength={12} autoComplete="new-password" required /></label>
-      <label><span>Workspace name <small>Optional</small></span><input name="workspaceName" placeholder="e.g. Hamza's Operator" /></label>
+      <label><span>Workspace name <small>Optional</small></span><input name="workspaceName" placeholder="e.g. Hamza's Wafira" /></label>
       {error ? <div className="form-error" role="alert">{error}</div> : null}
       <button className="m-button dark auth-submit" type="submit" disabled={busy}>
-        {busy ? "Creating workspace…" : "Create Operator workspace"}
+        {busy ? "Creating workspace…" : "Create Wafira workspace"}
       </button>
     </form>
   );

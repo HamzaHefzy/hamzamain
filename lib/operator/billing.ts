@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { db } from "@/lib/db";
+import { fetchWithTimeout } from "@/lib/http";
 
 export type BillingPlan = "assistant" | "operator" | "concierge";
 
@@ -44,7 +45,7 @@ export async function createCheckoutSession(input: {
   body.set("subscription_data[metadata][org_id]", input.orgId);
   body.set("subscription_data[metadata][plan]", input.plan);
 
-  const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+  const response = await fetchWithTimeout("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
     headers: {
       Authorization: "Bearer " + key,
@@ -189,7 +190,7 @@ export async function createBillingPortalSession(orgId: string) {
     return_url: base + "/assistant/billing",
   });
 
-  const response = await fetch("https://api.stripe.com/v1/billing_portal/sessions", {
+  const response = await fetchWithTimeout("https://api.stripe.com/v1/billing_portal/sessions", {
     method: "POST",
     headers: {
       Authorization: "Bearer " + key,

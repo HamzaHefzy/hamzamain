@@ -46,13 +46,13 @@ git archive "$SOURCE_BRANCH" | tar -x -C "$TMP_DIR"
 cd "$TMP_DIR"
 git init -b main >/dev/null
 git add .
-git commit -m "Initial Operator standalone release"
+git commit -m "Initial Yumna standalone release"
 
 echo "Creating $TARGET_REPO as a $VISIBILITY repository..."
 gh repo create "$TARGET_REPO" "--$VISIBILITY" --source=. --remote=origin --push
 
 echo
-echo "Standalone Operator repository created:"
+echo "Standalone Yumna repository created:"
 echo "  https://github.com/$TARGET_REPO"
 echo
 echo "Next:"

@@ -242,6 +242,22 @@ async function actionRunner(input: ExecuteInput): Promise<ExecutionResult> {
 }
 
 async function callWithVoiceProvider(input: ExecuteInput): Promise<ExecutionResult> {
+  const to = typeof input.request.to === "string" ? input.request.to : null;
+  const resolutionError =
+    typeof input.request.contactResolutionError === "string"
+      ? input.request.contactResolutionError
+      : null;
+
+  if (!to) {
+    return {
+      state: "waiting_external",
+      provider: "voice",
+      message:
+        resolutionError ??
+        "The call is planned but still needs a destination number from your private contacts, Google Maps, or a connected voice provider.",
+      data: { missingDestination: true, noDispatch: true },
+    };
+  }
 
   if (vapiConfigured()) {
     try {
@@ -287,20 +303,15 @@ async function callWithVoiceProvider(input: ExecuteInput): Promise<ExecutionResu
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
   const from = process.env.TWILIO_FROM_NUMBER;
-  const to = typeof input.request.to === "string" ? input.request.to : null;
-  const resolutionError =
-    typeof input.request.contactResolutionError === "string"
-      ? input.request.contactResolutionError
-      : null;
-  if (!sid || !token || !from || !to) {
+  if (!sid || !token || !from) {
     return {
       state: "waiting_external",
       provider: "voice",
-      message: !to
-        ? resolutionError ??
-          "The call is planned but still needs a destination number from your private contacts or connected voice provider."
-        : "Connect a voice provider or Twilio credentials to place outbound calls.",
-      data: { connector: "OPERATOR_VOICE_AGENT_URL", missingDestination: !to, noDispatch: true },
+      message: "Connect Vapi, another conversational voice provider, or Twilio to place outbound calls.",
+      data: {
+        connector: "VAPI_API_KEY or OPERATOR_VOICE_AGENT_URL or TWILIO_*",
+        noDispatch: true,
+      },
     };
   }
 

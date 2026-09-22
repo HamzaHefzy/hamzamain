@@ -295,3 +295,16 @@ CREATE TABLE operator_notification_events (
 );
 CREATE INDEX operator_notification_events_org_created_idx
   ON operator_notification_events(org_id, created_at DESC);
+
+
+CREATE TABLE operator_inbound_events (
+  provider text NOT NULL,
+  event_id text NOT NULL,
+  org_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  source text NOT NULL CHECK (source IN ('sms','voice','email','api')),
+  task_id uuid REFERENCES operator_tasks(id) ON DELETE SET NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (provider, event_id)
+);
+CREATE INDEX operator_inbound_events_org_created_idx
+  ON operator_inbound_events(org_id, created_at DESC);

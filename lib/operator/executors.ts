@@ -83,12 +83,17 @@ async function callWithVoiceProvider(input: ExecuteInput): Promise<ExecutionResu
   const token = process.env.TWILIO_AUTH_TOKEN;
   const from = process.env.TWILIO_FROM_NUMBER;
   const to = typeof input.request.to === "string" ? input.request.to : null;
+  const resolutionError =
+    typeof input.request.contactResolutionError === "string"
+      ? input.request.contactResolutionError
+      : null;
   if (!sid || !token || !from || !to) {
     return {
       state: "waiting_external",
       provider: "voice",
       message: !to
-        ? "The call is planned but still needs a destination number from a connected directory or voice provider."
+        ? resolutionError ??
+          "The call is planned but still needs a destination number from your private contacts or connected voice provider."
         : "Connect a voice provider or Twilio credentials to place outbound calls.",
       data: { connector: "OPERATOR_VOICE_AGENT_URL", missingDestination: !to, noDispatch: true },
     };
@@ -146,12 +151,17 @@ async function sendWithResend(input: ExecuteInput): Promise<ExecutionResult> {
   const key = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
   const to = typeof input.request.to === "string" ? input.request.to : null;
+  const resolutionError =
+    typeof input.request.contactResolutionError === "string"
+      ? input.request.contactResolutionError
+      : null;
   if (!key || !from || !to) {
     return {
       state: "waiting_external",
       provider: "resend",
       message: !to
-        ? "The message is planned but needs a recipient from a connected contact source."
+        ? resolutionError ??
+          "The message is planned but needs a recipient from your private contacts."
         : "Connect Resend credentials to send email.",
       data: { connector: "resend", missingRecipient: !to, noDispatch: true },
     };

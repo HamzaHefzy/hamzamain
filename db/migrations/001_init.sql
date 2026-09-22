@@ -78,7 +78,7 @@ CREATE TABLE rate_limits (
 
 CREATE TABLE operator_profiles (
   org_id uuid PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
-  assistant_name text NOT NULL DEFAULT 'Operator',
+  assistant_name text NOT NULL DEFAULT 'Wafira',
   timezone text NOT NULL DEFAULT 'America/New_York',
   assistant_phone text,
   owner_phone text,

@@ -237,4 +237,53 @@ describe.skipIf(!run)("Operator database lifecycle", () => {
     `;
   });
 
+  it("retries connector-blocked steps but does not duplicate dispatched work", async () => {
+    const [blockedTask] = await sql!<{ id: string }[]>`
+      insert into operator_tasks (
+        org_id, created_by, title, request, category, status, source
+      )
+      values (
+        ${orgId}, ${userId}, 'Blocked connector test',
+        'Test connector retry', 'general', 'waiting_external', 'api'
+      )
+      returning id
+    `;
+    await sql!`
+      insert into operator_steps (
+        org_id, task_id, sequence, kind, status, summary, provider, response
+      )
+      values (
+        ${orgId}, ${blockedTask.id}, 1, 'browser', 'waiting_external',
+        'Waiting for connector', 'action-runner', '{"noDispatch":true}'::jsonb
+      )
+    `;
+
+    const retried = await runOperatorTask(orgId, blockedTask.id);
+    expect(retried?.status).toBe("completed");
+
+    const [dispatchedTask] = await sql!<{ id: string }[]>`
+      insert into operator_tasks (
+        org_id, created_by, title, request, category, status, source
+      )
+      values (
+        ${orgId}, ${userId}, 'Dispatched provider test',
+        'Test provider wait', 'general', 'waiting_external', 'api'
+      )
+      returning id
+    `;
+    await sql!`
+      insert into operator_steps (
+        org_id, task_id, sequence, kind, status, summary, provider, response
+      )
+      values (
+        ${orgId}, ${dispatchedTask.id}, 1, 'browser', 'waiting_external',
+        'Already dispatched', 'action-runner', '{"providerJob":"abc"}'::jsonb
+      )
+    `;
+
+    const stillWaiting = await runOperatorTask(orgId, dispatchedTask.id);
+    expect(stillWaiting?.status).toBe("waiting_external");
+    expect(stillWaiting?.steps[0]?.status).toBe("waiting_external");
+  });
+
 });

@@ -1023,3 +1023,21 @@ button.ghost,
     width: 100%;
   }
 }
+
+.operator-rule-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.operator-inline-actions .danger-ghost {
+  background: white;
+  color: var(--op-danger);
+  border: 1px solid #ebcaca;
+}
+@media (max-width: 620px) {
+  .operator-rule-actions {
+    width: 100%;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

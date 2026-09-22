@@ -19,6 +19,7 @@ export async function startVapiCall(input: {
   to: string;
   objective: string;
   contactName?: string | null;
+  callbackToken: string;
 }) {
   const apiKey = process.env.VAPI_API_KEY;
   const assistantId = process.env.VAPI_ASSISTANT_ID;
@@ -31,6 +32,7 @@ export async function startVapiCall(input: {
   const server = new URL(siteUrl() + "/api/operator/vapi");
   server.searchParams.set("taskId", input.taskId);
   server.searchParams.set("stepId", input.stepId);
+  server.searchParams.set("callbackToken", input.callbackToken);
 
   const response = await fetchWithTimeout("https://api.vapi.ai/call", {
     method: "POST",

@@ -13,21 +13,26 @@ export default function Logo({ className = "", markOnly = false }: LogoProps) {
         aria-hidden="true"
         fill="none"
       >
-        <defs>
-          <linearGradient id="yumna-mark-gradient" x1="6" y1="5" x2="42" y2="44" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#7567F8"/>
-            <stop offset="1" stopColor="#4A3EC8"/>
-          </linearGradient>
-        </defs>
-        <rect x="2" y="2" width="44" height="44" rx="14" fill="url(#yumna-mark-gradient)"/>
         <path
-          d="M13.5 13.5 24 24m10.5-10.5L24 24v10.5"
-          stroke="white"
-          strokeWidth="5.6"
+          d="M9.5 10.5 24 25l14.5-14.5"
+          stroke="#5B4CE3"
+          strokeWidth="7"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle cx="35" cy="12.5" r="4.5" fill="#70E2B1" stroke="#4A3EC8" strokeWidth="2"/>
+        <path
+          d="M24 25v12.5"
+          stroke="#5B4CE3"
+          strokeWidth="7"
+          strokeLinecap="round"
+        />
+        <path
+          d="m29.5 17.5 4 4 6.5-7"
+          stroke="#65D8A7"
+          strokeWidth="4.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
       {!markOnly && <span className="yumna-logo-word">Yumna</span>}
     </span>

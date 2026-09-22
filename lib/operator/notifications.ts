@@ -115,31 +115,31 @@ function copy(input: NoticeInput) {
   const taskUrl = siteUrl() + "/assistant/tasks/" + input.taskId;
   if (input.kind === "approval") {
     return {
-      subject: "Wafira needs your approval",
+      subject: "Yumna needs your approval",
       email:
-        "Wafira paused a task because it needs your approval.\n\n" +
+        "Yumna paused a task because it needs your approval.\n\n" +
         input.title + "\n" + input.detail + "\n\nReview: " + taskUrl,
       sms:
-        "Wafira needs approval: " + input.title + ". Review: " + taskUrl,
+        "Yumna needs approval: " + input.title + ". Review: " + taskUrl,
     };
   }
   if (input.kind === "failed") {
     return {
-      subject: "Wafira needs attention",
+      subject: "Yumna needs attention",
       email:
-        "Wafira could not finish a task.\n\n" +
+        "Yumna could not finish a task.\n\n" +
         input.title + "\n" + input.detail + "\n\nReview: " + taskUrl,
       sms:
-        "Wafira needs attention: " + input.title + ". Review: " + taskUrl,
+        "Yumna needs attention: " + input.title + ". Review: " + taskUrl,
     };
   }
   return {
-    subject: "Wafira finished your task",
+    subject: "Yumna finished your task",
     email:
-      "Wafira completed a task.\n\n" +
+      "Yumna completed a task.\n\n" +
       input.title + "\n" + input.detail + "\n\nDetails: " + taskUrl,
     sms:
-      "Wafira finished: " + input.title + ". Details: " + taskUrl,
+      "Yumna finished: " + input.title + ". Details: " + taskUrl,
   };
 }
 

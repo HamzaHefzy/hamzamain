@@ -93,17 +93,22 @@ async function callWithVoiceProvider(input: ExecuteInput): Promise<ExecutionResu
     };
   }
 
-  const secret = process.env.OPERATOR_WEBHOOK_SECRET ?? "";
   const callback = new URL(siteUrl() + "/api/operator/voice");
   callback.searchParams.set("taskId", input.taskId);
   callback.searchParams.set("stepId", input.stepId);
-  if (secret) callback.searchParams.set("secret", secret);
+
+  const statusCallback = new URL(siteUrl() + "/api/operator/voice/status");
+  statusCallback.searchParams.set("taskId", input.taskId);
+  statusCallback.searchParams.set("stepId", input.stepId);
 
   const body = new URLSearchParams({
     To: to,
     From: from,
     Url: callback.toString(),
     Method: "POST",
+    StatusCallback: statusCallback.toString(),
+    StatusCallbackMethod: "POST",
+    StatusCallbackEvent: "completed",
   });
 
   const response = await fetch(

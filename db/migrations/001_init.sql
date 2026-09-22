@@ -69,12 +69,15 @@ CREATE TABLE operator_profiles (
   assistant_name text NOT NULL DEFAULT 'Operator',
   timezone text NOT NULL DEFAULT 'America/New_York',
   assistant_phone text,
+  owner_phone text,
   assistant_email text,
   home_base text,
   preferences jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE UNIQUE INDEX operator_profiles_owner_phone_unique ON operator_profiles(owner_phone) WHERE owner_phone IS NOT NULL;
 
 CREATE TABLE operator_tasks (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

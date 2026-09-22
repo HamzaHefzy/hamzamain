@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import { toJson } from "@/lib/json";
 import { planOperatorTask } from "@/lib/operator/planner";
 import { executeOperatorStep } from "@/lib/operator/executors";
-import type { ApprovalType } from "@/lib/operator/types";
 
 type TaskRow = {
   id: string;
@@ -37,7 +36,14 @@ type StepRow = {
   error: string | null;
 };
 
-async function event(orgId: string, taskId: string | null, stepId: string | null, eventType: string, message: string, metadata: Record<string, unknown> = {}) {
+async function event(
+  orgId: string,
+  taskId: string | null,
+  stepId: string | null,
+  eventType: string,
+  message: string,
+  metadata: Record<string, unknown> = {},
+) {
   const sql = db();
   await sql`
     insert into operator_events (org_id, task_id, step_id, event_type, message, metadata)
@@ -45,7 +51,12 @@ async function event(orgId: string, taskId: string | null, stepId: string | null
   `;
 }
 
-async function authorityAllows(orgId: string, domain: string, action: string) {
+async function authorityAllows(
+  orgId: string,
+  domain: string,
+  action: string,
+  requestedAmount?: number | null,
+) {
   const sql = db();
   const [row] = await sql<{ enabled: boolean; policy: Record<string, unknown> }[]>`
     select enabled, policy
@@ -53,7 +64,15 @@ async function authorityAllows(orgId: string, domain: string, action: string) {
     where org_id = ${orgId} and domain = ${domain} and action = ${action}
     limit 1
   `;
-  return Boolean(row?.enabled && row.policy?.mode === "allow");
+
+  if (!row?.enabled || row.policy?.mode !== "allow") return false;
+
+  const configuredCap = row.policy?.maxSpend;
+  if (typeof configuredCap === "number") {
+    return typeof requestedAmount === "number" && requestedAmount <= configuredCap;
+  }
+
+  return true;
 }
 
 export async function createOperatorTask(input: {
@@ -67,64 +86,76 @@ export async function createOperatorTask(input: {
   const plan = planOperatorTask(input.request);
   const sql = db();
 
-  return sql.begin(async (tx) => {
-    const [task] = await tx<TaskRow[]>`
-      insert into operator_tasks (
-        org_id, created_by, title, request, category, status,
-        priority, source, budget_limit, plan
+  const [task] = await sql<TaskRow[]>`
+    insert into operator_tasks (
+      org_id, created_by, title, request, category, status,
+      priority, source, budget_limit, plan
+    )
+    values (
+      ${input.orgId}, ${input.userId}, ${plan.title}, ${input.request},
+      ${plan.category}, 'ready', ${input.priority ?? "normal"},
+      ${input.source ?? "web"}, ${input.budgetLimit ?? null}, ${sql.json(toJson(plan))}
+    )
+    returning *
+  `;
+
+  let awaitingApproval = false;
+  for (let index = 0; index < plan.steps.length; index += 1) {
+    const planned = plan.steps[index];
+    const covered = planned.requiresApproval
+      ? await authorityAllows(
+          input.orgId,
+          planned.domain,
+          planned.action,
+          planned.action === "spend" ? input.budgetLimit : null,
+        )
+      : false;
+    const requiresApproval = planned.requiresApproval && !covered;
+
+    const [createdStep] = await sql<{ id: string }[]>`
+      insert into operator_steps (
+        org_id, task_id, sequence, kind, status, summary,
+        provider, requires_approval, request
       )
       values (
-        ${input.orgId}, ${input.userId}, ${plan.title}, ${input.request},
-        ${plan.category}, 'ready', ${input.priority ?? "normal"},
-        ${input.source ?? "web"}, ${input.budgetLimit ?? null}, ${tx.json(toJson(plan))}
+        ${input.orgId}, ${task.id}, ${index + 1}, ${planned.kind},
+        ${requiresApproval ? "awaiting_approval" : "pending"},
+        ${planned.summary}, ${planned.provider ?? null}, ${requiresApproval},
+        ${sql.json(toJson({ ...planned.request, domain: planned.domain, action: planned.action }))}
       )
-      returning *
+      returning id
     `;
 
-    let awaitingApproval = false;
-    for (let index = 0; index < plan.steps.length; index += 1) {
-      const planned = plan.steps[index];
-      const covered = planned.requiresApproval
-        ? await authorityAllows(input.orgId, planned.domain, planned.action)
-        : false;
-      const requiresApproval = planned.requiresApproval && !covered;
-
-      const [createdStep] = await tx<{ id: string }[]>`
-        insert into operator_steps (
-          org_id, task_id, sequence, kind, status, summary,
-          provider, requires_approval, request
+    if (requiresApproval) {
+      awaitingApproval = true;
+      await sql`
+        insert into operator_approvals (
+          org_id, task_id, step_id, approval_type, summary, amount, currency
         )
         values (
-          ${input.orgId}, ${task.id}, ${index + 1}, ${planned.kind},
-          ${requiresApproval ? "awaiting_approval" : "pending"},
-          ${planned.summary}, ${planned.provider ?? null}, ${requiresApproval},
-          ${tx.json(toJson({ ...planned.request, domain: planned.domain, action: planned.action }))}
+          ${input.orgId}, ${task.id}, ${createdStep.id},
+          ${planned.approvalType ?? "other"},
+          ${planned.summary}, ${input.budgetLimit ?? null}, 'USD'
         )
-        returning id
       `;
-
-      if (requiresApproval) {
-        awaitingApproval = true;
-        await tx`
-          insert into operator_approvals (
-            org_id, task_id, step_id, approval_type, summary, amount, currency
-          )
-          values (
-            ${input.orgId}, ${task.id}, ${createdStep.id},
-            ${planned.approvalType ?? "other" as ApprovalType},
-            ${planned.summary}, ${input.budgetLimit ?? null}, 'USD'
-          )
-        `;
-      }
     }
+  }
 
-    if (awaitingApproval) {
-      await tx`update operator_tasks set status = 'awaiting_approval', updated_at = now() where id = ${task.id}`;
-      task.status = "awaiting_approval";
-    }
+  if (awaitingApproval) {
+    await sql`
+      update operator_tasks
+      set status = 'awaiting_approval', updated_at = now()
+      where id = ${task.id}
+    `;
+    task.status = "awaiting_approval";
+  }
 
-    return task;
+  await event(input.orgId, task.id, null, "task.created", "Operator accepted the task.", {
+    category: plan.category,
+    steps: plan.steps.length,
   });
+
+  return task;
 }
 
 export async function listOperatorTasks(orgId: string, limit = 50) {
@@ -159,8 +190,14 @@ export async function getOperatorTask(orgId: string, taskId: string) {
     order by sequence
   `;
   const approvals = await sql<{
-    id: string; step_id: string | null; approval_type: string; summary: string;
-    amount: string | null; currency: string; status: string; requested_at: string;
+    id: string;
+    step_id: string | null;
+    approval_type: string;
+    summary: string;
+    amount: string | null;
+    currency: string;
+    status: string;
+    requested_at: string;
   }[]>`
     select id, step_id, approval_type, summary, amount, currency, status, requested_at
     from operator_approvals
@@ -174,20 +211,35 @@ export async function runOperatorTask(orgId: string, taskId: string) {
   const sql = db();
   const task = await getOperatorTask(orgId, taskId);
   if (!task) throw new Error("Task not found.");
-  if (["completed","cancelled"].includes(task.status)) return task;
+  if (["completed", "cancelled"].includes(task.status)) return task;
 
   await sql`
     update operator_tasks
-    set status = 'in_progress', started_at = coalesce(started_at, now()), updated_at = now(), error = null
+    set status = 'in_progress',
+        started_at = coalesce(started_at, now()),
+        updated_at = now(),
+        error = null
     where id = ${taskId} and org_id = ${orgId}
   `;
-  await event(orgId, taskId, null, "task.started", "Operator started the task.");
+  await event(orgId, taskId, null, "task.started", "Operator started or resumed the task.");
 
   for (const step of task.steps) {
     if (step.status === "completed" || step.status === "skipped") continue;
+
     if (step.status === "awaiting_approval") {
-      await sql`update operator_tasks set status = 'awaiting_approval', updated_at = now() where id = ${taskId}`;
+      await sql`
+        update operator_tasks set status = 'awaiting_approval', updated_at = now()
+        where id = ${taskId}
+      `;
       await event(orgId, taskId, step.id, "task.paused", "Operator is waiting for approval.");
+      return getOperatorTask(orgId, taskId);
+    }
+
+    if (step.status === "waiting_external") {
+      await sql`
+        update operator_tasks set status = 'waiting_external', updated_at = now()
+        where id = ${taskId}
+      `;
       return getOperatorTask(orgId, taskId);
     }
 
@@ -208,7 +260,8 @@ export async function runOperatorTask(orgId: string, taskId: string) {
     if (result.state === "completed") {
       await sql`
         update operator_steps
-        set status = 'completed', provider = ${result.provider},
+        set status = 'completed',
+            provider = ${result.provider},
             response = ${sql.json(toJson({ message: result.message, ...(result.data ?? {}) }))},
             completed_at = now()
         where id = ${step.id}
@@ -220,13 +273,15 @@ export async function runOperatorTask(orgId: string, taskId: string) {
     if (result.state === "waiting_external") {
       await sql`
         update operator_steps
-        set status = 'waiting_external', provider = ${result.provider},
+        set status = 'waiting_external',
+            provider = ${result.provider},
             response = ${sql.json(toJson({ message: result.message, ...(result.data ?? {}) }))}
         where id = ${step.id}
       `;
       await sql`
         update operator_tasks
-        set status = 'waiting_external', updated_at = now(),
+        set status = 'waiting_external',
+            updated_at = now(),
             result = ${sql.json(toJson({ message: result.message, waitingOn: result.provider }))}
         where id = ${taskId}
       `;
@@ -236,12 +291,16 @@ export async function runOperatorTask(orgId: string, taskId: string) {
 
     await sql`
       update operator_steps
-      set status = 'failed', provider = ${result.provider}, error = ${result.message},
-          response = ${sql.json(toJson(result.data ?? {}))}, completed_at = now()
+      set status = 'failed',
+          provider = ${result.provider},
+          error = ${result.message},
+          response = ${sql.json(toJson(result.data ?? {}))},
+          completed_at = now()
       where id = ${step.id}
     `;
     await sql`
-      update operator_tasks set status = 'failed', error = ${result.message}, updated_at = now()
+      update operator_tasks
+      set status = 'failed', error = ${result.message}, updated_at = now()
       where id = ${taskId}
     `;
     await event(orgId, taskId, step.id, "step.failed", result.message, result.data ?? {});
@@ -250,7 +309,9 @@ export async function runOperatorTask(orgId: string, taskId: string) {
 
   await sql`
     update operator_tasks
-    set status = 'completed', completed_at = now(), updated_at = now(),
+    set status = 'completed',
+        completed_at = now(),
+        updated_at = now(),
         result = ${sql.json(toJson({ message: "Task completed." }))}
     where id = ${taskId}
   `;
@@ -261,9 +322,16 @@ export async function runOperatorTask(orgId: string, taskId: string) {
 export async function listPendingApprovals(orgId: string) {
   const sql = db();
   return sql<{
-    id: string; task_id: string; step_id: string | null; approval_type: string;
-    summary: string; amount: string | null; currency: string; status: string;
-    requested_at: string; task_title: string;
+    id: string;
+    task_id: string;
+    step_id: string | null;
+    approval_type: string;
+    summary: string;
+    amount: string | null;
+    currency: string;
+    status: string;
+    requested_at: string;
+    task_title: string;
   }[]>`
     select a.*, t.title as task_title
     from operator_approvals a
@@ -298,8 +366,10 @@ export async function resolveOperatorApproval(input: {
 
   if (input.decision === "rejected") {
     await sql`
-      update operator_tasks set status = 'cancelled', updated_at = now(),
-        result = ${sql.json(toJson({ message: "Cancelled after approval was declined." }))}
+      update operator_tasks
+      set status = 'cancelled',
+          updated_at = now(),
+          result = ${sql.json(toJson({ message: "Cancelled after approval was declined." }))}
       where id = ${approval.task_id} and org_id = ${input.orgId}
     `;
     await event(input.orgId, approval.task_id, approval.step_id, "approval.rejected", approval.summary);
@@ -309,19 +379,78 @@ export async function resolveOperatorApproval(input: {
   const [remaining] = await sql<{ count: number }[]>`
     select count(*)::int as count
     from operator_approvals
-    where task_id = ${approval.task_id} and org_id = ${input.orgId} and status = 'pending'
+    where task_id = ${approval.task_id}
+      and org_id = ${input.orgId}
+      and status = 'pending'
   `;
   if ((remaining?.count ?? 0) === 0) {
-    await sql`update operator_tasks set status = 'ready', updated_at = now() where id = ${approval.task_id}`;
+    await sql`
+      update operator_tasks set status = 'ready', updated_at = now()
+      where id = ${approval.task_id}
+    `;
   }
   await event(input.orgId, approval.task_id, approval.step_id, "approval.approved", approval.summary);
   return getOperatorTask(input.orgId, approval.task_id);
 }
 
+export async function acceptOperatorCallback(input: {
+  taskId: string;
+  stepId: string;
+  state: "completed" | "failed";
+  message: string;
+  data?: Record<string, unknown>;
+}) {
+  const sql = db();
+  const [step] = await sql<{ org_id: string; task_id: string }[]>`
+    select org_id, task_id
+    from operator_steps
+    where id = ${input.stepId} and task_id = ${input.taskId}
+    limit 1
+  `;
+  if (!step) throw new Error("Callback step not found.");
+
+  if (input.state === "failed") {
+    await sql`
+      update operator_steps
+      set status = 'failed',
+          error = ${input.message},
+          response = ${sql.json(toJson(input.data ?? {}))},
+          completed_at = now()
+      where id = ${input.stepId}
+    `;
+    await sql`
+      update operator_tasks
+      set status = 'failed', error = ${input.message}, updated_at = now()
+      where id = ${input.taskId}
+    `;
+    await event(step.org_id, input.taskId, input.stepId, "step.failed", input.message, input.data ?? {});
+    return getOperatorTask(step.org_id, input.taskId);
+  }
+
+  await sql`
+    update operator_steps
+    set status = 'completed',
+        response = ${sql.json(toJson({ message: input.message, ...(input.data ?? {}) }))},
+        completed_at = now(),
+        error = null
+    where id = ${input.stepId}
+  `;
+  await sql`
+    update operator_tasks
+    set status = 'ready', updated_at = now(), error = null
+    where id = ${input.taskId}
+  `;
+  await event(step.org_id, input.taskId, input.stepId, "step.completed", input.message, input.data ?? {});
+  return runOperatorTask(step.org_id, input.taskId);
+}
+
 export async function operatorOverview(orgId: string) {
   const sql = db();
   const [counts] = await sql<{
-    active: number; approvals: number; completed_week: number; waiting: number;
+    active: number;
+    approvals: number;
+    completed_week: number;
+    waiting: number;
   }[]>`
     select
       count(*) filter (where status in ('ready','in_progress','awaiting_approval','waiting_external'))::int as active,
@@ -333,5 +462,9 @@ export async function operatorOverview(orgId: string) {
   `;
   const recent = await listOperatorTasks(orgId, 8);
   const approvals = await listPendingApprovals(orgId);
-  return { counts: counts ?? { active: 0, approvals: 0, completed_week: 0, waiting: 0 }, recent, approvals };
+  return {
+    counts: counts ?? { active: 0, approvals: 0, completed_week: 0, waiting: 0 },
+    recent,
+    approvals,
+  };
 }

@@ -41,7 +41,7 @@ const groups: Array<{ label: string; items: NavItem[] }> = [
   },
 ];
 
-const publicPaths = new Set(["/", "/login", "/signup", "/pricing", "/security", "/privacy"]);
+const publicPaths = new Set(["/", "/product", "/demo", "/use-cases", "/integrations", "/login", "/signup", "/pricing", "/security", "/privacy"]);
 
 function isActive(pathname: string, href: string) {
   if (href === "/assistant") return pathname === href || pathname.startsWith("/assistant/tasks/");

@@ -17,7 +17,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const auth = await apiSession("support_write");
+  const auth = await apiSession("task_write");
   if (!auth.session) return auth.response;
   try {
     const input = createSchema.parse(await request.json());

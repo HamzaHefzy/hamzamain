@@ -78,6 +78,7 @@ CREATE TABLE operator_profiles (
 );
 
 CREATE UNIQUE INDEX operator_profiles_owner_phone_unique ON operator_profiles(owner_phone) WHERE owner_phone IS NOT NULL;
+CREATE UNIQUE INDEX operator_profiles_assistant_phone_unique ON operator_profiles(assistant_phone) WHERE assistant_phone IS NOT NULL;
 
 CREATE TABLE operator_tasks (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

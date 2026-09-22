@@ -266,7 +266,7 @@ async function callWithVoiceProvider(input: ExecuteInput): Promise<ExecutionResu
   return {
     state: "waiting_external",
     provider: "twilio",
-    message: "Outbound call started. Operator is waiting for the call workflow to finish.",
+    message: "Outbound call started. Wafira is waiting for the call workflow to finish.",
     data: { callSid: payload.sid ?? null },
   };
 }
@@ -294,7 +294,7 @@ async function sendWithResend(input: ExecuteInput): Promise<ExecutionResult> {
   const subject =
     typeof input.request.subject === "string"
       ? input.request.subject
-      : "Message from your personal Operator";
+      : "Message from your personal Wafira";
   const body =
     typeof input.request.body === "string" ? input.request.body : input.summary;
 

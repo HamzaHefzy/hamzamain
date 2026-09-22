@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db, hasDatabase } from "@/lib/db";
-import { SESSION_COOKIE, signSession, type AnchorRole } from "@/lib/auth";
+import { SESSION_COOKIE, signSession, type OperatorRole } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { rateLimit } from "@/lib/rate-limit";
 import { assertSameOrigin, hashIp, requestIp } from "@/lib/security";
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       email: string;
       name: string;
       password_hash: string;
-      role: AnchorRole;
+      role: OperatorRole;
       org_id: string;
       org_name: string;
       org_slug: string;
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       where lower(u.email) = lower(${input.email})
         and u.active = true
         and m.active = true
-        and o.status in ('active','trial')
+        and o.status in ('active','trial','past_due')
         and (${input.organization ?? null}::text is null or o.slug = ${input.organization ?? null})
       order by o.created_at
       limit 1

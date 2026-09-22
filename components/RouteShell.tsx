@@ -66,7 +66,7 @@ function currentLabel(pathname: string) {
     const match = group.items.find((item) => isActive(pathname, item.href));
     if (match) return match.label;
   }
-  return "Wafira";
+  return "Yumna";
 }
 
 export default function RouteShell({ children }: { children: ReactNode }) {
@@ -106,7 +106,7 @@ export default function RouteShell({ children }: { children: ReactNode }) {
   return (
     <div className="app-shell">
       <aside className="app-sidebar" aria-label="Primary navigation">
-        <Link href="/assistant" className="app-brand" aria-label="Wafira home">
+        <Link href="/assistant" className="app-brand" aria-label="Yumna home">
           <Logo />
         </Link>
         <Link href="/assistant#delegate" className="app-new-task">
@@ -155,7 +155,7 @@ export default function RouteShell({ children }: { children: ReactNode }) {
         <main className="main-content">
           {children}
           <footer className="app-footer">
-            <span>© 2026 Wafira</span>
+            <span>© 2026 Yumna</span>
             <div><Link href="/security">Security</Link><Link href="/privacy">Privacy</Link><Link href="/">Public site</Link></div>
           </footer>
         </main>

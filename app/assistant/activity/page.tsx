@@ -28,7 +28,7 @@ export default async function ActivityPage() {
       <header className="operator-page-header">
         <div>
           <span className="operator-kicker">Audit trail</span>
-          <h1>Everything Wafira did.</h1>
+          <h1>Everything Yumna did.</h1>
           <p>No invisible autonomy. Actions, pauses, failures, approvals, and completions stay visible.</p>
         </div>
       </header>
@@ -53,7 +53,7 @@ export default async function ActivityPage() {
           )) : (
             <div className="operator-empty">
               <strong>No activity yet.</strong>
-              <span>Once Wafira starts working, the complete audit trail appears here.</span>
+              <span>Once Yumna starts working, the complete audit trail appears here.</span>
             </div>
           )}
         </div>

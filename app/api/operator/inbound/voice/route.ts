@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   const to = params.get("To")?.trim() ?? "";
   const from = params.get("From")?.trim() ?? "unknown caller";
-  if (!to) return xml(twimlVoiceSay("This Operator number is not configured."), 400);
+  if (!to) return xml(twimlVoiceSay("This Wafira number is not configured."), 400);
 
   const sql = db();
   const [identity] = await sql<{
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   `;
 
   if (!identity) {
-    return xml(twimlVoiceSay("This Operator number is not linked to a verified workspace."), 404);
+    return xml(twimlVoiceSay("This Wafira number is not linked to a verified workspace."), 404);
   }
 
   const speech = params.get("SpeechResult")?.trim();

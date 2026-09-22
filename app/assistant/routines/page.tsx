@@ -14,7 +14,7 @@ export default async function RoutinesPage() {
         <div>
           <span className="operator-kicker">Proactive work</span>
           <h1>Stop remembering to ask.</h1>
-          <p>Routines create real Wafira tasks automatically. The same authority and approval rules still apply when a scheduled task reaches something consequential.</p>
+          <p>Routines create real Yumna tasks automatically. The same authority and approval rules still apply when a scheduled task reaches something consequential.</p>
         </div>
       </header>
 

@@ -1,4 +1,5 @@
 import { acceptSafeOperatorCallback } from "@/lib/operator/callbacks";
+import { verifyOperatorStepCallbackToken } from "@/lib/operator/callback-auth";
 import { twilioWebhookUrl, verifyTwilioFormRequest } from "@/lib/twilio";
 
 export async function POST(request: Request) {
@@ -14,10 +15,14 @@ export async function POST(request: Request) {
   const url = new URL(request.url);
   const taskId = url.searchParams.get("taskId");
   const stepId = url.searchParams.get("stepId");
+  const callbackToken = url.searchParams.get("callbackToken");
   const callSid = params.get("CallSid");
   const callStatus = params.get("CallStatus") ?? "unknown";
-  if (!taskId || !stepId || !callSid) {
+  if (!taskId || !stepId || !callbackToken || !callSid) {
     return new Response("Missing callback context.", { status: 400 });
+  }
+  if (!(await verifyOperatorStepCallbackToken({ taskId, stepId, token: callbackToken }))) {
+    return new Response("Invalid or expired task callback.", { status: 401 });
   }
 
   const successful = callStatus === "completed";

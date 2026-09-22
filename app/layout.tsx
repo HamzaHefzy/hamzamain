@@ -9,17 +9,17 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  applicationName: "Dexyra",
+  applicationName: "Wafira",
   title: {
-    default: "Dexyra | Your right hand for real life",
-    template: "%s | Dexyra",
+    default: "Wafira | More time for your actual life",
+    template: "%s | Wafira",
   },
   description:
-    "A personal execution assistant that can find businesses, make calls, work across your apps, book, follow up, and own real-world tasks through completion.",
+    "A personal execution assistant that finds businesses, makes calls, works across your apps, books, follows up, and owns real-world tasks through completion.",
   openGraph: {
-    title: "Dexyra | Your right hand for real life",
+    title: "Wafira | More time for your actual life",
     description:
-      "Delegate calls, appointments, reservations, app actions, follow-ups, and administrative work to one trusted right hand.",
+      "Delegate calls, appointments, reservations, connected-app work, follow-ups, and everyday administration.",
     type: "website",
   },
 };
@@ -27,9 +27,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>
-        <RouteShell>{children}</RouteShell>
-      </body>
+      <body><RouteShell>{children}</RouteShell></body>
     </html>
   );
 }

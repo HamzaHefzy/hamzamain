@@ -20,6 +20,7 @@ Operator is a production-shaped personal operations system: a user delegates an 
 - Personal memory with normal/private/restricted privacy tiers
 - Daily and weekly proactive routines that create normal governed tasks
 - Signed inbound Twilio SMS that turns a text into an Operator task
+- Signed inbound Twilio call intake with automated-assistant disclosure and speech-to-task capture
 - Connection-health UI
 - Stripe Checkout subscriptions and signed webhook processing
 - Docker/local bootstrap and PostgreSQL-backed GitHub CI
@@ -54,7 +55,8 @@ The application code is intentionally provider-neutral. Production deployment ne
 
 - `OPERATOR_PLANNER_URL`: optional reasoning/planning service for arbitrary requests; the safe local planner remains the fallback.
 - `OPERATOR_ACTION_RUNNER_URL`: browser/API worker that accepts a step and calls `/api/operator/callback` when asynchronous work finishes.
-- `TWILIO_FROM_NUMBER` + `/api/operator/inbound/sms`: optional inbound text-to-Operator channel. Link the owner's E.164 phone number in Connections and configure Twilio's webhook to this route.
+- `TWILIO_FROM_NUMBER` + `/api/operator/inbound/sms`: optional inbound text-to-Operator channel. Link the owner's E.164 phone number in Connections and configure Twilio's Messaging webhook to this route.
+- `/api/operator/inbound/voice`: optional Twilio Voice webhook for disclosed automated call intake. It collects the caller's spoken reason for calling and creates a follow-up task; full conversation automation belongs behind `OPERATOR_VOICE_AGENT_URL`.
 - `OPERATOR_VOICE_AGENT_URL`: conversational outbound voice service. The existing Twilio variables provide a simpler fallback.
 - `OPERATOR_HUMAN_QUEUE_URL`: human exception/escalation service.
 - `OPERATOR_WEBHOOK_SECRET`: bearer token required by external executor callbacks.

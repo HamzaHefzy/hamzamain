@@ -22,6 +22,7 @@ This checklist is deliberately operational: passing it means the application is 
 
 For real-world execution, connect the capabilities you plan to sell:
 
+- OpenAI through `OPENAI_API_KEY` (or an explicit `OPERATOR_PLANNER_URL`) for arbitrary-task planning.
 - Google Maps Platform with Places API (New) enabled for local discovery and phone resolution.
 - Pipedream Connect for managed app authentication and connected-app actions.
 - Brave Search through `BRAVE_SEARCH_API_KEY` for live web research and sources.

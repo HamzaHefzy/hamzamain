@@ -8,6 +8,14 @@ function number(value: unknown) {
   return typeof value === "number" ? value : null;
 }
 
+function hostname(value: string) {
+  try {
+    return new URL(value).hostname.replace(/^www\./, "");
+  } catch {
+    return value;
+  }
+}
+
 export default function StepResult({
   provider,
   response,
@@ -35,7 +43,7 @@ export default function StepResult({
                 <div>
                   <strong>{text(item.title) ?? "Web result"}</strong>
                   {text(item.description) ? <p>{text(item.description)}</p> : null}
-                  {url ? <small>{new URL(url).hostname.replace(/^www\./, "")}</small> : null}
+                  {url ? <small>{hostname(url)}</small> : null}
                 </div>
               </div>
               {url ? <a href={url} target="_blank" rel="noreferrer">Open ↗</a> : null}

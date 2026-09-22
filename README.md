@@ -26,28 +26,19 @@ Finance views may show aggregate campus/network funding scenarios. Student-level
 
 ## Local development
 
-Start PostgreSQL:
-
-~~~bash
-docker compose up -d
-~~~
-
-Install dependencies and export development environment variables:
+The supported local setup path is:
 
 ~~~bash
 npm install
-export DATABASE_URL=postgres://anchor:anchor@localhost:5432/anchor
-export DATABASE_SSL=false
-export AUTH_SECRET="replace-with-at-least-32-random-characters"
-export SEED_ADMIN_EMAIL=admin@example.org
-export SEED_ADMIN_PASSWORD="replace-with-a-development-password"
-export SEED_ORG_NAME="Anchor Demo District"
-export SEED_ORG_SLUG="anchor-demo"
-npm run db:setup
+npm run setup:local
 npm run dev
 ~~~
 
-Open http://localhost:3000.
+The setup command creates a gitignored `.env.local`, starts the PostgreSQL Docker service, runs every migration, seeds a demo organization, and prints the local admin credentials to the terminal.
+
+Open http://localhost:3000 and sign in with the email/password printed by `npm run setup:local`.
+
+If Docker Desktop is not running, start it and rerun `npm run setup:local`.
 
 ## Validation
 

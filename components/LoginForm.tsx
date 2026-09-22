@@ -14,28 +14,47 @@ export default function LoginForm() {
     setBusy(true);
     setError("");
 
-    const form = new FormData(event.currentTarget);
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: form.get("email"),
-        password: form.get("password"),
-        organization: form.get("organization") || undefined,
-      }),
-    });
+    try {
+      const form = new FormData(event.currentTarget);
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.get("email"),
+          password: form.get("password"),
+          organization: form.get("organization") || undefined,
+        }),
+      });
 
-    const payload = await response.json();
-    setBusy(false);
+      const raw = await response.text();
+      let payload: { error?: string; code?: string } = {};
+      if (raw) {
+        try {
+          payload = JSON.parse(raw) as { error?: string; code?: string };
+        } catch {
+          payload = {};
+        }
+      }
 
-    if (!response.ok) {
-      setError(payload.error ?? "Unable to sign in.");
-      return;
+      if (!response.ok) {
+        setError(
+          payload.code === "database_unavailable"
+            ? "This Anchor workspace has not been connected to its database yet. If you are running Anchor locally, run npm run setup:local in the project terminal, then refresh this page."
+            : payload.error ?? "Unable to sign in.",
+        );
+        return;
+      }
+
+      const next = search.get("next");
+      router.push(next && next.startsWith("/") ? next : "/dashboard");
+      router.refresh();
+    } catch {
+      setError(
+        "The sign-in service could not be reached. Confirm the Anchor server is running, then try again.",
+      );
+    } finally {
+      setBusy(false);
     }
-
-    const next = search.get("next");
-    router.push(next && next.startsWith("/") ? next : "/dashboard");
-    router.refresh();
   }
 
   return (

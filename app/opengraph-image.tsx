@@ -7,7 +7,7 @@ export default function Image() {
   return new ImageResponse(
     <div style={{ width:"100%",height:"100%",display:"flex",flexDirection:"column",justifyContent:"space-between",background:"#f8fafd",color:"#1f1f1f",padding:68,fontFamily:"Arial, sans-serif" }}>
       <div style={{display:"flex",alignItems:"center",gap:16,fontSize:30,fontWeight:700}}>
-        <div style={{width:48,height:48,borderRadius:15,display:"flex",alignItems:"center",justifyContent:"center",background:"#4f46c8",color:"#fff",fontSize:24,fontWeight:800}}>W</div>
+        <div style={{width:48,height:48,borderRadius:15,display:"flex",alignItems:"center",justifyContent:"center",background:"#4f46c8",color:"#fff",fontSize:24,fontWeight:800}}>Y</div>
         Yumna
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:22,maxWidth:980}}>

@@ -29,8 +29,7 @@ export async function POST(request: Request) {
     typeof row.request.objective === "string" ? row.request.objective : row.summary;
   const script =
     "Hello. I am an automated personal assistant calling on behalf of my user. " +
-    "I am calling about this request: " + objective +
-    ". This basic phone fallback can deliver the request, but a connected conversational voice agent is required for a live back-and-forth conversation.";
+    "This call concerns: " + objective + ".";
 
   return new Response(twimlVoiceSay(script), {
     headers: { "Content-Type": "text/xml; charset=utf-8" },

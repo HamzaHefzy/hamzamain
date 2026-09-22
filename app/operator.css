@@ -1672,10 +1672,10 @@ button.ghost:hover,
 .operator-logo-mark { width:30px; height:30px; }
 .operator-logo-word { font-weight:720; font-size:20px; }
 
-/* Public pages get Wafira's calmer palette */
+/* Public pages get Yumna's calmer palette */
 .operator-marketing { background: white; }
 .operator-public-nav { min-height: 70px; }
-.operator-public-nav .wafira-logo { font-size: 19px; }
+.operator-public-nav .yumna-logo { font-size: 19px; }
 .operator-public-nav .operator-nav-cta,
 .operator-hero-actions a:first-child,
 .operator-public-pricing .operator-pricing-grid a {

@@ -610,3 +610,116 @@ button.ghost,
 @media (max-width: 900px) {
   .operator-pricing-grid { grid-template-columns: 1fr; }
 }
+
+.operator-memory-form,
+.operator-routine-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+.operator-memory-form label,
+.operator-routine-form label {
+  display: grid;
+  gap: 6px;
+}
+.operator-memory-form label > span,
+.operator-routine-form label > span {
+  color: var(--op-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.operator-memory-form .wide,
+.operator-routine-form .wide {
+  grid-column: 1 / -1;
+}
+.operator-memory-form input,
+.operator-memory-form select,
+.operator-routine-form input,
+.operator-routine-form select,
+.operator-memory-form textarea,
+.operator-routine-form textarea {
+  width: 100%;
+  border: 1px solid #d9dbe0;
+  border-radius: 11px;
+  background: white;
+  padding: 11px 12px;
+  font: inherit;
+}
+.operator-memory-form textarea,
+.operator-routine-form textarea {
+  min-height: 94px;
+  resize: vertical;
+}
+.operator-memory-form button,
+.operator-routine-form button,
+.operator-memory-list button,
+.operator-routine-list button {
+  min-height: 43px;
+  border: 0;
+  border-radius: 11px;
+  padding: 0 16px;
+  background: var(--op-ink);
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.operator-memory-list,
+.operator-routine-list {
+  display: grid;
+  gap: 10px;
+}
+.operator-memory-list article,
+.operator-routine-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid var(--op-line);
+  border-radius: 14px;
+  background: white;
+}
+.operator-memory-list article > div,
+.operator-routine-copy {
+  display: grid;
+  gap: 6px;
+}
+.operator-routine-copy p {
+  margin: 0;
+  color: var(--op-muted);
+  line-height: 1.5;
+}
+.operator-routine-copy small {
+  color: var(--op-muted);
+}
+.operator-memory-list button.ghost,
+.operator-routine-list button.ghost {
+  background: var(--op-soft);
+  color: var(--op-ink);
+  border: 1px solid var(--op-line);
+}
+@media (max-width: 900px) {
+  .operator-memory-form,
+  .operator-routine-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 620px) {
+  .operator-memory-form,
+  .operator-routine-form {
+    grid-template-columns: 1fr;
+  }
+  .operator-memory-form .wide,
+  .operator-routine-form .wide {
+    grid-column: auto;
+  }
+  .operator-memory-list article,
+  .operator-routine-list article {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1931,3 +1931,126 @@ input, select, textarea {
   .operator-command { padding: 18px; }
   .operator-metrics { grid-template-columns: 1fr 1fr; }
 }
+
+.step-result-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.step-result-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 15px;
+  border: 1px solid var(--op-line);
+  border-radius: 14px;
+  background: #fff;
+}
+.step-result-card > div:first-child {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.step-result-card strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+.step-result-card p {
+  margin: 0 0 5px;
+  color: var(--op-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.step-result-card small {
+  color: var(--op-muted);
+  font-size: 11px;
+}
+.step-result-index {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--op-soft);
+  color: var(--op-muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+.step-result-pin {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--op-accent-soft);
+  color: var(--op-accent);
+  font-size: 12px;
+}
+.step-result-card > a,
+.step-result-actions a {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--op-line);
+  border-radius: 10px;
+  background: var(--op-soft);
+  color: var(--op-ink);
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+}
+.step-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.step-call-result {
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid var(--op-line);
+  border-radius: 14px;
+  background: #fafafa;
+}
+.step-call-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.step-call-head > span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: #111317;
+  color: #fff;
+}
+.step-call-head > div {
+  display: grid;
+  gap: 2px;
+}
+.step-call-head small {
+  color: var(--op-muted);
+  font-size: 11px;
+}
+.step-call-result > p {
+  margin: 12px 0 0;
+  color: #3f444c;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+@media (max-width: 700px) {
+  .step-result-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

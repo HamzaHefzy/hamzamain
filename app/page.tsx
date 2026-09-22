@@ -21,9 +21,9 @@ export default function MarketingHome() {
               <Link href="/demo" className="y-secondary-link large">Try the live demo <span>→</span></Link>
             </div>
             <div className="y-home-proof">
-              <span><i /> Google Maps + Places</span>
-              <span><i /> 3,000+ app gateway</span>
-              <span><i /> Calls + SMS</span>
+              <span><i /> Live web + local search</span>
+              <span><i /> Natural phone calls</span>
+              <span><i /> Thousands of connected apps</span>
               <span><i /> Approval controls</span>
             </div>
           </div>

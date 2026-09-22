@@ -9,17 +9,17 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  applicationName: "Operator",
+  applicationName: "Dexyra",
   title: {
-    default: "Operator | Hand off the work around your life",
-    template: "%s | Operator",
+    default: "Dexyra | Your right hand for real life",
+    template: "%s | Dexyra",
   },
   description:
-    "A personal operations assistant that can call, coordinate, book, follow up, and keep ownership of real-world tasks until they are finished.",
+    "A personal execution assistant that can find businesses, make calls, work across your apps, book, follow up, and own real-world tasks through completion.",
   openGraph: {
-    title: "Operator | Hand off the work around your life",
+    title: "Dexyra | Your right hand for real life",
     description:
-      "Delegate calls, appointments, reservations, errands, follow-ups, and administrative work to one trusted operating layer.",
+      "Delegate calls, appointments, reservations, app actions, follow-ups, and administrative work to one trusted right hand.",
     type: "website",
   },
 };

@@ -207,3 +207,22 @@ CREATE TABLE operator_billing_events (
   event_type text NOT NULL,
   received_at timestamptz NOT NULL DEFAULT now()
 );
+
+
+CREATE TABLE operator_routines (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  created_by uuid REFERENCES users(id) ON DELETE SET NULL,
+  title text NOT NULL,
+  request text NOT NULL,
+  cadence text NOT NULL CHECK (cadence IN ('daily','weekly')),
+  next_run_at timestamptz NOT NULL,
+  enabled boolean NOT NULL DEFAULT true,
+  last_run_at timestamptz,
+  last_task_id uuid REFERENCES operator_tasks(id) ON DELETE SET NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX operator_routines_due_idx
+  ON operator_routines(enabled, next_run_at)
+  WHERE enabled = true;

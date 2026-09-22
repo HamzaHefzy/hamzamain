@@ -1,14 +1,26 @@
 import { requireSession } from "@/lib/auth";
 import { getOperatorProfile } from "@/lib/operator/profile";
 import PhoneIdentityForm from "@/components/operator/PhoneIdentityForm";
+import IntegrationHub from "@/components/operator/IntegrationHub";
+import { listPipedreamAccounts, pipedreamConfigured } from "@/lib/operator/pipedream";
 
 export const dynamic = "force-dynamic";
 
 export default async function ConnectionsPage() {
   const session = await requireSession();
   const profile = await getOperatorProfile(session.orgId);
+  const appGatewayConnected = pipedreamConfigured();
+  const connectedApps = appGatewayConnected
+    ? await listPipedreamAccounts(session.orgId).catch(() => [])
+    : [];
 
   const connections = [
+    {
+      name: "3,000+ app gateway",
+      env: "PIPEDREAM_PROJECT_ID + OAuth credentials",
+      connected: appGatewayConnected,
+      description: "Managed per-user OAuth and tools for thousands of apps including Gmail, Calendar, Drive, Slack, Notion, Microsoft 365 and more.",
+    },
     {
       name: "Google Maps / Places",
       env: "GOOGLE_MAPS_API_KEY",
@@ -83,6 +95,16 @@ export default async function ConnectionsPage() {
           homeBase={profile?.home_base ?? null}
         />
       </section>
+
+      {appGatewayConnected ? (
+        <section className="operator-section">
+          <div className="operator-section-heading">
+            <div><span className="operator-kicker">App network</span><h2>Connect the apps your life already runs on.</h2></div>
+            <span className="operator-count">{connectedApps.length}</span>
+          </div>
+          <IntegrationHub connected={connectedApps} />
+        </section>
+      ) : null}
 
       <section className="operator-connection-grid">
         {connections.map((connection) => (

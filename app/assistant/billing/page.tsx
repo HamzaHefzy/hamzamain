@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/auth";
 import BillingButtons from "@/components/operator/BillingButtons";
+import BillingPortalButton from "@/components/operator/BillingPortalButton";
 import { getOperatorEntitlements } from "@/lib/operator/entitlements";
 
 export const dynamic = "force-dynamic";
@@ -40,8 +41,11 @@ export default async function BillingPage() {
           <h1>Choose how much of life you want to delegate.</h1>
           <p>Subscriptions keep Operator aligned to you—not advertisers or merchants—and control execution capacity directly.</p>
         </div>
-        <div className="operator-status-pill status-completed">
-          {entitlement.plan + " · " + entitlement.status}
+        <div className="operator-billing-header-actions">
+          <div className="operator-status-pill status-completed">
+            {entitlement.plan + " · " + entitlement.status}
+          </div>
+          {entitlement.customerId ? <BillingPortalButton /> : null}
         </div>
       </header>
 

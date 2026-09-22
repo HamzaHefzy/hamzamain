@@ -86,19 +86,55 @@ console.log("\nAnchor local setup");
 console.log("------------------");
 console.log("Environment written to .env.local");
 
-const dockerCheck = spawnSync("docker", ["compose", "version"], {
+const dockerCandidates = [
+  "docker",
+  "/Applications/Docker.app/Contents/Resources/bin/docker",
+  join(process.env.HOME || "", "Applications/Docker.app/Contents/Resources/bin/docker"),
+].filter(Boolean);
+
+let dockerBin = null;
+
+for (const candidate of dockerCandidates) {
+  const check = spawnSync(candidate, ["compose", "version"], {
+    cwd: root,
+    stdio: "ignore",
+  });
+  if (check.status === 0) {
+    dockerBin = candidate;
+    break;
+  }
+}
+
+if (!dockerBin) {
+  console.error(
+    "\nDocker CLI / Compose could not be found. Docker Desktop may be installed but its CLI is not available to this shell.",
+  );
+  console.error(
+    "Open Docker Desktop and wait until it says the engine is running. Then either restart Terminal or run:",
+  );
+  console.error(
+    '  export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"',
+  );
+  console.error("Then run: npm run setup:local");
+  process.exit(1);
+}
+
+const engineCheck = spawnSync(dockerBin, ["info"], {
   cwd: root,
   stdio: "ignore",
 });
 
-if (dockerCheck.status !== 0) {
+if (engineCheck.status !== 0) {
   console.error(
-    "\nDocker Compose is not available. Start/install Docker Desktop, then run npm run setup:local again.",
+    "\nDocker Desktop was found, but the Docker engine is not ready.",
+  );
+  console.error(
+    "Open Docker Desktop, wait until it finishes starting, then run npm run setup:local again.",
   );
   process.exit(1);
 }
 
-const up = spawnSync("docker", ["compose", "up", "-d", "postgres"], {
+const up = spawnSync(dockerBin, ["compose", "up", "-d", "postgres"], {
   cwd: root,
   stdio: "inherit",
 });
@@ -107,7 +143,7 @@ if (up.status !== 0) process.exit(up.status ?? 1);
 let ready = false;
 for (let attempt = 0; attempt < 30; attempt += 1) {
   const check = spawnSync(
-    "docker",
+    dockerBin,
     ["compose", "exec", "-T", "postgres", "pg_isready", "-U", "anchor", "-d", "anchor"],
     { cwd: root, stdio: "ignore" },
   );

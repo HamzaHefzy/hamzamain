@@ -26,13 +26,16 @@ export async function getOperatorProfile(orgId: string) {
 export async function updateOperatorPhoneIdentity(input: {
   orgId: string;
   ownerPhone: string | null;
+  assistantPhone?: string | null;
 }) {
   const sql = db();
-  const assistantPhone = process.env.TWILIO_FROM_NUMBER ?? null;
   const [profile] = await sql<OperatorProfile[]>`
     update operator_profiles
     set owner_phone = ${input.ownerPhone},
-        assistant_phone = coalesce(${assistantPhone}, assistant_phone),
+        assistant_phone = case
+          when ${input.assistantPhone === undefined}::boolean then assistant_phone
+          else ${input.assistantPhone ?? null}
+        end,
         updated_at = now()
     where org_id = ${input.orgId}
     returning org_id, assistant_name, timezone, assistant_phone, owner_phone,

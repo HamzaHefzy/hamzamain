@@ -30,13 +30,24 @@ export function verifyTwilioFormRequest(input: {
   return timingSafeEqual(Buffer.from(expected), Buffer.from(input.signature));
 }
 
-export function twimlMessage(message: string) {
-  const escaped = message.replace(/[<>&'"]/g, (char) => ({
+function escapeXml(value: string) {
+  return value.replace(/[<>&\'"]/g, (char) => ({
     "<": "&lt;",
     ">": "&gt;",
     "&": "&amp;",
-    "'": "&apos;",
-    '"': "&quot;",
+    "\'": "&apos;",
+    "\"": "&quot;",
   }[char] ?? char));
-  return `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${escaped}</Message></Response>`;
+}
+
+export function twimlMessage(message: string) {
+  return `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${escapeXml(message)}</Message></Response>`;
+}
+
+export function twimlVoiceGather(input: { greeting: string; action: string }) {
+  return `<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" speechTimeout="auto" action="${escapeXml(input.action)}" method="POST"><Say>${escapeXml(input.greeting)}</Say></Gather><Say>I did not hear a message. Goodbye.</Say></Response>`;
+}
+
+export function twimlVoiceSay(message: string) {
+  return `<?xml version="1.0" encoding="UTF-8"?><Response><Say>${escapeXml(message)}</Say><Hangup/></Response>`;
 }

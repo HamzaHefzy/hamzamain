@@ -108,13 +108,30 @@ export default function LivePhoneDemo({ large = false }: { large?: boolean }) {
       </div>
 
       <div className="y-phone-shell">
+        {!large ? (
+          <>
+            <div className="y-demo-float y-demo-float-map"><span>M</span><div><strong>Google Maps</strong><small>Verified business + phone</small></div></div>
+            <div className="y-demo-float y-demo-float-call"><span>☎</span><div><strong>Calling now</strong><small>Yumna handles the hold time</small></div></div>
+          </>
+        ) : null}
         <div className="y-phone-hardware">
           <div className="y-phone-island" />
           <div className="y-phone-screen">
+            <div className="y-phone-statusbar" aria-hidden="true">
+              <span>9:41</span>
+              <span className="y-phone-island-mini" />
+              <span>5G · 100%</span>
+            </div>
             <header className="y-phone-top">
               <div className="y-phone-mini-brand"><span>Y</span><strong>Yumna</strong></div>
-              <span className="y-phone-live"><i /> live</span>
+              <span className="y-phone-live"><i /> working</span>
             </header>
+            <div className="y-phone-toolbar" aria-live="polite">
+              <span className={current?.title.toLowerCase().includes("found") || current?.title.toLowerCase().includes("compared") ? "active" : ""}>Maps</span>
+              <span className={current?.title.toLowerCase().includes("call") ? "active" : ""}>Voice</span>
+              <span className={current?.type === "approval" ? "active" : ""}>Approval</span>
+              <span className={current?.title.toLowerCase().includes("calendar") || current?.title.toLowerCase().includes("booked") ? "active" : ""}>Calendar</span>
+            </div>
 
             <div className="y-phone-thread">
               <div className="y-phone-user-message">
@@ -165,6 +182,12 @@ export default function LivePhoneDemo({ large = false }: { large?: boolean }) {
               ) : null}
             </div>
 
+            <div className="y-phone-bottom-nav" aria-hidden="true">
+              <span className="active"><b>⌁</b><small>Home</small></span>
+              <span><b>✓</b><small>Tasks</small></span>
+              <span><b>⌘</b><small>Apps</small></span>
+              <span><b>◌</b><small>You</small></span>
+            </div>
             <div className="y-phone-home-indicator" />
           </div>
         </div>

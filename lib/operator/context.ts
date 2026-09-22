@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { toJson } from "@/lib/json";
+import { listPipedreamAccounts, pipedreamConfigured } from "@/lib/operator/pipedream";
 
 export type OperatorMemory = {
   id: string;
@@ -84,12 +85,21 @@ export async function plannerContext(orgId: string) {
     limit 100
   `;
 
+  const connectedApps = pipedreamConfigured()
+    ? await listPipedreamAccounts(orgId).catch(() => [])
+    : [];
+
   return {
     profile: profile ?? null,
     memories: memories.map((memory) => ({
       key: memory.memory_key,
       value: memory.value,
       sensitivity: memory.sensitivity,
+    })),
+    connectedApps: connectedApps.map((account) => ({
+      app: account.app,
+      accountId: account.id,
+      name: account.name,
     })),
   };
 }

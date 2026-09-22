@@ -25,9 +25,15 @@ export async function createCheckoutSession(input: {
   if (!key) throw new Error("STRIPE_SECRET_KEY is not configured.");
 
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const sql = db();
+  const [existing] = await sql<{ customer_id: string | null }[]>`
+    select customer_id from operator_subscriptions where org_id = ${input.orgId} limit 1
+  `;
+
   const body = new URLSearchParams();
   body.set("mode", "subscription");
-  body.set("customer_email", input.email);
+  if (existing?.customer_id) body.set("customer", existing.customer_id);
+  else body.set("customer_email", input.email);
   body.set("client_reference_id", input.orgId);
   body.set("success_url", base + "/assistant/billing?checkout=success");
   body.set("cancel_url", base + "/assistant/billing?checkout=cancelled");
@@ -159,4 +165,41 @@ export async function applyStripeEvent(event: {
   }
 
   return { duplicate: false };
+}
+
+
+export async function createBillingPortalSession(orgId: string) {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error("STRIPE_SECRET_KEY is not configured.");
+
+  const sql = db();
+  const [subscription] = await sql<{ customer_id: string | null }[]>`
+    select customer_id
+    from operator_subscriptions
+    where org_id = ${orgId}
+    limit 1
+  `;
+  if (!subscription?.customer_id) {
+    throw new Error("No Stripe customer exists for this workspace yet.");
+  }
+
+  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const body = new URLSearchParams({
+    customer: subscription.customer_id,
+    return_url: base + "/assistant/billing",
+  });
+
+  const response = await fetch("https://api.stripe.com/v1/billing_portal/sessions", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + key,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
+  });
+  const payload = await response.json() as { url?: string; error?: { message?: string } };
+  if (!response.ok || !payload.url) {
+    throw new Error(payload.error?.message ?? "Stripe billing portal could not be created.");
+  }
+  return { url: payload.url };
 }

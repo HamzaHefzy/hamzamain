@@ -235,3 +235,28 @@ export async function runPipedreamAction(input: {
   }
   return payload;
 }
+
+
+export async function disconnectPipedreamAccount(input: {
+  externalUserId: string;
+  accountId: string;
+}) {
+  const { projectId } = config();
+  const token = await accessToken();
+  const url = new URL(
+    "https://api.pipedream.com/v1/connect/" +
+      encodeURIComponent(projectId) +
+      "/accounts/" +
+      encodeURIComponent(input.accountId),
+  );
+  url.searchParams.set("external_user_id", input.externalUserId);
+
+  const response = await fetchWithTimeout(url.toString(), {
+    method: "DELETE",
+    headers: baseHeaders(token),
+  });
+  if (!response.ok && response.status !== 404) {
+    throw new Error("Unable to disconnect app account.");
+  }
+  return { ok: true };
+}

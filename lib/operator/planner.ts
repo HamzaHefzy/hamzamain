@@ -15,7 +15,7 @@ function step(input: PlannedStep): PlannedStep {
 
 export function planOperatorTask(rawRequest: string): TaskPlan {
   const request = rawRequest.trim();
-  if (request.length < 4) throw new Error("Tell Dexyra what you want handled.");
+  if (request.length < 4) throw new Error("Tell Wafira what you want handled.");
 
   const text = request.toLowerCase();
   const steps: PlannedStep[] = [];
@@ -180,7 +180,7 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
     title: titleFromRequest(request),
     category,
     rationale:
-      "Dexyra decomposes the request into auditable actions and pauses only when authority is missing.",
+      "Wafira decomposes the request into auditable actions and pauses only when authority is missing.",
     steps,
     assumptions,
   };

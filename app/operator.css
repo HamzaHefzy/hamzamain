@@ -901,3 +901,46 @@ button.ghost,
   text-transform: none;
   letter-spacing: 0;
 }
+
+.operator-verification-banner {
+  width: min(1180px, calc(100% - 48px));
+  margin: 24px auto -22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 15px 17px;
+  border: 1px solid #efd8a9;
+  border-radius: 14px;
+  background: #fffaf0;
+}
+.operator-verification-banner > div {
+  display: grid;
+  gap: 4px;
+}
+.operator-verification-banner span,
+.operator-verification-banner small {
+  color: #7c6539;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.operator-verification-banner button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  border: 1px solid #e4c98e;
+  border-radius: 10px;
+  padding: 0 13px;
+  background: white;
+  color: var(--op-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+@media (max-width: 620px) {
+  .operator-verification-banner {
+    width: min(100% - 28px, 1180px);
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

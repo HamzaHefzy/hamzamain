@@ -13,7 +13,8 @@
     "db:setup": "npm run db:migrate && npm run db:seed",
     "check:source": "node scripts/check-source.mjs",
     "typecheck": "tsc --noEmit",
-    "setup:local": "node scripts/setup-local.mjs"
+    "setup:local": "node scripts/setup-local.mjs",
+    "check:production": "node scripts/check-production.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

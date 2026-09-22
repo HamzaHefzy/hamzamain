@@ -10,7 +10,7 @@ export default function NotFound() {
           <p>The link may be outdated, or the resource no longer exists in this workspace.</p>
         </div>
       </header>
-      <Link className="operator-back" href="/assistant">← Return to Wafira</Link>
+      <Link className="operator-back" href="/assistant">← Return to Yumna</Link>
     </div>
   );
 }

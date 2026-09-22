@@ -159,7 +159,7 @@ describe.skipIf(!run)("Operator database lifecycle", () => {
       orgId,
       userId,
       request: "Call my dentist and schedule the first available appointment",
-    })).rejects.toThrow(/Operator/);
+    })).rejects.toThrow(/Yumna/);
 
     const browserTask = await createOperatorTask({
       orgId,

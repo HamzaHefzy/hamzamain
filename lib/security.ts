@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { AnchorRole } from "@/lib/auth";
+import type { OperatorRole } from "@/lib/auth";
 
 export function assertSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
@@ -16,7 +16,7 @@ export function assertSameOrigin(request: Request) {
 
 export function hashIp(ip: string | null) {
   if (!ip) return null;
-  const salt = process.env.AUTH_SECRET ?? "anchor";
+  const salt = process.env.AUTH_SECRET ?? "operator";
   return createHash("sha256").update(`${salt}:${ip}`).digest("hex").slice(0, 24);
 }
 
@@ -26,6 +26,6 @@ export function requestIp(request: Request) {
     ?? null;
 }
 
-export function hasRole(role: AnchorRole, allowed: AnchorRole[]) {
+export function hasRole(role: OperatorRole, allowed: OperatorRole[]) {
   return allowed.includes(role);
 }

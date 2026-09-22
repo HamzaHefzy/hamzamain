@@ -13,8 +13,8 @@ export default async function ContactsPage() {
       <header className="operator-page-header">
         <div>
           <span className="operator-kicker">Private directory</span>
-          <h1>Give Wafira the people and businesses you actually use.</h1>
-          <p>Contact details stay inside Wafira's private core. The planner does not receive your address book; only the resolved destination is attached at execution time.</p>
+          <h1>Give Yumna the people and businesses you actually use.</h1>
+          <p>Contact details stay inside Yumna's private core. The planner does not receive your address book; only the resolved destination is attached at execution time.</p>
         </div>
       </header>
 
@@ -46,7 +46,7 @@ export default async function ContactsPage() {
           )) : (
             <div className="operator-empty">
               <strong>No contacts yet.</strong>
-              <span>Add the dentist, salon, favorite restaurants, family, or anyone Wafira may need to reach.</span>
+              <span>Add the dentist, salon, favorite restaurants, family, or anyone Yumna may need to reach.</span>
             </div>
           )}
         </div>

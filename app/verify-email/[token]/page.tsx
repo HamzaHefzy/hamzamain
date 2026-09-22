@@ -15,20 +15,20 @@ export default async function VerifyEmailPage({
   return (
     <div className="public-form-page">
       <header className="public-form-header">
-        <Link href="/" aria-label="Wafira home"><Logo /></Link>
+        <Link href="/" aria-label="Yumna home"><Logo /></Link>
       </header>
       <main className="auth-card">
         <div className="m-kicker">Email verification</div>
         {result.ok ? (
           <>
             <h1>Email verified.</h1>
-            <p>Your Wafira workspace can now execute tasks and accept workspace changes.</p>
-            <Link href="/assistant" className="m-button dark auth-submit">Open Wafira</Link>
+            <p>Your Yumna workspace can now execute tasks and accept workspace changes.</p>
+            <Link href="/assistant" className="m-button dark auth-submit">Open Yumna</Link>
           </>
         ) : (
           <>
             <h1>This verification link has expired.</h1>
-            <p>Sign in to Wafira and request a fresh verification email from the banner at the top of your workspace.</p>
+            <p>Sign in to Yumna and request a fresh verification email from the banner at the top of your workspace.</p>
             <Link href="/login" className="m-button dark auth-submit">Sign in</Link>
           </>
         )}

@@ -43,9 +43,9 @@ export async function issueEmailVerification(input: {
   const verificationUrl = siteUrl() + "/verify-email/" + token;
   await sendEmail({
     to: input.email,
-    subject: "Verify your Operator email",
+    subject: "Verify your Wafira email",
     body:
-      "Verify your email to unlock Operator execution and workspace changes:\n\n" +
+      "Verify your email to unlock Wafira execution and workspace changes:\n\n" +
       verificationUrl +
       "\n\nThis link expires in 24 hours.",
   });

@@ -17,12 +17,12 @@ export default async function BillingPage() {
     plan: string;
     status: string;
     current_period_end: string | null;
-  }[]>\`
+  }[]>`
     select plan, status, current_period_end
     from operator_subscriptions
-    where org_id = \${session.orgId}
+    where org_id = ${session.orgId}
     limit 1
-  \`;
+  `;
 
   return (
     <div className="operator-page">
@@ -33,7 +33,7 @@ export default async function BillingPage() {
           <p>Subscriptions keep Operator aligned to you—not advertisers or merchants.</p>
         </div>
         <div className="operator-status-pill status-completed">
-          {subscription ? \`\${subscription.plan} · \${subscription.status}\` : "trial"}
+          {subscription ? `${subscription.plan} · ${subscription.status}` : "trial"}
         </div>
       </header>
 

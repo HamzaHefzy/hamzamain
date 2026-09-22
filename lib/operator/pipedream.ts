@@ -260,3 +260,170 @@ export async function disconnectPipedreamAccount(input: {
   }
   return { ok: true };
 }
+
+
+export type PipedreamActionSummary = {
+  id: string;
+  name: string;
+  description: string | null;
+  app: string;
+  props: Array<{
+    name: string;
+    label: string | null;
+    description: string | null;
+    type: string | null;
+    optional: boolean;
+    hidden: boolean;
+    remoteOptions: boolean;
+  }>;
+  readOnly: boolean;
+  destructive: boolean;
+};
+
+function componentArray(raw: Record<string, unknown>) {
+  if (Array.isArray(raw.data)) return raw.data;
+  if (
+    raw.data &&
+    typeof raw.data === "object" &&
+    Array.isArray((raw.data as Record<string, unknown>).data)
+  ) {
+    return (raw.data as Record<string, unknown>).data as unknown[];
+  }
+  if (Array.isArray(raw.components)) return raw.components;
+  return [] as unknown[];
+}
+
+export async function listPipedreamActions(appSlug: string, limit = 30) {
+  const { projectId } = config();
+  const token = await accessToken();
+  const url = new URL(
+    "https://api.pipedream.com/v1/connect/" +
+      encodeURIComponent(projectId) +
+      "/components",
+  );
+  url.searchParams.set("app", appSlug);
+  url.searchParams.set("component_type", "action");
+
+  const response = await fetchWithTimeout(url.toString(), {
+    headers: baseHeaders(token),
+  });
+  const raw = await response.json().catch(() => ({})) as Record<string, unknown>;
+  if (!response.ok) throw new Error("Unable to discover connected app tools.");
+
+  return componentArray(raw)
+    .slice(0, Math.max(1, Math.min(limit, 60)))
+    .map((entry): PipedreamActionSummary | null => {
+      if (!entry || typeof entry !== "object") return null;
+      const component = entry as Record<string, unknown>;
+      const id =
+        typeof component.key === "string"
+          ? component.key
+          : typeof component.id === "string"
+            ? component.id
+            : null;
+      if (!id) return null;
+
+      const rawProps = Array.isArray(component.configurable_props)
+        ? component.configurable_props
+        : Array.isArray(component.configurableProps)
+          ? component.configurableProps
+          : [];
+      const annotations =
+        component.annotations && typeof component.annotations === "object"
+          ? component.annotations as Record<string, unknown>
+          : {};
+
+      return {
+        id,
+        name:
+          typeof component.name === "string"
+            ? component.name
+            : typeof annotations.title === "string"
+              ? annotations.title
+              : id,
+        description:
+          typeof component.description === "string"
+            ? component.description
+            : null,
+        app: appSlug,
+        props: rawProps
+          .map((prop) => {
+            if (!prop || typeof prop !== "object") return null;
+            const value = prop as Record<string, unknown>;
+            if (typeof value.name !== "string") return null;
+            return {
+              name: value.name,
+              label: typeof value.label === "string" ? value.label : null,
+              description:
+                typeof value.description === "string" ? value.description : null,
+              type: typeof value.type === "string" ? value.type : null,
+              optional: value.optional === true,
+              hidden: value.hidden === true,
+              remoteOptions: value.remoteOptions === true,
+            };
+          })
+          .filter((prop): prop is PipedreamActionSummary["props"][number] => Boolean(prop))
+          .filter((prop) => !prop.hidden),
+        readOnly: annotations.readOnlyHint === true,
+        destructive: annotations.destructiveHint === true,
+      };
+    })
+    .filter((action): action is PipedreamActionSummary => Boolean(action));
+}
+
+export async function retrievePipedreamAction(actionId: string) {
+  const { projectId } = config();
+  const token = await accessToken();
+  const response = await fetchWithTimeout(
+    "https://api.pipedream.com/v1/connect/" +
+      encodeURIComponent(projectId) +
+      "/components/" +
+      encodeURIComponent(actionId),
+    { headers: baseHeaders(token) },
+  );
+  const raw = await response.json().catch(() => ({})) as Record<string, unknown>;
+  if (!response.ok) throw new Error("Unable to retrieve connected app tool.");
+
+  const component =
+    raw.data && typeof raw.data === "object"
+      ? raw.data as Record<string, unknown>
+      : raw;
+  return component;
+}
+
+export async function runPipedreamAppAction(input: {
+  externalUserId: string;
+  app: string;
+  actionId: string;
+  configuredProps: Record<string, unknown>;
+  accountId?: string | null;
+}) {
+  const accounts = await listPipedreamAccounts(input.externalUserId);
+  const account =
+    (input.accountId
+      ? accounts.find((candidate) => candidate.id === input.accountId)
+      : null) ??
+    accounts.find((candidate) => candidate.app === input.app);
+
+  if (!account) {
+    throw new Error(
+      "No connected " + input.app + " account exists for this workspace.",
+    );
+  }
+
+  const props: Record<string, unknown> = {
+    ...input.configuredProps,
+  };
+  if (
+    !props[input.app] ||
+    typeof props[input.app] !== "object"
+  ) {
+    props[input.app] = { authProvisionId: account.id };
+  }
+
+  return runPipedreamAction({
+    externalUserId: input.externalUserId,
+    actionId: input.actionId,
+    configuredProps: props,
+  });
+}

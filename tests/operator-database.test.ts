@@ -8,6 +8,8 @@ import {
 } from "@/lib/operator/service";
 import { plannerContext, upsertOperatorMemory } from "@/lib/operator/context";
 import { createOperatorRoutine, runDueOperatorRoutines } from "@/lib/operator/routines";
+import { cancelOperatorTask } from "@/lib/operator/cancellation";
+import { acceptSafeOperatorCallback } from "@/lib/operator/callbacks";
 
 const run = Boolean(process.env.DATABASE_URL);
 const sql = run ? postgres(process.env.DATABASE_URL!, { max: 1, prepare: false }) : null;
@@ -166,6 +168,53 @@ describe.skipIf(!run)("Operator database lifecycle", () => {
       set plan = 'trial', status = 'trialing', updated_at = now()
       where org_id = ${orgId}
     `;
+  });
+
+  it("cancels in-flight work and ignores duplicate late callbacks", async () => {
+    const [task] = await sql!<{ id: string }[]>`
+      insert into operator_tasks (
+        org_id, created_by, title, request, category, status, source
+      )
+      values (
+        ${orgId}, ${userId}, 'Callback cancellation test',
+        'Test a cancelled external action', 'general', 'waiting_external', 'api'
+      )
+      returning id
+    `;
+    const [step] = await sql!<{ id: string }[]>`
+      insert into operator_steps (
+        org_id, task_id, sequence, kind, status, summary, provider
+      )
+      values (
+        ${orgId}, ${task.id}, 1, 'browser', 'waiting_external',
+        'External action in flight', 'test-runner'
+      )
+      returning id
+    `;
+
+    const cancelled = await cancelOperatorTask({ orgId, userId, taskId: task.id });
+    expect(cancelled?.status).toBe("cancelled");
+    expect(cancelled?.steps[0]?.status).toBe("skipped");
+
+    const callback = {
+      callbackId: "test-callback-" + task.id,
+      taskId: task.id,
+      stepId: step.id,
+      state: "completed" as const,
+      message: "Provider says it completed.",
+    };
+    const afterLateCallback = await acceptSafeOperatorCallback(callback);
+    expect(afterLateCallback?.status).toBe("cancelled");
+
+    const duplicate = await acceptSafeOperatorCallback(callback);
+    expect(duplicate?.status).toBe("cancelled");
+
+    const [ledger] = await sql!<{ count: number }[]>`
+      select count(*)::int as count
+      from operator_callback_events
+      where callback_id = ${callback.callbackId}
+    `;
+    expect(ledger.count).toBe(1);
   });
 
 });

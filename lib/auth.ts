@@ -17,6 +17,7 @@ export type OperatorSession = {
   role: OperatorRole;
   orgName: string;
   orgSlug: string;
+  emailVerified: boolean;
 };
 
 function secret() {
@@ -66,8 +67,9 @@ export async function getSession(): Promise<OperatorSession | null> {
     org_id: string;
     org_name: string;
     org_slug: string;
+    email_verified_at: string | null;
   }[]>`
-    select u.id as user_id, u.email, u.name, m.role,
+    select u.id as user_id, u.email, u.name, u.email_verified_at, m.role,
            o.id as org_id, o.name as org_name, o.slug as org_slug
     from users u
     join memberships m on m.user_id = u.id
@@ -91,6 +93,7 @@ export async function getSession(): Promise<OperatorSession | null> {
     role: row.role,
     orgName: row.org_name,
     orgSlug: row.org_slug,
+    emailVerified: Boolean(row.email_verified_at),
   };
 }
 

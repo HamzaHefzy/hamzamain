@@ -24,12 +24,31 @@ const securityHeaders = [
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
 ];
 
+const legacyRedirects = [
+  { source: "/attendance/:path*", destination: "/assistant", permanent: false },
+  { source: "/cases/:path*", destination: "/assistant", permanent: false },
+  { source: "/evidence/:path*", destination: "/assistant", permanent: false },
+  { source: "/funding/:path*", destination: "/assistant", permanent: false },
+  { source: "/recovery/:path*", destination: "/assistant", permanent: false },
+  { source: "/value/:path*", destination: "/assistant", permanent: false },
+  { source: "/virtual/:path*", destination: "/assistant", permanent: false },
+  { source: "/launch/:path*", destination: "/assistant", permanent: false },
+  { source: "/audit/:path*", destination: "/assistant/activity", permanent: false },
+  { source: "/integrations/:path*", destination: "/assistant/connections", permanent: false },
+  { source: "/settings/:path*", destination: "/assistant/authority", permanent: false },
+  { source: "/data-governance/:path*", destination: "/privacy", permanent: false },
+  { source: "/request-demo/:path*", destination: "/signup", permanent: false },
+];
+
 const nextConfig: NextConfig = {
   output: "standalone",
   turbopack: { root: process.cwd() },
   poweredByHeader: false,
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
+  },
+  async redirects() {
+    return legacyRedirects;
   },
 };
 

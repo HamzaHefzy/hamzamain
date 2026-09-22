@@ -14,7 +14,7 @@ export default async function WorkspacePrivacyPage() {
         <div>
           <span className="operator-kicker">Data & account</span>
           <h1>Your data should be portable—and deletable.</h1>
-          <p>Operator keeps operational context because it makes delegation better. This page gives the workspace owner control over taking that data out or removing it entirely.</p>
+          <p>Wafira keeps operational context because it makes delegation better. This page gives the workspace owner control over taking that data out or removing it entirely.</p>
         </div>
       </header>
       <WorkspacePrivacyActions orgSlug={session.orgSlug} />

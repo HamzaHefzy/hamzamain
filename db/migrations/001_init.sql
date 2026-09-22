@@ -265,3 +265,20 @@ CREATE UNIQUE INDEX operator_contacts_org_phone_unique
 CREATE UNIQUE INDEX operator_contacts_org_email_unique
   ON operator_contacts(org_id, lower(email))
   WHERE email IS NOT NULL;
+
+
+CREATE TABLE operator_notification_events (
+  id bigserial PRIMARY KEY,
+  org_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  task_id uuid REFERENCES operator_tasks(id) ON DELETE CASCADE,
+  event_key text NOT NULL,
+  channel text NOT NULL CHECK (channel IN ('email','sms')),
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','sent','failed')),
+  provider_id text,
+  error text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  sent_at timestamptz,
+  UNIQUE(org_id, event_key, channel)
+);
+CREATE INDEX operator_notification_events_org_created_idx
+  ON operator_notification_events(org_id, created_at DESC);

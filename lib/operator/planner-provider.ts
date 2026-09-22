@@ -41,7 +41,7 @@ const jsonPlanSchema = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["kind", "summary", "domain", "action", "requiresApproval"],
+        required: ["kind", "summary", "domain", "action", "requiresApproval", "approvalType", "provider", "request"],
         properties: {
           kind: {
             type: "string",
@@ -52,11 +52,21 @@ const jsonPlanSchema = {
           action: { type: "string" },
           requiresApproval: { type: "boolean" },
           approvalType: {
-            type: "string",
-            enum: ["spend", "booking", "communication", "calendar", "account_change", "sensitive", "other"],
+            anyOf: [
+              {
+                type: "string",
+                enum: ["spend", "booking", "communication", "calendar", "account_change", "sensitive", "other"],
+              },
+              { type: "null" },
+            ],
           },
-          provider: { type: "string" },
-          request: { type: "object", additionalProperties: true },
+          provider: { anyOf: [{ type: "string" }, { type: "null" }] },
+          request: {
+            anyOf: [
+              { type: "object", additionalProperties: true },
+              { type: "null" },
+            ],
+          },
         },
       },
     },
@@ -135,7 +145,18 @@ async function planWithOpenAI(request: string, context: Record<string, unknown>)
 
   const output = extractResponseText(payload);
   if (!output) throw new Error("OpenAI planner returned no structured output.");
-  return planSchema.parse(JSON.parse(output));
+  const raw = JSON.parse(output) as Record<string, unknown>;
+  if (Array.isArray(raw.steps)) {
+    raw.steps = raw.steps.map((item) => {
+      if (!item || typeof item !== "object") return item;
+      const step = { ...(item as Record<string, unknown>) };
+      if (step.approvalType === null) delete step.approvalType;
+      if (step.provider === null) delete step.provider;
+      if (step.request === null) delete step.request;
+      return step;
+    });
+  }
+  return planSchema.parse(raw);
 }
 
 async function planWithRemote(request: string, context: Record<string, unknown>) {

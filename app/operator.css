@@ -723,3 +723,19 @@ button.ghost,
     flex-direction: column;
   }
 }
+
+.operator-phone-form {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.4fr) 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+.operator-phone-form h2 { margin: 5px 0 6px; }
+.operator-phone-form p { margin: 0; color: var(--op-muted); line-height: 1.5; font-size: 13px; }
+.operator-phone-form label { display: grid; gap: 6px; }
+.operator-phone-form label > span { color: var(--op-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.operator-phone-form input { min-height: 43px; width: 100%; border: 1px solid #d9dbe0; border-radius: 11px; padding: 0 12px; font: inherit; background: white; }
+.operator-phone-form input[readonly] { background: var(--op-soft); color: var(--op-muted); }
+.operator-phone-form button { min-height: 43px; border: 0; border-radius: 11px; padding: 0 16px; background: var(--op-ink); color: white; font: inherit; font-weight: 700; cursor: pointer; }
+@media (max-width: 900px) { .operator-phone-form { grid-template-columns: 1fr 1fr; } .operator-phone-form > div:first-child { grid-column: 1 / -1; } }
+@media (max-width: 620px) { .operator-phone-form { grid-template-columns: 1fr; } .operator-phone-form > div:first-child { grid-column: auto; } }

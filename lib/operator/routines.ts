@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { createOperatorTask, runOperatorTask } from "@/lib/operator/service";
+import { assertRoutineCapacity } from "@/lib/operator/entitlements";
 
 export type OperatorRoutine = {
   id: string;
@@ -39,6 +40,7 @@ export async function createOperatorRoutine(input: {
     throw new Error("First run time must be in the future.");
   }
 
+  await assertRoutineCapacity(input.orgId);
   const sql = db();
   const [routine] = await sql<OperatorRoutine[]>`
     insert into operator_routines (

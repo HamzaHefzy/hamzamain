@@ -30,6 +30,7 @@ export async function updateOperatorProfileSettings(input: {
   assistantPhone?: string | null;
   notifyEmail?: boolean;
   notifySms?: boolean;
+  homeBase?: string | null;
 }) {
   const sql = db();
   const current = await getOperatorProfile(input.orgId);
@@ -58,6 +59,7 @@ export async function updateOperatorProfileSettings(input: {
     update operator_profiles
     set owner_phone = ${input.ownerPhone === undefined ? current.owner_phone : input.ownerPhone},
         assistant_phone = ${provisionedAssistantPhone ?? null},
+        home_base = ${input.homeBase === undefined ? current.home_base : input.homeBase?.trim() || null},
         preferences = ${sql.json(toJson(preferences))},
         updated_at = now()
     where org_id = ${input.orgId}

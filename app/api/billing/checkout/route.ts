@@ -8,7 +8,7 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
-  const auth = await apiSession("view");
+  const auth = await apiSession("admin");
   if (!auth.session) return auth.response;
 
   try {

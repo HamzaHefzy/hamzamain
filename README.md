@@ -17,11 +17,17 @@ Operator is a production-shaped personal operations system: a user delegates an 
 - Human-operator exception queue contract
 - Signed asynchronous provider callbacks and automatic task resume
 - Task-level audit/activity history
+- Atomic execution-step claiming to prevent duplicate calls, bookings, or payments under concurrent retries
 - Personal memory with normal/private/restricted privacy tiers
+- Private contacts resolved only at execution time, without exposing the address book to the planner
 - Daily and weekly proactive routines that create normal governed tasks
-- Signed inbound Twilio SMS that turns a text into an Operator task
+- Deduplicated email/SMS alerts for approvals, completion, and failures
+- Signed, retry-safe inbound Twilio SMS that turns a text into an Operator task
 - Signed inbound Twilio call intake with automated-assistant disclosure and speech-to-task capture
 - Connection-health UI
+- Production email verification before execution or workspace mutation
+- Workspace JSON export and owner-controlled deletion with billing cancellation safeguards
+- Subscription entitlements, usage limits, and self-service Stripe billing management
 - Stripe Checkout subscriptions and signed webhook processing
 - Docker/local bootstrap and PostgreSQL-backed GitHub CI
 - Demo executor for safe end-to-end product testing without external credentials
@@ -42,12 +48,13 @@ Set `OPERATOR_DEMO_MODE=true` to run the complete task lifecycle locally without
 
 ~~~bash
 npm run check:source
+npm run check:production
 npm run typecheck
 npm test
 npm run build
 ~~~
 
-GitHub Actions also provisions PostgreSQL, applies every migration, seeds the database, runs database smoke tests, and performs a production build.
+GitHub Actions also provisions PostgreSQL, applies the standalone schema, seeds the database, runs the integration suite, and performs a production build. `npm run check:production` is intentionally stricter than CI because it validates live credentials and rejects demo mode.
 
 ## Connecting the outside world
 
@@ -69,6 +76,10 @@ Executor requests include the task ID, step ID, requested objective, and a one-t
 Consequential actions are not inferred as permission. They are either explicitly approved for the task or covered by a stored authority rule. Spend rules with a maximum amount are enforced against the task's declared budget ceiling; if the amount is unknown, Operator asks.
 
 Every material state transition is persisted. The user can see what Operator attempted, why it paused, what provider handled a step, what was approved, and whether the task finished.
+
+## Standalone repository
+
+Publish a clean-history repository with `bash scripts/publish-standalone.sh OWNER/operator private`. See `docs/STANDALONE_REPOSITORY.md` for the complete handoff and `docs/PRODUCTION_LAUNCH.md` for the release gate.
 
 ## Deployment
 

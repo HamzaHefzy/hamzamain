@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import Logo from "./Logo";
 import LogoutButton from "./LogoutButton";
+import QuickCommand from "@/components/operator/QuickCommand";
 
 type NavItem = {
   href: string;
@@ -143,12 +144,15 @@ export default function RouteShell({ children }: { children: ReactNode }) {
             </button>
             <span className="app-current-title">{currentLabel(pathname)}</span>
           </div>
+          <div className="app-topbar-center">
+            <QuickCommand />
+          </div>
           <div className="app-topbar-right">
             <Link href="/assistant/connections" className="app-topbar-action">
               <Icon name="apps" />
               <span>Apps</span>
             </Link>
-            <Link href="/assistant/authority" className="app-avatar" aria-label="Authority and account controls">W</Link>
+            <Link href="/assistant/authority" className="app-avatar" aria-label="Authority and account controls">Y</Link>
           </div>
         </header>
 

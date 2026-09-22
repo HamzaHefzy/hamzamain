@@ -85,7 +85,7 @@ Every material transition is persisted. The user can see what Yumna attempted, w
 
 ## Standalone repository
 
-This branch is intentionally isolated from Anchor. Publish a clean-history repository with:
+This branch is intentionally isolated from the legacy source application. Publish a clean-history repository with:
 
 ~~~bash
 bash scripts/publish-standalone.sh YOUR_GITHUB_OWNER/yumna private

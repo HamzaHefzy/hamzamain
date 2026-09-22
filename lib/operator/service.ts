@@ -6,6 +6,7 @@ import { plannerContext } from "@/lib/operator/context";
 import { assertPlanSupportsSteps, assertTaskCapacity } from "@/lib/operator/entitlements";
 import { resolveOperatorDestination } from "@/lib/operator/contacts";
 import { notifyOperator } from "@/lib/operator/notifications";
+import { issueOperatorStepCallbackToken } from "@/lib/operator/callback-auth";
 
 type TaskRow = {
   id: string;
@@ -339,12 +340,22 @@ export async function runOperatorTask(orgId: string, taskId: string) {
 
     let result;
     try {
+      const callbackToken =
+        step.kind === "research"
+          ? undefined
+          : await issueOperatorStepCallbackToken({
+              orgId,
+              taskId,
+              stepId: step.id,
+            });
+
       result = await executeOperatorStep({
         taskId,
         stepId: step.id,
         kind: step.kind,
         summary: step.summary,
         request: executionRequest,
+        callbackToken,
       });
     } catch (error) {
       result = {
@@ -359,6 +370,7 @@ export async function runOperatorTask(orgId: string, taskId: string) {
       const [updated] = await sql<{ id: string }[]>`
         update operator_steps
         set status = 'completed',
+            callback_token_hash = null,
             provider = ${result.provider},
             response = ${sql.json(toJson({ message: result.message, ...(result.data ?? {}) }))},
             completed_at = now(),
@@ -401,6 +413,7 @@ export async function runOperatorTask(orgId: string, taskId: string) {
     const [failed] = await sql<{ id: string }[]>`
       update operator_steps
       set status = 'failed',
+          callback_token_hash = null,
           provider = ${result.provider},
           error = ${result.message},
           response = ${sql.json(toJson(result.data ?? {}))},
@@ -541,6 +554,7 @@ export async function acceptOperatorCallback(input: {
     const [failed] = await sql<{ id: string }[]>`
       update operator_steps
       set status = 'failed',
+          callback_token_hash = null,
           error = ${input.message},
           response = ${sql.json(toJson(input.data ?? {}))},
           completed_at = now()
@@ -573,6 +587,7 @@ export async function acceptOperatorCallback(input: {
   const [completed] = await sql<{ id: string }[]>`
     update operator_steps
     set status = 'completed',
+        callback_token_hash = null,
         response = ${sql.json(toJson({ message: input.message, ...(input.data ?? {}) }))},
         completed_at = now(),
         error = null

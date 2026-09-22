@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { getOperatorTask } from "@/lib/operator/service";
 import TaskActions from "@/components/operator/TaskActions";
+import StepResult from "@/components/operator/StepResult";
+import TaskLiveRefresh from "@/components/operator/TaskLiveRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +22,7 @@ export default async function TaskPage({
 
   return (
     <div className="operator-page">
+      <TaskLiveRefresh status={task.status} />
       <Link href="/assistant" className="operator-back">← All tasks</Link>
 
       <header className="operator-task-header">
@@ -58,6 +61,7 @@ export default async function TaskPage({
                 <strong>{step.summary}</strong>
                 {step.error ? <p className="operator-error">{step.error}</p> : null}
                 {typeof step.response?.message === "string" ? <p>{step.response.message}</p> : null}
+                <StepResult provider={step.provider} response={step.response ?? {}} />
               </div>
             </article>
           ))}

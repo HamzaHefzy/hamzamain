@@ -7,6 +7,7 @@ type ExecuteInput = {
   kind: OperatorStepKind;
   summary: string;
   request: Record<string, unknown>;
+  callbackToken?: string;
 };
 
 function siteUrl() {
@@ -14,12 +15,12 @@ function siteUrl() {
 }
 
 function callbackContext(input: ExecuteInput) {
-  const token = process.env.OPERATOR_WEBHOOK_SECRET;
   return {
     url: siteUrl() + "/api/operator/callback",
-    ...(token ? { token } : {}),
+    ...(input.callbackToken ? { token: input.callbackToken } : {}),
     taskId: input.taskId,
     stepId: input.stepId,
+    eventIdHeader: "x-operator-event-id",
   };
 }
 

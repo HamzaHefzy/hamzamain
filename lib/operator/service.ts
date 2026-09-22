@@ -3,6 +3,7 @@ import { toJson } from "@/lib/json";
 import { planOperatorTaskWithProvider } from "@/lib/operator/planner-provider";
 import { executeOperatorStep } from "@/lib/operator/executors";
 import { plannerContext } from "@/lib/operator/context";
+import { assertPlanSupportsSteps, assertTaskCapacity } from "@/lib/operator/entitlements";
 
 type TaskRow = {
   id: string;
@@ -84,8 +85,10 @@ export async function createOperatorTask(input: {
   budgetLimit?: number | null;
   source?: "web" | "sms" | "email" | "voice" | "automation" | "api";
 }) {
+  const entitlement = await assertTaskCapacity(input.orgId);
   const context = await plannerContext(input.orgId);
   const plan = await planOperatorTaskWithProvider(input.request, context);
+  assertPlanSupportsSteps(entitlement, plan.steps);
   const sql = db();
 
   const [task] = await sql<TaskRow[]>`

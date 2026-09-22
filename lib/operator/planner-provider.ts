@@ -42,6 +42,7 @@ export async function planOperatorTaskWithProvider(request: string, context?: Re
           goal: "Create the smallest safe sequence of auditable actions that fully owns this user request.",
           approvalRule: "Consequential communications, account changes, sensitive actions, and spending require explicit approval unless a stored authority rule covers them.",
           escalationOrder: ["api", "browser", "voice", "human"],
+          connectedAppRule: "When context.connectedApps contains the app needed for the request, prefer an api step with provider app-agent and request.app set to that app slug. The app-agent dynamically selects a safe connected-app tool. Consequential writes still require approval.",
         },
       }),
     });

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Logo from "@/components/Logo";
 
 type DemoStep = {
   icon: string;
@@ -238,9 +239,7 @@ export default function LivePhoneDemo({ large = false }: { large?: boolean }) {
           <div className="y-phone-screen">
             <header className="y-phone-top">
               <div className="y-phone-mini-brand">
-                <span className="y-mini-mark" aria-hidden>
-                  <i /><i /><i />
-                </span>
+                <Logo markOnly className="y-phone-logo" />
                 <strong>Yumna</strong>
               </div>
               <span className="y-phone-live"><i /> live</span>
@@ -254,9 +253,7 @@ export default function LivePhoneDemo({ large = false }: { large?: boolean }) {
               </div>
 
               <div className="y-phone-assistant-head">
-                <span className="y-mini-mark dark" aria-hidden>
-                  <i /><i /><i />
-                </span>
+                <Logo markOnly className="y-phone-logo assistant" />
                 <div>
                   <strong>On it.</strong>
                   <small>I’ll only interrupt when you need to decide.</small>

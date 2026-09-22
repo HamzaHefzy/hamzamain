@@ -1,3 +1,4 @@
+import "./load-env";
 import bcrypt from "bcryptjs";
 import postgres from "postgres";
 

@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import postgres from "postgres";
+import bcrypt from "bcryptjs";
 import {
   createOperatorTask,
   getOperatorTask,
@@ -12,6 +13,7 @@ import { cancelOperatorTask } from "@/lib/operator/cancellation";
 import { acceptSafeOperatorCallback } from "@/lib/operator/callbacks";
 import { resolveOperatorDestination, saveOperatorContact } from "@/lib/operator/contacts";
 import { issueOperatorStepCallbackToken, verifyOperatorStepCallbackToken } from "@/lib/operator/callback-auth";
+import { deleteOperatorWorkspace, exportOperatorWorkspace } from "@/lib/operator/account";
 
 const run = Boolean(process.env.DATABASE_URL);
 const sql = run ? postgres(process.env.DATABASE_URL!, { max: 1, prepare: false }) : null;
@@ -411,6 +413,67 @@ describe.skipIf(!run)("Operator database lifecycle", () => {
       stepId: step.id,
       token,
     })).toBe(false);
+  });
+
+  it("exports and permanently deletes an isolated workspace", async () => {
+    const password = "delete-test-password";
+    const passwordHash = await bcrypt.hash(password, 12);
+    const [org] = await sql!<{ id: string }[]>`
+      insert into organizations (name, slug, timezone, status)
+      values ('Delete Test', 'delete-test-workspace', 'America/New_York', 'trial')
+      returning id
+    `;
+    const [user] = await sql!<{ id: string }[]>`
+      insert into users (email, name, password_hash, email_verified_at)
+      values ('delete-test@example.invalid', 'Delete Test Owner', ${passwordHash}, now())
+      returning id
+    `;
+    await sql!`
+      insert into memberships (user_id, org_id, role)
+      values (${user.id}, ${org.id}, 'owner')
+    `;
+    await sql!`
+      insert into operator_profiles (org_id, assistant_name, timezone)
+      values (${org.id}, 'Operator', 'America/New_York')
+    `;
+    await sql!`
+      insert into operator_subscriptions (org_id, plan, status)
+      values (${org.id}, 'trial', 'trialing')
+    `;
+    await sql!`
+      insert into operator_tasks (
+        org_id, created_by, title, request, category, status, source
+      )
+      values (
+        ${org.id}, ${user.id}, 'Export test task', 'Export this task',
+        'general', 'completed', 'api'
+      )
+    `;
+
+    const exported = await exportOperatorWorkspace(org.id);
+    expect(exported.organization).toBeTruthy();
+    expect(exported.tasks).toHaveLength(1);
+    expect(exported.members).toHaveLength(1);
+
+    await expect(deleteOperatorWorkspace({
+      orgId: org.id,
+      userId: user.id,
+      password: "wrong-password",
+    })).rejects.toThrow(/incorrect/i);
+
+    await deleteOperatorWorkspace({
+      orgId: org.id,
+      userId: user.id,
+      password,
+    });
+
+    const [remaining] = await sql!<{ orgs: number; users: number }[]>`
+      select
+        (select count(*)::int from organizations where id = ${org.id}) as orgs,
+        (select count(*)::int from users where id = ${user.id}) as users
+    `;
+    expect(remaining.orgs).toBe(0);
+    expect(remaining.users).toBe(0);
   });
 
 });

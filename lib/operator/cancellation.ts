@@ -30,6 +30,7 @@ export async function cancelOperatorTask(input: {
     await tx`
       update operator_steps
       set status = 'skipped',
+          callback_token_hash = null,
           completed_at = coalesce(completed_at, now()),
           error = case
             when status in ('running','waiting_external')

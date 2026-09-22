@@ -5,6 +5,13 @@ export async function GET() {
   const auth = await apiSession("admin");
   if (!auth.session) return auth.response;
 
+  if (auth.session.role !== "owner") {
+    return new Response(
+      JSON.stringify({ error: "Only the workspace owner can export the complete workspace." }),
+      { status: 403, headers: { "Content-Type": "application/json; charset=utf-8" } },
+    );
+  }
+
   try {
     const data = await exportOperatorWorkspace(auth.session.orgId);
     const filename =

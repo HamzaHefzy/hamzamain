@@ -286,4 +286,46 @@ describe.skipIf(!run)("Operator database lifecycle", () => {
     expect(stillWaiting?.steps[0]?.status).toBe("waiting_external");
   });
 
+  it("dispatches a pending step only once under concurrent run requests", async () => {
+    const [task] = await sql!<{ id: string }[]>`
+      insert into operator_tasks (
+        org_id, created_by, title, request, category, status, source
+      )
+      values (
+        ${orgId}, ${userId}, 'Concurrency test',
+        'Research one option safely', 'general', 'ready', 'api'
+      )
+      returning id
+    `;
+    const [step] = await sql!<{ id: string }[]>`
+      insert into operator_steps (
+        org_id, task_id, sequence, kind, status, summary, request
+      )
+      values (
+        ${orgId}, ${task.id}, 1, 'browser', 'pending',
+        'Run exactly once', '{"objective":"concurrency test"}'::jsonb
+      )
+      returning id
+    `;
+
+    const results = await Promise.all([
+      runOperatorTask(orgId, task.id),
+      runOperatorTask(orgId, task.id),
+    ]);
+    expect(results.some((result) => result?.status === "completed")).toBe(true);
+
+    const finalTask = await getOperatorTask(orgId, task.id);
+    expect(finalTask?.status).toBe("completed");
+    expect(finalTask?.steps[0]?.status).toBe("completed");
+
+    const [events] = await sql!<{ count: number }[]>`
+      select count(*)::int as count
+      from operator_events
+      where task_id = ${task.id}
+        and step_id = ${step.id}
+        and event_type = 'step.completed'
+    `;
+    expect(events.count).toBe(1);
+  });
+
 });

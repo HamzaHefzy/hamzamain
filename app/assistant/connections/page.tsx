@@ -10,6 +10,12 @@ export default async function ConnectionsPage() {
 
   const connections = [
     {
+      name: "Google Maps / Places",
+      env: "GOOGLE_MAPS_API_KEY",
+      connected: Boolean(process.env.GOOGLE_MAPS_API_KEY),
+      description: "Search local businesses and resolve canonical addresses, Maps links, websites, ratings and phone numbers before execution.",
+    },
+    {
       name: "Browser & API runner",
       env: "OPERATOR_ACTION_RUNNER_URL",
       connected: Boolean(process.env.OPERATOR_ACTION_RUNNER_URL),
@@ -74,6 +80,7 @@ export default async function ConnectionsPage() {
           assistantPhone={profile?.assistant_phone ?? process.env.TWILIO_FROM_NUMBER ?? null}
           notifyEmail={notifyEmail}
           notifySms={notifySms}
+          homeBase={profile?.home_base ?? null}
         />
       </section>
 

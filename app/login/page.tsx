@@ -12,15 +12,15 @@ export default async function LoginPage() {
   return (
     <div className="public-form-page">
       <header className="public-form-header">
-        <Link href="/" aria-label="Wafira home"><Logo /></Link>
+        <Link href="/" aria-label="Yumna home"><Logo /></Link>
         <Link href="/signup" className="m-button light compact">Create account</Link>
       </header>
       <main className="auth-card">
         <div className="m-kicker">Your private workspace</div>
-        <h1>Sign in to Wafira</h1>
+        <h1>Sign in to Yumna</h1>
         <p>Hand off calls, bookings, app work, follow-ups, scheduling, and the administrative load you do not want to carry.</p>
         <LoginForm />
-        <div className="auth-help">New to Wafira? <Link href="/signup">Create your workspace.</Link></div>
+        <div className="auth-help">New to Yumna? <Link href="/signup">Create your workspace.</Link></div>
       </main>
     </div>
   );

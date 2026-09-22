@@ -14,13 +14,16 @@ This checklist is deliberately operational: passing it means the application is 
 ## Billing
 
 - Stripe secret and webhook secrets are configured.
-- Assistant, Operator, and Concierge price IDs point to recurring prices in the intended Stripe account.
+- Assistant, Wafira, and Concierge price IDs point to recurring prices in the intended Stripe account.
 - Stripe posts signed events to `/api/billing/webhook`.
 - The billing portal is enabled in Stripe so customers can manage or cancel subscriptions.
 
 ## Execution providers
 
 For real-world execution, connect the capabilities you plan to sell:
+
+- Google Maps Platform with Places API (New) enabled for local discovery and phone resolution.
+- Pipedream Connect for managed app authentication and connected-app actions.
 
 - Browser/API worker through `OPERATOR_ACTION_RUNNER_URL`.
 - Conversational voice service through `OPERATOR_VOICE_AGENT_URL`, or Twilio for the basic phone fallback.
@@ -30,7 +33,7 @@ Each asynchronous executor receives a per-step callback credential. It must retu
 
 ## Communications
 
-- Link the owner phone from Connections before enabling text-to-Operator.
+- Link the owner phone from Connections before enabling text-to-Wafira.
 - Configure Twilio Messaging to post to `/api/operator/inbound/sms`.
 - Configure Twilio Voice intake to post to `/api/operator/inbound/voice`.
 - Keep SMS task notifications opt-in.

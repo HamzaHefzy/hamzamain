@@ -3,21 +3,21 @@ import Logo from "@/components/Logo";
 
 export const metadata = {
   title: "Security",
-  description: "Wafira security architecture and trust controls.",
+  description: "Yumna security architecture and trust controls.",
 };
 
 export default function SecurityPage() {
   return (
     <div className="marketing-site trust-site">
       <header className="operator-public-nav">
-        <Link href="/" aria-label="Wafira home"><Logo /></Link>
+        <Link href="/" aria-label="Yumna home"><Logo /></Link>
         <nav><Link href="/pricing">Pricing</Link><Link href="/privacy">Privacy</Link><Link href="/signup" className="operator-nav-cta">Start delegating</Link></nav>
       </header>
       <main className="m-container trust-main">
         <div className="m-section-heading centered trust-heading">
           <div className="operator-kicker">Security architecture</div>
           <h1>Autonomy needs a small blast radius.</h1>
-          <p>Wafira separates identity, authority, execution, and audit so a useful assistant does not require unlimited permission.</p>
+          <p>Yumna separates identity, authority, execution, and audit so a useful assistant does not require unlimited permission.</p>
         </div>
         <div className="trust-grid">
           <article><h2>Workspace isolation</h2><p>Tasks, steps, approvals, authority rules, memories, connections, events, and subscriptions are scoped to a PostgreSQL workspace.</p></article>

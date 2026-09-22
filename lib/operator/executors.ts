@@ -1,4 +1,5 @@
 import type { ExecutionResult, OperatorStepKind } from "@/lib/operator/types";
+import { fetchWithTimeout } from "@/lib/http";
 
 type ExecuteInput = {
   taskId: string;
@@ -28,7 +29,7 @@ async function postExecutor(
   input: ExecuteInput,
   secret?: string,
 ): Promise<ExecutionResult> {
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -111,7 +112,7 @@ async function callWithVoiceProvider(input: ExecuteInput): Promise<ExecutionResu
     StatusCallbackEvent: "completed",
   });
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     "https://api.twilio.com/2010-04-01/Accounts/" + sid + "/Calls.json",
     {
       method: "POST",
@@ -163,7 +164,7 @@ async function sendWithResend(input: ExecuteInput): Promise<ExecutionResult> {
   const body =
     typeof input.request.body === "string" ? input.request.body : input.summary;
 
-  const response = await fetch("https://api.resend.com/emails", {
+  const response = await fetchWithTimeout("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: "Bearer " + key,

@@ -240,7 +240,10 @@ export async function runOperatorTask(orgId: string, taskId: string) {
       return getOperatorTask(orgId, taskId);
     }
 
-    if (step.status === "waiting_external") {
+    if (
+      step.status === "waiting_external" &&
+      step.response?.noDispatch !== true
+    ) {
       await sql`
         update operator_tasks set status = 'waiting_external', updated_at = now()
         where id = ${taskId}
@@ -254,13 +257,23 @@ export async function runOperatorTask(orgId: string, taskId: string) {
       where id = ${step.id} and org_id = ${orgId}
     `;
 
-    const result = await executeOperatorStep({
-      taskId,
-      stepId: step.id,
-      kind: step.kind,
-      summary: step.summary,
-      request: step.request ?? {},
-    });
+    let result;
+    try {
+      result = await executeOperatorStep({
+        taskId,
+        stepId: step.id,
+        kind: step.kind,
+        summary: step.summary,
+        request: step.request ?? {},
+      });
+    } catch (error) {
+      result = {
+        state: "failed" as const,
+        provider: step.provider ?? step.kind,
+        message: error instanceof Error ? error.message : "Executor failed unexpectedly.",
+        data: { unexpectedExecutorError: true },
+      };
+    }
 
     if (result.state === "completed") {
       await sql`

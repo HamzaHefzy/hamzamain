@@ -5,30 +5,19 @@ type LogoProps = {
 
 export default function Logo({ className = "", markOnly = false }: LogoProps) {
   return (
-    <span className={`operator-logo ${className}`.trim()} aria-label="Dexyra">
+    <span className={`wafira-logo ${className}`.trim()} aria-label="Wafira">
       <svg
-        className="operator-logo-mark"
+        className="wafira-logo-mark"
         viewBox="0 0 48 48"
         role="img"
         aria-hidden="true"
         fill="none"
       >
-        <path
-          d="M10 8h10.5C31.8 8 39 14.5 39 24s-7.2 16-18.5 16H10V8Z"
-          stroke="currentColor"
-          strokeWidth="5.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="m17 24 5.2 5.2L33 18.4"
-          stroke="currentColor"
-          strokeWidth="5.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        <path d="M8.5 13.5 15 35h5l4-13 4 13h5l6.5-21.5" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M15.2 13.5 20 29.4 24 17l4 12.4 4.8-15.9" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity=".42"/>
+        <circle cx="37.5" cy="10.5" r="3.5" fill="currentColor"/>
       </svg>
-      {!markOnly && <span className="operator-logo-word">Dexyra</span>}
+      {!markOnly && <span className="wafira-logo-word">Wafira</span>}
     </span>
   );
 }

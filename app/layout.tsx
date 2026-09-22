@@ -3,22 +3,23 @@ import RouteShell from "@/components/RouteShell";
 import "./globals.css";
 import "./marketing.css";
 import "./forms.css";
+import "./operator.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  applicationName: "Anchor",
+  applicationName: "Operator",
   title: {
-    default: "Anchor | Attendance that actually gets solved",
-    template: "%s | Anchor",
+    default: "Operator | Hand off the work around your life",
+    template: "%s | Operator",
   },
   description:
-    "Anchor helps districts and virtual schools turn attendance data into barrier resolution, verified support, virtual participation recovery, and clearer funding impact.",
+    "A personal operations assistant that can call, coordinate, book, follow up, and keep ownership of real-world tasks until they are finished.",
   openGraph: {
-    title: "Anchor | Attendance that actually gets solved",
+    title: "Operator | Hand off the work around your life",
     description:
-      "Attendance resolution, virtual participation recovery, and funding impact in one operating system for schools.",
+      "Delegate calls, appointments, reservations, errands, follow-ups, and administrative work to one trusted operating layer.",
     type: "website",
   },
 };

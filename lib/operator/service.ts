@@ -4,6 +4,7 @@ import { planOperatorTaskWithProvider } from "@/lib/operator/planner-provider";
 import { executeOperatorStep } from "@/lib/operator/executors";
 import { plannerContext } from "@/lib/operator/context";
 import { assertPlanSupportsSteps, assertTaskCapacity } from "@/lib/operator/entitlements";
+import { resolveOperatorDestination } from "@/lib/operator/contacts";
 
 type TaskRow = {
   id: string;
@@ -306,6 +307,16 @@ export async function runOperatorTask(orgId: string, taskId: string) {
       await event(orgId, taskId, null, "task.started", "Operator started or resumed the task.");
     }
 
+    const executionRequest =
+      step.kind === "voice" || step.kind === "email"
+        ? await resolveOperatorDestination({
+            orgId,
+            kind: step.kind,
+            taskRequest: task.request,
+            request: step.request ?? {},
+          })
+        : step.request ?? {};
+
     let result;
     try {
       result = await executeOperatorStep({
@@ -313,7 +324,7 @@ export async function runOperatorTask(orgId: string, taskId: string) {
         stepId: step.id,
         kind: step.kind,
         summary: step.summary,
-        request: step.request ?? {},
+        request: executionRequest,
       });
     } catch (error) {
       result = {

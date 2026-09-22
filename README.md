@@ -59,11 +59,10 @@ The application code is intentionally provider-neutral. Production deployment ne
 - `/api/operator/inbound/voice`: optional Twilio Voice webhook for disclosed automated call intake. It collects the caller's spoken reason for calling and creates a follow-up task; full conversation automation belongs behind `OPERATOR_VOICE_AGENT_URL`.
 - `OPERATOR_VOICE_AGENT_URL`: conversational outbound voice service. The existing Twilio variables provide a simpler fallback.
 - `OPERATOR_HUMAN_QUEUE_URL`: human exception/escalation service.
-- `OPERATOR_WEBHOOK_SECRET`: bearer token required by external executor callbacks.
 - `RESEND_API_KEY` / `RESEND_FROM_EMAIL`: outbound email.
 - Stripe secret, webhook secret, and three price IDs for paid subscriptions.
 
-Executor requests include the task ID, step ID, requested objective, and a signed callback contract. External systems never receive database credentials.
+Executor requests include the task ID, step ID, requested objective, and a one-time scoped callback token. The token is hashed at rest, bound to that step, and revoked when the step reaches a terminal state. External systems never receive database credentials or a workspace-wide callback secret.
 
 ## Trust model
 

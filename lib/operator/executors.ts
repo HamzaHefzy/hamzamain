@@ -1,12 +1,15 @@
 import type { ExecutionResult, OperatorStepKind } from "@/lib/operator/types";
 import { fetchWithTimeout } from "@/lib/http";
+import { runPipedreamAction } from "@/lib/operator/pipedream";
 
 type ExecuteInput = {
+  orgId: string;
   taskId: string;
   stepId: string;
   kind: OperatorStepKind;
   summary: string;
   request: Record<string, unknown>;
+  provider?: string | null;
   callbackToken?: string;
 };
 
@@ -54,6 +57,65 @@ async function postExecutor(
     message: String(payload.message ?? provider + " accepted the step."),
     data: payload,
   };
+}
+
+
+async function connectedAppRunner(input: ExecuteInput): Promise<ExecutionResult> {
+  const actionId =
+    typeof input.request.pipedreamActionId === "string"
+      ? input.request.pipedreamActionId
+      : null;
+  const configuredProps =
+    input.request.configuredProps &&
+    typeof input.request.configuredProps === "object" &&
+    !Array.isArray(input.request.configuredProps)
+      ? input.request.configuredProps as Record<string, unknown>
+      : {};
+
+  if (actionId) {
+    try {
+      const payload = await runPipedreamAction({
+        externalUserId: input.orgId,
+        actionId,
+        configuredProps,
+      });
+      return {
+        state: "completed",
+        provider: "pipedream",
+        message: "Connected app action completed.",
+        data: payload,
+      };
+    } catch (error) {
+      return {
+        state: "failed",
+        provider: "pipedream",
+        message:
+          error instanceof Error ? error.message : "Connected app action failed.",
+      };
+    }
+  }
+
+  const url = process.env.OPERATOR_APP_AGENT_URL;
+  if (!url) {
+    return {
+      state: "waiting_external",
+      provider: "app-agent",
+      message:
+        "The required app is connected, but the dynamic app-action agent is not configured for this request.",
+      data: {
+        connector: "OPERATOR_APP_AGENT_URL",
+        app: input.request.app ?? null,
+        noDispatch: true,
+      },
+    };
+  }
+
+  return postExecutor(
+    url,
+    "app-agent",
+    input,
+    process.env.OPERATOR_APP_AGENT_SECRET,
+  );
 }
 
 async function actionRunner(input: ExecuteInput): Promise<ExecutionResult> {
@@ -236,6 +298,7 @@ export async function executeOperatorStep(input: ExecuteInput): Promise<Executio
     };
   }
   if (input.kind === "voice") return callWithVoiceProvider(input);
+  if (input.kind === "api" && (input.provider === "pipedream" || input.provider === "app-agent" || input.request.pipedreamActionId || input.request.app)) return connectedAppRunner(input);
   if (input.kind === "email") return sendWithResend(input);
   if (input.kind === "human") return sendToHumanQueue(input);
   return actionRunner(input);

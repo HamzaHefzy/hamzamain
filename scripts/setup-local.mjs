@@ -24,7 +24,7 @@ function parseEnv(content) {
 }
 
 function randomPassword() {
-  return "Wafira-" + randomBytes(9).toString("base64url") + "!";
+  return "Yumna-" + randomBytes(9).toString("base64url") + "!";
 }
 
 const existing = existsSync(envPath) ? parseEnv(readFileSync(envPath, "utf8")) : {};
@@ -36,10 +36,10 @@ const values = {
   NEXT_PUBLIC_SITE_URL: existing.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   OPERATOR_DEMO_MODE: existing.OPERATOR_DEMO_MODE || "true",
   CRON_SECRET: existing.CRON_SECRET || randomBytes(32).toString("base64url"),
-  SEED_ADMIN_EMAIL: existing.SEED_ADMIN_EMAIL || "admin@wafira.local",
+  SEED_ADMIN_EMAIL: existing.SEED_ADMIN_EMAIL || "admin@yumna.local",
   SEED_ADMIN_PASSWORD: existing.SEED_ADMIN_PASSWORD || randomPassword(),
-  SEED_ORG_NAME: existing.SEED_ORG_NAME || "Wafira Demo",
-  SEED_ORG_SLUG: existing.SEED_ORG_SLUG || "wafira-demo",
+  SEED_ORG_NAME: existing.SEED_ORG_NAME || "Yumna Demo",
+  SEED_ORG_SLUG: existing.SEED_ORG_SLUG || "yumna-demo",
 };
 
 const orderedKeys = [
@@ -61,7 +61,7 @@ writeFileSync(
   { mode: 0o600 },
 );
 
-console.log("\nWafira local setup");
+console.log("\nYumna local setup");
 console.log("--------------------");
 console.log("Environment written to .env.local");
 
@@ -103,7 +103,7 @@ for (const command of [["run", "db:migrate"], ["run", "db:seed"]]) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
-console.log("\nLocal Wafira workspace is ready.");
+console.log("\nLocal Yumna workspace is ready.");
 console.log("URL:      http://localhost:3000");
 console.log("Email:    " + values.SEED_ADMIN_EMAIL);
 console.log("Password: " + values.SEED_ADMIN_PASSWORD);

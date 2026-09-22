@@ -214,48 +214,97 @@ export async function getOperatorTask(orgId: string, taskId: string) {
 
 export async function runOperatorTask(orgId: string, taskId: string) {
   const sql = db();
-  const task = await getOperatorTask(orgId, taskId);
-  if (!task) throw new Error("Task not found.");
-  if (["completed", "cancelled"].includes(task.status)) return task;
+  let announcedStart = false;
 
-  await sql`
-    update operator_tasks
-    set status = 'in_progress',
-        started_at = coalesce(started_at, now()),
-        updated_at = now(),
-        error = null
-    where id = ${taskId} and org_id = ${orgId}
-  `;
-  await event(orgId, taskId, null, "task.started", "Operator started or resumed the task.");
+  for (let guard = 0; guard < 100; guard += 1) {
+    const task = await getOperatorTask(orgId, taskId);
+    if (!task) throw new Error("Task not found.");
+    if (["completed", "cancelled"].includes(task.status)) return task;
 
-  for (const step of task.steps) {
-    if (step.status === "completed" || step.status === "skipped") continue;
+    const step = task.steps.find((candidate) =>
+      !["completed", "skipped"].includes(candidate.status),
+    );
+
+    if (!step) {
+      const [completed] = await sql<{ id: string }[]>`
+        update operator_tasks
+        set status = 'completed',
+            completed_at = coalesce(completed_at, now()),
+            updated_at = now(),
+            error = null,
+            result = ${sql.json(toJson({ message: "Task completed." }))}
+        where id = ${taskId}
+          and org_id = ${orgId}
+          and status not in ('completed','cancelled')
+        returning id
+      `;
+      if (completed) {
+        await event(orgId, taskId, null, "task.completed", "Operator completed the task.");
+      }
+      return getOperatorTask(orgId, taskId);
+    }
 
     if (step.status === "awaiting_approval") {
       await sql`
         update operator_tasks set status = 'awaiting_approval', updated_at = now()
-        where id = ${taskId}
+        where id = ${taskId} and org_id = ${orgId}
+          and status not in ('completed','cancelled')
       `;
-      await event(orgId, taskId, step.id, "task.paused", "Operator is waiting for approval.");
       return getOperatorTask(orgId, taskId);
     }
 
-    if (
-      step.status === "waiting_external" &&
-      step.response?.noDispatch !== true
-    ) {
+    if (step.status === "waiting_external" && step.response?.noDispatch !== true) {
       await sql`
         update operator_tasks set status = 'waiting_external', updated_at = now()
-        where id = ${taskId}
+        where id = ${taskId} and org_id = ${orgId}
+          and status not in ('completed','cancelled')
       `;
       return getOperatorTask(orgId, taskId);
+    }
+
+    if (step.status === "running") {
+      return task;
+    }
+
+    const [claimed] = await sql<{ id: string }[]>`
+      update operator_steps
+      set status = 'running',
+          started_at = coalesce(started_at, now()),
+          error = null
+      where id = ${step.id}
+        and org_id = ${orgId}
+        and task_id = ${taskId}
+        and (
+          status in ('pending','failed')
+          or (
+            status = 'waiting_external'
+            and response ->> 'noDispatch' = 'true'
+          )
+        )
+      returning id
+    `;
+
+    if (!claimed) {
+      const refreshed = await getOperatorTask(orgId, taskId);
+      if (!refreshed) throw new Error("Task not found.");
+      return refreshed;
     }
 
     await sql`
-      update operator_steps
-      set status = 'running', started_at = coalesce(started_at, now()), error = null
-      where id = ${step.id} and org_id = ${orgId}
+      update operator_tasks
+      set status = 'in_progress',
+          started_at = coalesce(started_at, now()),
+          updated_at = now(),
+          error = null
+      where id = ${taskId}
+        and org_id = ${orgId}
+        and status not in ('completed','cancelled')
     `;
+
+    if (!announcedStart) {
+      announcedStart = true;
+      await event(orgId, taskId, null, "task.started", "Operator started or resumed the task.");
+    }
 
     let result;
     try {
@@ -276,38 +325,49 @@ export async function runOperatorTask(orgId: string, taskId: string) {
     }
 
     if (result.state === "completed") {
-      await sql`
+      const [updated] = await sql<{ id: string }[]>`
         update operator_steps
         set status = 'completed',
             provider = ${result.provider},
             response = ${sql.json(toJson({ message: result.message, ...(result.data ?? {}) }))},
-            completed_at = now()
+            completed_at = now(),
+            error = null
         where id = ${step.id}
+          and org_id = ${orgId}
+          and status = 'running'
+        returning id
       `;
+      if (!updated) return getOperatorTask(orgId, taskId);
       await event(orgId, taskId, step.id, "step.completed", result.message, result.data ?? {});
       continue;
     }
 
     if (result.state === "waiting_external") {
-      await sql`
+      const [updated] = await sql<{ id: string }[]>`
         update operator_steps
         set status = 'waiting_external',
             provider = ${result.provider},
             response = ${sql.json(toJson({ message: result.message, ...(result.data ?? {}) }))}
         where id = ${step.id}
+          and org_id = ${orgId}
+          and status = 'running'
+        returning id
       `;
+      if (!updated) return getOperatorTask(orgId, taskId);
       await sql`
         update operator_tasks
         set status = 'waiting_external',
             updated_at = now(),
             result = ${sql.json(toJson({ message: result.message, waitingOn: result.provider }))}
         where id = ${taskId}
+          and org_id = ${orgId}
+          and status not in ('completed','cancelled')
       `;
       await event(orgId, taskId, step.id, "step.waiting_external", result.message, result.data ?? {});
       return getOperatorTask(orgId, taskId);
     }
 
-    await sql`
+    const [failed] = await sql<{ id: string }[]>`
       update operator_steps
       set status = 'failed',
           provider = ${result.provider},
@@ -315,26 +375,23 @@ export async function runOperatorTask(orgId: string, taskId: string) {
           response = ${sql.json(toJson(result.data ?? {}))},
           completed_at = now()
       where id = ${step.id}
+        and org_id = ${orgId}
+        and status = 'running'
+      returning id
     `;
+    if (!failed) return getOperatorTask(orgId, taskId);
     await sql`
       update operator_tasks
       set status = 'failed', error = ${result.message}, updated_at = now()
       where id = ${taskId}
+        and org_id = ${orgId}
+        and status not in ('completed','cancelled')
     `;
     await event(orgId, taskId, step.id, "step.failed", result.message, result.data ?? {});
     return getOperatorTask(orgId, taskId);
   }
 
-  await sql`
-    update operator_tasks
-    set status = 'completed',
-        completed_at = now(),
-        updated_at = now(),
-        result = ${sql.json(toJson({ message: "Task completed." }))}
-    where id = ${taskId}
-  `;
-  await event(orgId, taskId, null, "task.completed", "Operator completed the task.");
-  return getOperatorTask(orgId, taskId);
+  throw new Error("Task exceeded the maximum number of execution steps.");
 }
 
 export async function listPendingApprovals(orgId: string) {

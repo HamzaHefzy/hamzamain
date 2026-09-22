@@ -739,3 +739,42 @@ button.ghost,
 .operator-phone-form button { min-height: 43px; border: 0; border-radius: 11px; padding: 0 16px; background: var(--op-ink); color: white; font: inherit; font-weight: 700; cursor: pointer; }
 @media (max-width: 900px) { .operator-phone-form { grid-template-columns: 1fr 1fr; } .operator-phone-form > div:first-child { grid-column: 1 / -1; } }
 @media (max-width: 620px) { .operator-phone-form { grid-template-columns: 1fr; } .operator-phone-form > div:first-child { grid-column: auto; } }
+
+.operator-task-actions .danger-ghost {
+  background: white;
+  color: var(--op-danger);
+  border: 1px solid #ebcaca;
+}
+.operator-billing-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.operator-billing-header-actions button.ghost {
+  min-height: 34px;
+  border: 1px solid var(--op-line);
+  border-radius: 999px;
+  padding: 0 13px;
+  background: white;
+  color: var(--op-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.operator-plan-name {
+  font-size: 22px !important;
+  text-transform: capitalize;
+}
+.operator-plan-detail {
+  display: block;
+  margin: 0 0 16px;
+  color: var(--op-muted);
+  line-height: 1.45;
+}
+@media (max-width: 620px) {
+  .operator-billing-header-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

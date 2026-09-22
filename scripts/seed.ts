@@ -26,11 +26,12 @@ async function main() {
     `;
 
     const [user] = await tx<{ id: string }[]>`
-      insert into users (email, name, password_hash)
-      values (${email.toLowerCase()}, 'Operator Owner', ${passwordHash})
+      insert into users (email, name, password_hash, email_verified_at)
+      values (${email.toLowerCase()}, 'Operator Owner', ${passwordHash}, now())
       on conflict (email) do update
         set password_hash = excluded.password_hash,
             name = excluded.name,
+            email_verified_at = now(),
             active = true
       returning id
     `;

@@ -41,9 +41,9 @@ export async function POST(request: Request) {
     const input = schema.parse(await request.json());
     const sql = db();
     const normalizedEmail = input.email.toLowerCase();
-    const [existing] = await sql<{ id: string }[]>\`
-      select id from users where lower(email) = lower(\${normalizedEmail}) limit 1
-    \`;
+    const [existing] = await sql<{ id: string }[]>`
+      select id from users where lower(email) = lower(${normalizedEmail}) limit 1
+    `;
     if (existing) {
       return NextResponse.json({ error: "An account already exists for this email." }, { status: 409 });
     }
@@ -53,24 +53,24 @@ export async function POST(request: Request) {
     const slug = slugBase(workspaceName) + "-" + crypto.randomUUID().slice(0, 6);
 
     const created = await sql.begin(async (tx) => {
-      const [org] = await tx<{ id: string; name: string; slug: string }[]>\`
+      const [org] = await tx<{ id: string; name: string; slug: string }[]>`
         insert into organizations (name, slug, organization_type, state, status)
-        values (\${workspaceName}, \${slug}, 'other', 'NA', 'trial')
+        values (${workspaceName}, ${slug}, 'other', 'NA', 'trial')
         returning id, name, slug
-      \`;
-      const [user] = await tx<{ id: string; email: string; name: string }[]>\`
+      `;
+      const [user] = await tx<{ id: string; email: string; name: string }[]>`
         insert into users (email, name, password_hash, last_login_at)
-        values (\${normalizedEmail}, \${input.name}, \${passwordHash}, now())
+        values (${normalizedEmail}, ${input.name}, ${passwordHash}, now())
         returning id, email, name
-      \`;
-      await tx\`
+      `;
+      await tx`
         insert into memberships (user_id, org_id, role)
-        values (\${user.id}, \${org.id}, 'owner')
-      \`;
-      await tx\`
+        values (${user.id}, ${org.id}, 'owner')
+      `;
+      await tx`
         insert into operator_profiles (org_id, assistant_name, timezone)
-        values (\${org.id}, 'Operator', 'America/New_York')
-      \`;
+        values (${org.id}, 'Operator', 'America/New_York')
+      `;
       return { org, user };
     });
 

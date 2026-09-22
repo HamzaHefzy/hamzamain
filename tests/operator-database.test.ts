@@ -140,4 +140,32 @@ describe.skipIf(!run)("Operator database lifecycle", () => {
     const secondPass = await runDueOperatorRoutines();
     expect(secondPass.some((item) => item.routineId === routine.id)).toBe(false);
   });
+
+  it("enforces plan capability boundaries", async () => {
+    await sql!`
+      update operator_subscriptions
+      set plan = 'assistant', status = 'active', updated_at = now()
+      where org_id = ${orgId}
+    `;
+
+    await expect(createOperatorTask({
+      orgId,
+      userId,
+      request: "Call my dentist and schedule the first available appointment",
+    })).rejects.toThrow(/Operator/);
+
+    const browserTask = await createOperatorTask({
+      orgId,
+      userId,
+      request: "Find three restaurants near downtown",
+    });
+    expect(browserTask.id).toBeTruthy();
+
+    await sql!`
+      update operator_subscriptions
+      set plan = 'trial', status = 'trialing', updated_at = now()
+      where org_id = ${orgId}
+    `;
+  });
+
 });

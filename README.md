@@ -10,7 +10,7 @@ The codebase is intentionally a **modular monolith**, not a monorepo. The core a
 - Interactive phone demo with live task progression, approval gating, replay, and multiple scenarios
 - Self-service signup, login, password recovery, and production email verification
 - PostgreSQL-backed multi-tenant workspaces and signed sessions
-- Natural-language task delegation with a deterministic safe planner and optional reasoning planner
+- Natural-language task delegation with a built-in OpenAI structured planner, deterministic safe fallback, and optional provider override
 - Durable task/step state machine that survives external waits
 - Atomic step claiming to prevent duplicate calls, bookings, or payments
 - Task cancellation, late-callback rejection, and idempotent callback ledger
@@ -67,7 +67,8 @@ Production capability is activated with credentials rather than product rewrites
 
 - `GOOGLE_MAPS_API_KEY`: Places API (New) for canonical business search, addresses, ratings, websites, Maps links, and phone numbers.
 - `PIPEDREAM_PROJECT_ID`, `PIPEDREAM_CLIENT_ID`, `PIPEDREAM_CLIENT_SECRET`: managed per-workspace OAuth and actions across thousands of applications.
-- `OPERATOR_PLANNER_URL`: optional reasoning planner. Yumna keeps the deterministic safe planner as fallback.
+- `OPENAI_API_KEY` / `OPENAI_PLANNER_MODEL`: built-in structured arbitrary-task planner using the Responses API. If omitted, Yumna uses the deterministic safe planner.
+- `OPERATOR_PLANNER_URL`: optional planner override for teams that want to provide their own planning service.
 - `BRAVE_SEARCH_API_KEY`: live web research and current source retrieval.
 - `OPERATOR_ACTION_RUNNER_URL`: browser/API worker for web workflows that do not have a direct app/API path.
 - `VAPI_API_KEY`, `VAPI_ASSISTANT_ID`, `VAPI_PHONE_NUMBER_ID`, `VAPI_WEBHOOK_SECRET`: preferred conversational outbound calls and end-of-call transcript reports. The saved Vapi assistant should reference the `{{objective}}` variable in its system prompt.

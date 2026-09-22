@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { toJson } from "@/lib/json";
-import { listPipedreamAccounts, pipedreamConfigured } from "@/lib/operator/pipedream";
+import { listPipedreamAccounts, listPipedreamActions, pipedreamConfigured } from "@/lib/operator/pipedream";
 
 export type OperatorMemory = {
   id: string;
@@ -58,7 +58,7 @@ export async function deleteOperatorMemory(orgId: string, memoryId: string) {
   return result.count > 0;
 }
 
-export async function plannerContext(orgId: string) {
+export async function plannerContext(orgId: string, requestText = "") {
   const sql = db();
   const [profile] = await sql<{
     timezone: string;
@@ -89,6 +89,41 @@ export async function plannerContext(orgId: string) {
     ? await listPipedreamAccounts(orgId).catch(() => [])
     : [];
 
+  const normalizedRequest = requestText.toLowerCase().replace(/[^a-z0-9]+/g, " ");
+  const relevantApps = connectedApps
+    .filter((account) => {
+      const app = account.app.toLowerCase().replace(/[_-]+/g, " ");
+      const name = account.name.toLowerCase();
+      return normalizedRequest.includes(app) || normalizedRequest.includes(name);
+    })
+    .slice(0, 3);
+
+  const connectedAppTools = [];
+  for (const account of relevantApps) {
+    const actions = await listPipedreamActions(account.app, 25).catch(() => []);
+    connectedAppTools.push({
+      app: account.app,
+      accountId: account.id,
+      tools: actions.map((action) => ({
+        id: action.id,
+        name: action.name,
+        description: action.description,
+        readOnly: action.readOnly,
+        destructive: action.destructive,
+        props: action.props
+          .filter((prop) => prop.name !== account.app)
+          .map((prop) => ({
+            name: prop.name,
+            label: prop.label,
+            description: prop.description,
+            type: prop.type,
+            optional: prop.optional,
+            remoteOptions: prop.remoteOptions,
+          })),
+      })),
+    });
+  }
+
   return {
     profile: profile ?? null,
     memories: memories.map((memory) => ({
@@ -101,5 +136,6 @@ export async function plannerContext(orgId: string) {
       accountId: account.id,
       name: account.name,
     })),
+    connectedAppTools,
   };
 }

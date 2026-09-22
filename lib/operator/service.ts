@@ -5,6 +5,7 @@ import { executeOperatorStep } from "@/lib/operator/executors";
 import { plannerContext } from "@/lib/operator/context";
 import { assertPlanSupportsSteps, assertTaskCapacity } from "@/lib/operator/entitlements";
 import { resolveOperatorDestination } from "@/lib/operator/contacts";
+import { notifyOperator } from "@/lib/operator/notifications";
 
 type TaskRow = {
   id: string;
@@ -161,6 +162,17 @@ export async function createOperatorTask(input: {
     steps: plan.steps.length,
   });
 
+  if (awaitingApproval) {
+    await notifyOperator({
+      orgId: input.orgId,
+      taskId: task.id,
+      kind: "approval",
+      title: task.title,
+      detail: "Operator is waiting before a consequential step.",
+      eventKey: "task:" + task.id + ":approval",
+    }).catch(() => undefined);
+  }
+
   return task;
 }
 
@@ -241,6 +253,14 @@ export async function runOperatorTask(orgId: string, taskId: string) {
       `;
       if (completed) {
         await event(orgId, taskId, null, "task.completed", "Operator completed the task.");
+        await notifyOperator({
+          orgId,
+          taskId,
+          kind: "completed",
+          title: task.title,
+          detail: "The workflow finished successfully.",
+          eventKey: "task:" + taskId + ":completed",
+        }).catch(() => undefined);
       }
       return getOperatorTask(orgId, taskId);
     }
@@ -399,6 +419,14 @@ export async function runOperatorTask(orgId: string, taskId: string) {
         and status not in ('completed','cancelled')
     `;
     await event(orgId, taskId, step.id, "step.failed", result.message, result.data ?? {});
+    await notifyOperator({
+      orgId,
+      taskId,
+      kind: "failed",
+      title: task.title,
+      detail: result.message,
+      eventKey: "task:" + taskId + ":failed:" + step.id,
+    }).catch(() => undefined);
     return getOperatorTask(orgId, taskId);
   }
 
@@ -487,44 +515,80 @@ export async function acceptOperatorCallback(input: {
   data?: Record<string, unknown>;
 }) {
   const sql = db();
-  const [step] = await sql<{ org_id: string; task_id: string }[]>`
-    select org_id, task_id
-    from operator_steps
-    where id = ${input.stepId} and task_id = ${input.taskId}
+  const [step] = await sql<{
+    org_id: string;
+    task_id: string;
+    task_title: string;
+    task_status: string;
+    step_status: string;
+  }[]>`
+    select s.org_id, s.task_id, t.title as task_title,
+           t.status as task_status, s.status as step_status
+    from operator_steps s
+    join operator_tasks t on t.id = s.task_id and t.org_id = s.org_id
+    where s.id = ${input.stepId} and s.task_id = ${input.taskId}
     limit 1
   `;
   if (!step) throw new Error("Callback step not found.");
+  if (["completed", "cancelled"].includes(step.task_status)) {
+    return getOperatorTask(step.org_id, input.taskId);
+  }
+  if (["completed", "failed", "skipped"].includes(step.step_status)) {
+    return getOperatorTask(step.org_id, input.taskId);
+  }
 
   if (input.state === "failed") {
-    await sql`
+    const [failed] = await sql<{ id: string }[]>`
       update operator_steps
       set status = 'failed',
           error = ${input.message},
           response = ${sql.json(toJson(input.data ?? {}))},
           completed_at = now()
       where id = ${input.stepId}
+        and task_id = ${input.taskId}
+        and status in ('running','waiting_external')
+      returning id
     `;
+    if (!failed) return getOperatorTask(step.org_id, input.taskId);
+
     await sql`
       update operator_tasks
       set status = 'failed', error = ${input.message}, updated_at = now()
       where id = ${input.taskId}
+        and org_id = ${step.org_id}
+        and status not in ('completed','cancelled')
     `;
     await event(step.org_id, input.taskId, input.stepId, "step.failed", input.message, input.data ?? {});
+    await notifyOperator({
+      orgId: step.org_id,
+      taskId: input.taskId,
+      kind: "failed",
+      title: step.task_title,
+      detail: input.message,
+      eventKey: "task:" + input.taskId + ":failed:" + input.stepId,
+    }).catch(() => undefined);
     return getOperatorTask(step.org_id, input.taskId);
   }
 
-  await sql`
+  const [completed] = await sql<{ id: string }[]>`
     update operator_steps
     set status = 'completed',
         response = ${sql.json(toJson({ message: input.message, ...(input.data ?? {}) }))},
         completed_at = now(),
         error = null
     where id = ${input.stepId}
+      and task_id = ${input.taskId}
+      and status in ('running','waiting_external')
+    returning id
   `;
+  if (!completed) return getOperatorTask(step.org_id, input.taskId);
+
   await sql`
     update operator_tasks
     set status = 'ready', updated_at = now(), error = null
     where id = ${input.taskId}
+      and org_id = ${step.org_id}
+      and status not in ('completed','cancelled')
   `;
   await event(step.org_id, input.taskId, input.stepId, "step.completed", input.message, input.data ?? {});
   return runOperatorTask(step.org_id, input.taskId);

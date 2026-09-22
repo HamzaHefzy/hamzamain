@@ -1,6 +1,6 @@
 import type { ExecutionResult, OperatorStepKind } from "@/lib/operator/types";
 import { fetchWithTimeout } from "@/lib/http";
-import { runPipedreamAction } from "@/lib/operator/pipedream";
+import { runPipedreamAppAction } from "@/lib/operator/pipedream";
 
 type ExecuteInput = {
   orgId: string;
@@ -74,10 +74,20 @@ async function connectedAppRunner(input: ExecuteInput): Promise<ExecutionResult>
 
   if (actionId) {
     try {
-      const payload = await runPipedreamAction({
+      const app =
+        typeof input.request.app === "string" ? input.request.app : null;
+      if (!app) {
+        throw new Error("Connected app execution requires request.app.");
+      }
+      const payload = await runPipedreamAppAction({
         externalUserId: input.orgId,
+        app,
         actionId,
         configuredProps,
+        accountId:
+          typeof input.request.accountId === "string"
+            ? input.request.accountId
+            : null,
       });
       return {
         state: "completed",

@@ -3,7 +3,17 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function PhoneIdentityForm({ ownerPhone, assistantPhone }: { ownerPhone: string | null; assistantPhone: string | null }) {
+export default function PhoneIdentityForm({
+  ownerPhone,
+  assistantPhone,
+  notifyEmail,
+  notifySms,
+}: {
+  ownerPhone: string | null;
+  assistantPhone: string | null;
+  notifyEmail: boolean;
+  notifySms: boolean;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -19,13 +29,17 @@ export default function PhoneIdentityForm({ ownerPhone, assistantPhone }: { owne
       const response = await fetch("/api/operator/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ownerPhone: raw || null }),
+        body: JSON.stringify({
+          ownerPhone: raw || null,
+          notifyEmail: data.get("notifyEmail") === "on",
+          notifySms: data.get("notifySms") === "on",
+        }),
       });
       const payload = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(payload.error ?? "Unable to save phone identity.");
+      if (!response.ok) throw new Error(payload.error ?? "Unable to save Operator settings.");
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Unable to save phone identity.");
+      setError(cause instanceof Error ? cause.message : "Unable to save Operator settings.");
     } finally {
       setBusy(false);
     }
@@ -34,9 +48,9 @@ export default function PhoneIdentityForm({ ownerPhone, assistantPhone }: { owne
   return (
     <form className="operator-phone-form" onSubmit={submit}>
       <div>
-        <span className="operator-kicker">Text-to-Operator identity</span>
-        <h2>Link your phone</h2>
-        <p>Only messages from this E.164 number can create tasks through the inbound SMS webhook.</p>
+        <span className="operator-kicker">Communications</span>
+        <h2>Phone identity & alerts</h2>
+        <p>Your linked phone secures text-to-Operator. Notifications tell you when a task needs approval, completes, or fails.</p>
       </div>
       <label>
         <span>Your phone</span>
@@ -46,7 +60,17 @@ export default function PhoneIdentityForm({ ownerPhone, assistantPhone }: { owne
         <span>Operator number</span>
         <input value={assistantPhone ?? "Connect Twilio to assign"} readOnly />
       </label>
-      <button type="submit" disabled={busy}>{busy ? "Saving…" : "Save identity"}</button>
+      <div className="operator-notification-options">
+        <label className="operator-check">
+          <input name="notifyEmail" type="checkbox" defaultChecked={notifyEmail} />
+          <span>Email task updates</span>
+        </label>
+        <label className="operator-check">
+          <input name="notifySms" type="checkbox" defaultChecked={notifySms} />
+          <span>SMS task updates</span>
+        </label>
+      </div>
+      <button type="submit" disabled={busy}>{busy ? "Saving…" : "Save settings"}</button>
       {error ? <div className="operator-error">{error}</div> : null}
     </form>
   );

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import WorkspacePrivacyActions from "@/components/operator/WorkspacePrivacyActions";
 
@@ -5,6 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function WorkspacePrivacyPage() {
   const session = await requireSession();
+  if (session.role !== "owner") redirect("/assistant");
 
   return (
     <div className="operator-page">

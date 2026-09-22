@@ -7,7 +7,7 @@ export const metadata = {
   description: "Google Maps, communications, and thousands of connected apps available to Yumna.",
 };
 
-const apps = ["Google Maps","Gmail","Google Calendar","Google Drive","Google Sheets","Google Docs","Slack","Notion","Outlook","OneDrive","Microsoft Teams","Dropbox","GitHub","Airtable","Todoist","Spotify"];
+const apps = ["Google Maps","Brave Search","Gmail","Google Calendar","Google Drive","Google Sheets","Google Docs","Slack","Notion","Outlook","OneDrive","Microsoft Teams","Dropbox","GitHub","Airtable","Todoist"];
 
 export default function IntegrationsPage() {
   return (
@@ -32,7 +32,8 @@ export default function IntegrationsPage() {
         </section>
 
         <section className="y-integration-three">
-          <article><span>☎</span><h3>Voice + SMS</h3><p>Outbound calls, inbound text-to-Yumna, signed webhooks, and scoped callback credentials.</p></article>
+          <article><span>⌕</span><h3>Live web search</h3><p>Fresh web results and sources through Brave Search for research, reviews, comparisons, and current information.</p></article>
+          <article><span>☎</span><h3>Voice + SMS</h3><p>Vapi handles natural outbound conversations and returns transcripts; Twilio powers inbound identity and the basic telephony fallback.</p></article>
           <article><span>✉</span><h3>Email</h3><p>Transactional delivery, notifications, and account verification without exposing provider secrets to the browser.</p></article>
           <article><span>↗</span><h3>Browser / API runner</h3><p>A provider-neutral contract for sites and systems that do not expose the right API directly.</p></article>
         </section>

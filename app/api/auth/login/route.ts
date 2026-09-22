@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { db } from "@/lib/db";
+import { db, hasDatabase } from "@/lib/db";
 import { SESSION_COOKIE, signSession, type AnchorRole } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { rateLimit } from "@/lib/rate-limit";
@@ -14,6 +14,13 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
+  if (!hasDatabase()) {
+    return NextResponse.json(
+      { error: "This Anchor workspace is not connected to its database yet.", code: "database_unavailable" },
+      { status: 503 },
+    );
+  }
+
   try {
     assertSameOrigin(request);
     const ipKey = hashIp(requestIp(request)) ?? "unknown";

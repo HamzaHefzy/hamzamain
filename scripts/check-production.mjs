@@ -14,6 +14,7 @@ const required = [
   "PIPEDREAM_PROJECT_ID",
   "PIPEDREAM_CLIENT_ID",
   "PIPEDREAM_CLIENT_SECRET",
+  "BRAVE_SEARCH_API_KEY",
 ];
 
 const failures = [];
@@ -40,19 +41,20 @@ if (process.env.OPERATOR_DEMO_MODE === "true") {
 }
 
 const hasActionRunner = Boolean(process.env.OPERATOR_ACTION_RUNNER_URL?.trim());
-const hasVoice =
-  Boolean(process.env.OPERATOR_VOICE_AGENT_URL?.trim()) ||
-  Boolean(
-    process.env.TWILIO_ACCOUNT_SID?.trim() &&
-    process.env.TWILIO_AUTH_TOKEN?.trim() &&
-    process.env.TWILIO_FROM_NUMBER?.trim(),
-  );
+const hasVapi =
+  Boolean(process.env.VAPI_API_KEY?.trim()) &&
+  Boolean(process.env.VAPI_ASSISTANT_ID?.trim()) &&
+  Boolean(process.env.VAPI_PHONE_NUMBER_ID?.trim()) &&
+  Boolean(process.env.VAPI_WEBHOOK_SECRET?.trim());
+
+const hasConversationalVoice =
+  hasVapi || Boolean(process.env.OPERATOR_VOICE_AGENT_URL?.trim());
 
 if (!hasActionRunner) {
   failures.push("Connect OPERATOR_ACTION_RUNNER_URL before selling browser/API execution.");
 }
-if (!hasVoice) {
-  failures.push("Connect a voice agent or Twilio before selling phone execution.");
+if (!hasConversationalVoice) {
+  failures.push("Connect Vapi or OPERATOR_VOICE_AGENT_URL before selling conversational phone execution.");
 }
 
 if (failures.length) {

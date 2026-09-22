@@ -1,5 +1,5 @@
-import Link from "next/link";
-import Logo from "@/components/Logo";
+import PublicNav from "@/components/marketing/PublicNav";
+import PublicFooter from "@/components/marketing/PublicFooter";
 
 export const metadata = {
   title: "Security",
@@ -8,27 +8,25 @@ export const metadata = {
 
 export default function SecurityPage() {
   return (
-    <div className="marketing-site trust-site">
-      <header className="operator-public-nav">
-        <Link href="/" aria-label="Yumna home"><Logo /></Link>
-        <nav><Link href="/pricing">Pricing</Link><Link href="/privacy">Privacy</Link><Link href="/signup" className="operator-nav-cta">Start delegating</Link></nav>
-      </header>
-      <main className="m-container trust-main">
-        <div className="m-section-heading centered trust-heading">
-          <div className="operator-kicker">Security architecture</div>
-          <h1>Autonomy needs a small blast radius.</h1>
-          <p>Yumna separates identity, authority, execution, and audit so a useful assistant does not require unlimited permission.</p>
-        </div>
-        <div className="trust-grid">
-          <article><h2>Workspace isolation</h2><p>Tasks, steps, approvals, authority rules, memories, connections, events, and subscriptions are scoped to a PostgreSQL workspace.</p></article>
-          <article><h2>Signed sessions</h2><p>Authentication uses signed HTTP-only cookies and bcrypt password hashes. Server routes enforce authenticated workspace context and role permissions.</p></article>
-          <article><h2>Default-deny authority</h2><p>Spending and other consequential actions pause when authorization is missing. Stored spending rules enforce declared caps.</p></article>
-          <article><h2>Signed callbacks</h2><p>Each asynchronous execution step receives its own opaque callback credential. Tokens are hashed at rest, scoped to one step, revoked on terminal state, and callback events are replay-safe. Stripe events use timestamped HMAC verification.</p></article>
-          <article><h2>Server-side secrets</h2><p>Provider credentials are read from server environment variables and are not embedded in browser bundles. External executors receive a narrow task contract.</p></article>
-          <article><h2>Continuous verification</h2><p>GitHub CI runs dependency auditing, source checks, strict TypeScript, PostgreSQL migrations, tests, and a production Next.js build on proposed changes.</p></article>
-        </div>
-        <section className="pricing-note">Security architecture is not a certification claim. A commercial deployment still needs production secret management, HTTPS, backups, monitoring, incident response, vendor review, and independent security testing.</section>
+    <div className="y-public-site">
+      <PublicNav />
+      <main className="y-content-page">
+        <section className="y-page-hero centered">
+          <span className="y-eyebrow">Security</span>
+          <h1>Useful autonomy needs a small blast radius.</h1>
+          <p>Yumna separates identity, authority, execution, and audit so completing more work does not require silently handing over unlimited permission.</p>
+        </section>
+        <section className="trust-grid y-trust-grid">
+          <article><h2>Workspace isolation</h2><p>Tasks, steps, approvals, authority rules, memories, contacts, connections, events, and subscriptions are workspace scoped.</p></article>
+          <article><h2>Scoped callback credentials</h2><p>External execution steps receive one opaque callback token, hashed at rest and revoked as soon as the step reaches a terminal state.</p></article>
+          <article><h2>Default-deny authority</h2><p>Spending and consequential commitments pause when authorization is missing. Stored rules can grant only the narrow authority you choose.</p></article>
+          <article><h2>Private contact resolution</h2><p>Your address book stays in the core application. The planner receives the resolved destination only when execution requires it.</p></article>
+          <article><h2>Server-side secrets</h2><p>Provider credentials stay server-side. Managed app authentication is injected during execution rather than exposed to browser or planning prompts.</p></article>
+          <article><h2>Continuous verification</h2><p>CI audits dependencies, source boundaries, strict TypeScript, fresh PostgreSQL migrations, integration tests, and the production build.</p></article>
+        </section>
+        <div className="y-legal-note">This architecture is not a security certification. A commercial launch still requires production secret management, HTTPS, backups, monitoring, vendor review, incident response, and independent security testing.</div>
       </main>
+      <PublicFooter />
     </div>
   );
 }

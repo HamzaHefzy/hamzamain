@@ -15,7 +15,7 @@ function step(input: PlannedStep): PlannedStep {
 
 export function planOperatorTask(rawRequest: string): TaskPlan {
   const request = rawRequest.trim();
-  if (request.length < 4) throw new Error("Tell Operator what you want handled.");
+  if (request.length < 4) throw new Error("Tell Dexyra what you want handled.");
 
   const text = request.toLowerCase();
   const steps: PlannedStep[] = [];
@@ -42,7 +42,14 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
     "cancel", "subscription", "refund", "return",
   ]);
   const isCall = includesAny(text, [
-    "call", "phone", "hold", "speak to", "ask them",
+    "call ", "call my", "call the", "phone them", "phone the", "ring ",
+    "hold", "speak to", "ask them",
+  ]);
+  const wantsPlaceInfo = includesAny(text, [
+    "phone number", "address", "hours", "near me", "nearby", "google maps",
+    "restaurant", "dentist", "doctor", "salon", "barber", "mechanic",
+    "plumber", "electrician", "pharmacy", "coffee", "cafe", "urgent care",
+    "veterinarian", " vet ", "hotel",
   ]);
   const isEmail = includesAny(text, [
     "email", "send", "reply", "message",
@@ -86,6 +93,16 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
       requiresApproval: false,
       provider: "twilio",
       request: { disclosureRequired: true, objective: request },
+    }));
+  } else if (wantsPlaceInfo && !transactionIntent) {
+    steps.push(step({
+      kind: "api",
+      summary: "Search Google Maps for canonical businesses, addresses, ratings, websites, and phone numbers",
+      domain: category,
+      action: "places_search",
+      requiresApproval: false,
+      provider: "google-places",
+      request: { query: request, includeContact: true },
     }));
   } else if (
     isRestaurant ||
@@ -163,7 +180,7 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
     title: titleFromRequest(request),
     category,
     rationale:
-      "Operator decomposes the request into auditable actions and pauses only when authority is missing.",
+      "Dexyra decomposes the request into auditable actions and pauses only when authority is missing.",
     steps,
     assumptions,
   };

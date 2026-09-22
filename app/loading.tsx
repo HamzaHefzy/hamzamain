@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="page-stack" aria-busy="true" aria-label="Loading Operator">
+    <div className="page-stack" aria-busy="true" aria-label="Loading Yumna">
       <div className="skeleton" />
       <div className="metric-grid">
         <div className="skeleton" />

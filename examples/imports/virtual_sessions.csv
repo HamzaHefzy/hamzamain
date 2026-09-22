@@ -1,2 +1,0 @@
-student_external_id,session_external_id,title,starts_at,ends_at,source,live_url,required,participation_status,joined_at,left_at,minutes
-S10002,ALG1-20260918,Algebra I Live,2026-09-18T10:00:00-05:00,2026-09-18T10:45:00-05:00,lms,https://school.example.org/classes/alg1,true,joined,2026-09-18T10:01:00-05:00,2026-09-18T10:43:00-05:00,42

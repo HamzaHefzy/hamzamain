@@ -37,8 +37,8 @@ const planRules: Record<OperatorPlan, {
 
 export async function getOperatorEntitlements(orgId: string) {
   const sql = db();
-  const [subscription] = await sql<{ plan: OperatorPlan; status: string }[]>`
-    select plan, status
+  const [subscription] = await sql<{ plan: OperatorPlan; status: string; customer_id: string | null }[]>`
+    select plan, status, customer_id
     from operator_subscriptions
     where org_id = ${orgId}
     limit 1
@@ -57,6 +57,7 @@ export async function getOperatorEntitlements(orgId: string) {
   return {
     plan,
     status: subscription?.status ?? "trialing",
+    customerId: subscription?.customer_id ?? null,
     limits: { monthlyTasks: rules.monthlyTasks, routines: rules.routines },
     usage: usage ?? { tasks: 0, routines: 0 },
     allowedKinds: rules.allowedKinds,

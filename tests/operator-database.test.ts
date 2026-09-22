@@ -217,4 +217,24 @@ describe.skipIf(!run)("Operator database lifecycle", () => {
     expect(ledger.count).toBe(1);
   });
 
+  it("pauses new execution when billing is delinquent", async () => {
+    await sql!`
+      update operator_subscriptions
+      set plan = 'operator', status = 'past_due', updated_at = now()
+      where org_id = ${orgId}
+    `;
+
+    await expect(createOperatorTask({
+      orgId,
+      userId,
+      request: "Find three coffee shops near downtown",
+    })).rejects.toThrow(/billing|subscription|past_due/i);
+
+    await sql!`
+      update operator_subscriptions
+      set plan = 'trial', status = 'trialing', updated_at = now()
+      where org_id = ${orgId}
+    `;
+  });
+
 });

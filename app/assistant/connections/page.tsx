@@ -50,6 +50,14 @@ export default async function ConnectionsPage() {
     },
   ];
 
+  const rawNotifications =
+    profile?.preferences.notifications &&
+    typeof profile.preferences.notifications === "object"
+      ? profile.preferences.notifications as Record<string, unknown>
+      : {};
+  const notifyEmail = rawNotifications.email !== false;
+  const notifySms = rawNotifications.sms === true;
+
   return (
     <div className="operator-page">
       <header className="operator-page-header">
@@ -64,6 +72,8 @@ export default async function ConnectionsPage() {
         <PhoneIdentityForm
           ownerPhone={profile?.owner_phone ?? null}
           assistantPhone={profile?.assistant_phone ?? process.env.TWILIO_FROM_NUMBER ?? null}
+          notifyEmail={notifyEmail}
+          notifySms={notifySms}
         />
       </section>
 

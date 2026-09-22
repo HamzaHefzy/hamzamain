@@ -89,7 +89,7 @@ export async function createOperatorTask(input: {
   source?: "web" | "sms" | "email" | "voice" | "automation" | "api";
 }) {
   const entitlement = await assertTaskCapacity(input.orgId);
-  const context = await plannerContext(input.orgId);
+  const context = await plannerContext(input.orgId, input.request);
   const plan = await planOperatorTaskWithProvider(input.request, context);
   assertPlanSupportsSteps(entitlement, plan.steps);
   const sql = db();

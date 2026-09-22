@@ -3,78 +3,54 @@ import Logo from "@/components/Logo";
 
 export const metadata = {
   title: "Pricing",
-  description: "Anchor pricing for attendance operations and virtual-school participation recovery.",
+  description: "Operator plans for personal operations, real-world execution, and human escalation.",
 };
 
 const plans = [
   {
-    name: "Anchor Core",
-    price: "From $30K / year",
-    detail: "District or network minimum",
-    items: [
-      "Attendance operations dashboard",
-      "ResolutionOS cases and commitments",
-      "CSV roster and attendance ingestion",
-      "Aggregate funding-impact modeling",
-      "Audit log and role-based access",
-    ],
+    name: "Assistant",
+    price: "$39",
+    detail: "For personal planning and lighter execution.",
+    items: ["Task planning and memory", "Reminders and follow-ups", "Calendar coordination", "Light connected actions"],
   },
   {
-    name: "Anchor Virtual",
-    price: "$12–$20 / virtual student",
-    detail: "$30K annual minimum",
-    items: [
-      "Everything in Core",
-      "Virtual evidence ledger",
-      "Policy-aware attendance adjudication",
-      "Same-day participation recovery",
-      "Virtual exception and day-close automation",
-    ],
+    name: "Operator",
+    price: "$99",
+    detail: "The core personal-operations product.",
+    items: ["Everything in Assistant", "Outbound calls and hold time", "Bookings and browser actions", "Authority wallet and audit trail"],
   },
   {
-    name: "Anchor Resolve",
-    price: "Custom",
-    detail: "Managed attendance operations",
-    items: [
-      "Technology + human operations",
-      "Attendance navigator workflow",
-      "Family/student outreach",
-      "Case-resolution SLAs",
-      "Outcome and workload reporting",
-    ],
+    name: "Concierge",
+    price: "$249",
+    detail: "For complex workflows and higher task volume.",
+    items: ["Everything in Operator", "Human exception escalation", "Complex travel and coordination", "Priority operations queue"],
   },
 ];
 
 export default function PricingPage() {
   return (
-    <div className="marketing-site pricing-site">
-      <header className="m-header">
-        <div className="m-container m-nav-wrap">
-          <Link href="/" className="m-brand"><Logo /></Link>
-          <nav className="m-nav"><Link href="/">Product</Link><Link href="/virtual">Virtual schools</Link><Link href="/pricing">Pricing</Link></nav>
-          <div className="m-nav-actions"><Link href="/login" className="m-nav-secondary">Sign in</Link><Link href="/request-demo" className="m-button dark compact">Request demo</Link></div>
-        </div>
+    <div className="operator-marketing">
+      <header className="operator-public-nav">
+        <Link href="/" aria-label="Operator home"><Logo /></Link>
+        <nav><Link href="/">Product</Link><Link href="/login">Sign in</Link><Link href="/signup" className="operator-nav-cta">Start delegating</Link></nav>
       </header>
-      <main className="m-container pricing-main">
-        <div className="m-section-heading centered pricing-heading">
-          <div className="m-kicker">Pricing tied to operating value</div>
-          <h1>Start with the attendance problem worth solving.</h1>
-          <p>Annual contracts are scoped to enrollment, workflow complexity, integrations, and whether Anchor staff operate part of the recovery queue.</p>
-        </div>
-        <div className="pricing-grid">
+      <main className="operator-public-pricing">
+        <header>
+          <span className="operator-kicker">Simple subscription pricing</span>
+          <h1>Pay Operator to work for you.</h1>
+          <p>The subscription is the alignment model. Operator is designed to serve the user rather than optimize for advertisements or merchant placement.</p>
+        </header>
+        <section className="operator-pricing-grid">
           {plans.map((plan) => (
-            <article className="pricing-card" key={plan.name}>
-              <span>{plan.name}</span>
-              <h2>{plan.price}</h2>
+            <article key={plan.name} className={plan.name === "Operator" ? "featured" : ""}>
+              <span className="operator-kicker">{plan.name}</span>
+              <strong>{plan.price}<small>/month</small></strong>
               <p>{plan.detail}</p>
               <ul>{plan.items.map((item) => <li key={item}>{item}</li>)}</ul>
-              <Link href="/request-demo" className="m-button dark">Discuss fit</Link>
+              <Link href="/signup">Start free</Link>
             </article>
           ))}
-        </div>
-        <div className="pricing-note">
-          Implementation, custom SIS/LMS integrations, and managed operations are scoped separately. Anchor does not charge based on an individual student’s modeled funding value.
-        </div>
+        </section>
       </main>
     </div>
   );

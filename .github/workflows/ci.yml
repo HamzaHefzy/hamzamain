@@ -40,6 +40,24 @@ jobs:
         run: npm audit --omit=dev --audit-level=moderate
       - name: Source hygiene
         run: npm run check:source
+      - name: Standalone publication script syntax
+        run: bash -n scripts/publish-standalone.sh
+      - name: Production configuration contract
+        env:
+          AUTH_SECRET: ci-production-auth-secret-with-more-than-thirty-two-characters
+          NEXT_PUBLIC_SITE_URL: https://operator.example
+          OPERATOR_DEMO_MODE: "false"
+          RESEND_API_KEY: re_ci_placeholder
+          RESEND_FROM_EMAIL: Operator <operator@example.invalid>
+          CRON_SECRET: ci-cron-secret-value
+          STRIPE_SECRET_KEY: sk_test_placeholder
+          STRIPE_WEBHOOK_SECRET: whsec_placeholder
+          STRIPE_PRICE_ASSISTANT: price_assistant
+          STRIPE_PRICE_OPERATOR: price_operator
+          STRIPE_PRICE_CONCIERGE: price_concierge
+          OPERATOR_ACTION_RUNNER_URL: https://actions.operator.example
+          OPERATOR_VOICE_AGENT_URL: https://voice.operator.example
+        run: npm run check:production
       - name: Typecheck
         run: npm run typecheck
       - name: Migrate database

@@ -11,6 +11,7 @@ const navItems = [
   { href: "/assistant/activity", label: "Activity" },
   { href: "/assistant/routines", label: "Routines" },
   { href: "/assistant/memory", label: "Memory" },
+  { href: "/assistant/contacts", label: "Contacts" },
   { href: "/assistant/authority", label: "Authority" },
   { href: "/assistant/connections", label: "Connections" },
   { href: "/assistant/billing", label: "Billing" },

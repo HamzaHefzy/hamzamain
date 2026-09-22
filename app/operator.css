@@ -778,3 +778,102 @@ button.ghost,
     flex-direction: column;
   }
 }
+
+.operator-contact-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+.operator-contact-form label {
+  display: grid;
+  gap: 6px;
+}
+.operator-contact-form label > span {
+  color: var(--op-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.operator-contact-form .wide {
+  grid-column: span 2;
+}
+.operator-contact-form input,
+.operator-contact-form textarea {
+  width: 100%;
+  border: 1px solid #d9dbe0;
+  border-radius: 11px;
+  background: white;
+  padding: 11px 12px;
+  font: inherit;
+}
+.operator-contact-form textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+.operator-contact-form button,
+.operator-contact-list button {
+  min-height: 43px;
+  border: 0;
+  border-radius: 11px;
+  padding: 0 16px;
+  background: var(--op-ink);
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.operator-contact-list {
+  display: grid;
+  gap: 10px;
+}
+.operator-contact-list article {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid var(--op-line);
+  border-radius: 14px;
+  background: white;
+}
+.operator-contact-list article > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.operator-contact-list span,
+.operator-contact-list small,
+.operator-contact-list p {
+  color: var(--op-muted);
+}
+.operator-contact-list small {
+  line-height: 1.45;
+}
+.operator-contact-list p {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+.operator-contact-list button.ghost {
+  background: var(--op-soft);
+  color: var(--op-ink);
+  border: 1px solid var(--op-line);
+}
+@media (max-width: 900px) {
+  .operator-contact-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 620px) {
+  .operator-contact-form {
+    grid-template-columns: 1fr;
+  }
+  .operator-contact-form .wide {
+    grid-column: auto;
+  }
+  .operator-contact-list article {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

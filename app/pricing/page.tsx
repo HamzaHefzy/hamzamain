@@ -1,5 +1,6 @@
 import Link from "next/link";
-import Logo from "@/components/Logo";
+import PublicNav from "@/components/marketing/PublicNav";
+import PublicFooter from "@/components/marketing/PublicFooter";
 
 export const metadata = {
   title: "Pricing",
@@ -32,21 +33,18 @@ const plans = [
 
 export default function PricingPage() {
   return (
-    <div className="operator-marketing">
-      <header className="operator-public-nav">
-        <Link href="/" aria-label="Yumna home"><Logo /></Link>
-        <nav><Link href="/">Product</Link><Link href="/login">Sign in</Link><Link href="/signup" className="operator-nav-cta">Start free</Link></nav>
-      </header>
-      <main className="operator-public-pricing">
-        <header>
-          <span className="operator-kicker">Simple subscription pricing</span>
-          <h1>Pay Yumna to give you time back.</h1>
-          <p>Plans control real execution capacity and capabilities. The business model is subscription-funded so Yumna stays aligned to you, not advertisers or merchants.</p>
-        </header>
-        <section className="operator-pricing-grid">
+    <div className="y-public-site">
+      <PublicNav />
+      <main className="y-content-page">
+        <section className="y-page-hero centered">
+          <span className="y-eyebrow">Pricing</span>
+          <h1>Pay for execution, not another chat window.</h1>
+          <p>Plans control actual task capacity and execution capability. Yumna is subscription-funded so the product stays aligned to you rather than advertisers or merchants.</p>
+        </section>
+        <section className="operator-pricing-grid y-public-pricing-grid">
           {plans.map((plan) => (
             <article key={plan.id} className={plan.id === "operator" ? "featured" : ""}>
-              <span className="operator-kicker">{plan.name}</span>
+              <span className="y-eyebrow">{plan.name}</span>
               <strong>{plan.price}<small>/month</small></strong>
               <p>{plan.detail}</p>
               <ul>{plan.items.map((item) => <li key={item}>{item}</li>)}</ul>
@@ -54,7 +52,9 @@ export default function PricingPage() {
             </article>
           ))}
         </section>
+        <div className="y-pricing-footnote">Provider usage, telephony, and external service costs may require separate connected accounts or future usage-based allowances depending on deployment.</div>
       </main>
+      <PublicFooter />
     </div>
   );
 }

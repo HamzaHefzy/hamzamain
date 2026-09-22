@@ -42,7 +42,7 @@ export async function planOperatorTaskWithProvider(request: string, context?: Re
           goal: "Create the smallest safe sequence of auditable actions that fully owns this user request.",
           approvalRule: "Consequential communications, account changes, sensitive actions, and spending require explicit approval unless a stored authority rule covers them.",
           escalationOrder: ["api", "browser", "voice", "human"],
-          connectedAppRule: "When context.connectedApps contains the app needed for the request, prefer an api step with provider app-agent and request.app set to that app slug. The app-agent dynamically selects a safe connected-app tool. Consequential writes still require approval.",
+          connectedAppRule: "When context.connectedAppTools contains tools for the requested app, choose the narrowest matching tool and create an api step with provider pipedream. Set request.app, request.accountId, request.pipedreamActionId, and request.configuredProps using only values supported by the user request/context. Do not invent IDs or remote-option values. Read-only tools need no approval unless sensitive; writes, sends, deletes, purchases, bookings, account changes, or destructive tools require the appropriate approval unless a stored authority rule covers them. If no exact tool can be configured safely, use provider app-agent with request.app instead of guessing.",
         },
       }),
     });

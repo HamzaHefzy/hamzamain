@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       priority: input.priority,
       budgetLimit: input.budgetLimit,
     });
-    const finalTask = input.runImmediately && task.status === "ready"
+    const finalTask = input.runImmediately
       ? await runOperatorTask(auth.session.orgId, task.id)
       : task;
     return NextResponse.json({ task: finalTask }, { status: 201 });

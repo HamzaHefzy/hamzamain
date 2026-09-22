@@ -61,7 +61,7 @@ async function actionRunner(input: ExecuteInput): Promise<ExecutionResult> {
       state: "waiting_external",
       provider: "action-runner",
       message: "Connect a browser/API action runner to execute this step in the outside world.",
-      data: { connector: "OPERATOR_ACTION_RUNNER_URL" },
+      data: { connector: "OPERATOR_ACTION_RUNNER_URL", noDispatch: true },
     };
   }
   return postExecutor(url, "action-runner", input, process.env.OPERATOR_ACTION_RUNNER_SECRET);
@@ -89,7 +89,7 @@ async function callWithVoiceProvider(input: ExecuteInput): Promise<ExecutionResu
       message: !to
         ? "The call is planned but still needs a destination number from a connected directory or voice provider."
         : "Connect a voice provider or Twilio credentials to place outbound calls.",
-      data: { connector: "OPERATOR_VOICE_AGENT_URL", missingDestination: !to },
+      data: { connector: "OPERATOR_VOICE_AGENT_URL", missingDestination: !to, noDispatch: true },
     };
   }
 
@@ -147,7 +147,7 @@ async function sendWithResend(input: ExecuteInput): Promise<ExecutionResult> {
       message: !to
         ? "The message is planned but needs a recipient from a connected contact source."
         : "Connect Resend credentials to send email.",
-      data: { connector: "resend", missingRecipient: !to },
+      data: { connector: "resend", missingRecipient: !to, noDispatch: true },
     };
   }
 
@@ -192,7 +192,7 @@ async function sendToHumanQueue(input: ExecuteInput): Promise<ExecutionResult> {
       state: "waiting_external",
       provider: "human-queue",
       message: "Connect a human-operations queue for exception handling.",
-      data: { connector: "OPERATOR_HUMAN_QUEUE_URL" },
+      data: { connector: "OPERATOR_HUMAN_QUEUE_URL", noDispatch: true },
     };
   }
   return postExecutor(url, "human-queue", input, process.env.OPERATOR_HUMAN_QUEUE_SECRET);

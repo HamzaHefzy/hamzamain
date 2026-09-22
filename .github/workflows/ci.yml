@@ -59,8 +59,12 @@ jobs:
           PIPEDREAM_PROJECT_ID: pd_project_ci
           PIPEDREAM_CLIENT_ID: pd_client_ci
           PIPEDREAM_CLIENT_SECRET: pd_secret_ci
+          BRAVE_SEARCH_API_KEY: brave_ci_placeholder
+          VAPI_API_KEY: vapi_ci_placeholder
+          VAPI_ASSISTANT_ID: vapi_assistant_ci
+          VAPI_PHONE_NUMBER_ID: vapi_phone_ci
+          VAPI_WEBHOOK_SECRET: vapi_webhook_ci_placeholder
           OPERATOR_ACTION_RUNNER_URL: https://actions.yumna.example
-          OPERATOR_VOICE_AGENT_URL: https://voice.yumna.example
         run: npm run check:production
       - name: Typecheck
         run: npm run typecheck

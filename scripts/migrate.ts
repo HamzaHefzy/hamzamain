@@ -1,3 +1,4 @@
+import "./load-env";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import postgres from "postgres";

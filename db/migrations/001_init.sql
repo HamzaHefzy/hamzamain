@@ -16,6 +16,7 @@ CREATE TABLE users (
   email text NOT NULL UNIQUE,
   name text NOT NULL,
   password_hash text NOT NULL,
+  email_verified_at timestamptz,
   active boolean NOT NULL DEFAULT true,
   last_login_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -32,6 +33,17 @@ CREATE TABLE memberships (
   UNIQUE(user_id, org_id)
 );
 CREATE INDEX memberships_org_active_idx ON memberships(org_id, active);
+
+CREATE TABLE email_verification_tokens (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  org_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  token_hash text NOT NULL UNIQUE,
+  expires_at timestamptz NOT NULL,
+  used_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  FOREIGN KEY (user_id, org_id) REFERENCES memberships(user_id, org_id)
+);
 
 CREATE TABLE password_reset_tokens (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

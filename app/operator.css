@@ -877,3 +877,27 @@ button.ghost,
     flex-direction: column;
   }
 }
+
+.operator-notification-options {
+  display: grid;
+  gap: 8px;
+  align-self: center;
+}
+.operator-phone-form .operator-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.operator-phone-form .operator-check input {
+  width: 16px;
+  min-height: 16px;
+  height: 16px;
+  padding: 0;
+}
+.operator-phone-form .operator-check span {
+  color: var(--op-ink);
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: none;
+  letter-spacing: 0;
+}

@@ -21,7 +21,7 @@ function slugBase(value: string) {
 export async function POST(request: Request) {
   if (!hasDatabase()) {
     return NextResponse.json(
-      { error: "Wafira is not connected to its database yet.", code: "database_unavailable" },
+      { error: "Yumna is not connected to its database yet.", code: "database_unavailable" },
       { status: 503 },
     );
   }
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await bcrypt.hash(input.password, 12);
-    const workspaceName = input.workspaceName?.trim() || input.name + "'s Wafira";
+    const workspaceName = input.workspaceName?.trim() || input.name + "'s Yumna";
     const slug = slugBase(workspaceName) + "-" + crypto.randomUUID().slice(0, 6);
 
     const created = await sql.begin(async (tx) => {
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       `;
       await tx`
         insert into operator_profiles (org_id, assistant_name, timezone)
-        values (${org.id}, 'Wafira', 'America/New_York')
+        values (${org.id}, 'Yumna', 'America/New_York')
       `;
       await tx`
         insert into operator_subscriptions (org_id, plan, status)

@@ -1,4 +1,6 @@
 import { db } from "@/lib/db";
+import { resolveNamedGooglePlace } from "@/lib/operator/places";
+import { getOperatorProfile } from "@/lib/operator/profile";
 
 export type OperatorContact = {
   id: string;
@@ -132,6 +134,38 @@ export async function resolveOperatorDestination(input: {
     .sort((a, b) => b.score - a.score);
 
   if (!ranked.length) {
+    if (input.kind === "voice" && process.env.GOOGLE_MAPS_API_KEY) {
+      const profile = await getOperatorProfile(input.orgId);
+      const place = await resolveNamedGooglePlace({
+        query: input.taskRequest,
+        homeBase: profile?.home_base ?? null,
+      });
+
+      if (place.resolved?.internationalPhoneNumber || place.resolved?.nationalPhoneNumber) {
+        return {
+          ...input.request,
+          to:
+            place.resolved.internationalPhoneNumber ??
+            place.resolved.nationalPhoneNumber,
+          contactName: place.resolved.displayName,
+          destinationSource: "google-places",
+          placeId: place.resolved.id,
+          placeAddress: place.resolved.formattedAddress,
+          placeWebsite: place.resolved.websiteUri,
+          googleMapsUri: place.resolved.googleMapsUri,
+        };
+      }
+
+      return {
+        ...input.request,
+        contactResolutionError:
+          place.candidates.length > 0
+            ? "Google Maps found possible businesses, but Operator will not guess which one you meant. Name the business more specifically."
+            : "No matching phone number was found in your private contacts or Google Maps.",
+        placeCandidates: place.candidates,
+      };
+    }
+
     return {
       ...input.request,
       contactResolutionError:

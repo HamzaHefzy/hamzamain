@@ -8,11 +8,13 @@ export default function PhoneIdentityForm({
   assistantPhone,
   notifyEmail,
   notifySms,
+  homeBase,
 }: {
   ownerPhone: string | null;
   assistantPhone: string | null;
   notifyEmail: boolean;
   notifySms: boolean;
+  homeBase: string | null;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -33,6 +35,7 @@ export default function PhoneIdentityForm({
           ownerPhone: raw || null,
           notifyEmail: data.get("notifyEmail") === "on",
           notifySms: data.get("notifySms") === "on",
+          homeBase: String(data.get("homeBase") ?? "").trim() || null,
         }),
       });
       const payload = await response.json() as { error?: string };
@@ -52,6 +55,10 @@ export default function PhoneIdentityForm({
         <h2>Phone identity & alerts</h2>
         <p>Your linked phone secures text-to-Operator. Notifications tell you when a task needs approval, completes, or fails.</p>
       </div>
+      <label>
+        <span>Home base</span>
+        <input name="homeBase" defaultValue={homeBase ?? ""} placeholder="Durham, NC or your neighborhood" />
+      </label>
       <label>
         <span>Your phone</span>
         <input name="ownerPhone" defaultValue={ownerPhone ?? ""} placeholder="+19195551234" pattern="\+[1-9][0-9]{7,14}" />

@@ -242,3 +242,26 @@ CREATE TABLE operator_callback_events (
 );
 CREATE INDEX operator_callback_events_task_idx
   ON operator_callback_events(task_id, received_at DESC);
+
+
+CREATE TABLE operator_contacts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  display_name text NOT NULL,
+  organization text,
+  phone text,
+  email text,
+  aliases text[] NOT NULL DEFAULT '{}'::text[],
+  notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CHECK (phone IS NOT NULL OR email IS NOT NULL)
+);
+CREATE INDEX operator_contacts_org_name_idx
+  ON operator_contacts(org_id, lower(display_name));
+CREATE UNIQUE INDEX operator_contacts_org_phone_unique
+  ON operator_contacts(org_id, phone)
+  WHERE phone IS NOT NULL;
+CREATE UNIQUE INDEX operator_contacts_org_email_unique
+  ON operator_contacts(org_id, lower(email))
+  WHERE email IS NOT NULL;

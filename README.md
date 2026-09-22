@@ -1,32 +1,28 @@
-# Anchor
+# Operator
 
-Anchor is an attendance-resolution operating system for school systems. It combines attendance ingestion, ResolutionOS case execution, virtual participation recovery, and aggregate attendance-linked funding planning in one organization-scoped workspace.
+Operator is a production-shaped personal operations system: a user delegates an outcome and the product owns the workflow until it is complete. The execution engine is provider-neutral and follows an API/browser → voice → human escalation model with durable state, approvals, bounded authority, billing, and a complete audit trail.
 
-## Production-v1 capabilities
+## What is implemented
 
-- PostgreSQL multi-tenancy
-- signed sessions and role-based access
-- team invitations and password recovery
-- campus and delivery-model configuration
-- versioned virtual attendance policies
-- roster, attendance, evidence, and virtual-session CSV ingestion
-- OneRoster roster synchronization with encrypted OAuth credentials
-- persistent ResolutionOS cases, owners, commitments, verification, and history
-- virtual evidence adjudication
-- scheduled-session Show-Up recovery and secure student barrier check-ins
-- Twilio SMS and Resend email adapters
-- aggregate funding assumptions and scenarios
-- audit logging
-- public pricing, persisted sales lead capture, Resend sales alerts, and signed CRM webhooks
-- Docker support and PostgreSQL-backed CI
+- Public product site, pricing, sign-in, and self-service signup
+- PostgreSQL-backed multi-tenant workspaces and signed sessions
+- Command center for natural-language task delegation
+- Pluggable reasoning planner with deterministic safe fallback and explicit execution steps
+- Durable task/step state machine that survives external waits
+- Approval queue and default-deny authority wallet
+- Spend-cap enforcement for delegated purchasing authority
+- Browser/API executor contract
+- Conversational voice-agent contract plus Twilio fallback
+- Resend email execution
+- Human-operator exception queue contract
+- Signed asynchronous provider callbacks and automatic task resume
+- Task-level audit/activity history
+- Connection-health UI
+- Stripe Checkout subscriptions and signed webhook processing
+- Docker/local bootstrap and PostgreSQL-backed GitHub CI
+- Demo executor for safe end-to-end product testing without external credentials
 
-## Product guardrail
-
-Finance views may show aggregate campus/network funding scenarios. Student-level views must never assign or display a dollar value to an individual child, and support prioritization must not depend on funding weight.
-
-## Local development
-
-The supported local setup path is:
+## Run locally
 
 ~~~bash
 npm install
@@ -34,13 +30,11 @@ npm run setup:local
 npm run dev
 ~~~
 
-The setup command creates a gitignored `.env.local`, starts the PostgreSQL Docker service, runs every migration, seeds a demo organization, and prints the local admin credentials to the terminal.
+Open http://localhost:3000. The setup script creates a local database and prints a development login. You can also create a new workspace through /signup.
 
-Open http://localhost:3000 and sign in with the email/password printed by `npm run setup:local`.
+Set `OPERATOR_DEMO_MODE=true` to run the complete task lifecycle locally without placing real calls, purchases, or bookings.
 
-If Docker Desktop is not running, start it and rerun `npm run setup:local`.
-
-## Validation
+## Production validation
 
 ~~~bash
 npm run check:source
@@ -49,23 +43,30 @@ npm test
 npm run build
 ~~~
 
-GitHub Actions additionally starts PostgreSQL, runs migrations and seed, executes the database smoke test, and performs the production build.
+GitHub Actions also provisions PostgreSQL, applies every migration, seeds the database, runs database smoke tests, and performs a production build.
 
-## Customer setup
+## Connecting the outside world
 
-See:
+The application code is intentionally provider-neutral. Production deployment needs credentials/endpoints rather than another product rewrite:
 
-- docs/DEPLOYMENT.md
-- docs/CUSTOMER_ONBOARDING.md
-- docs/ATTENDANCE_RECOVERY_STRATEGY.md
-- docs/SECURITY.md
-- docs/PRODUCT_GUARDRAILS.md
-- examples/imports/
+- `OPERATOR_PLANNER_URL`: optional reasoning/planning service for arbitrary requests; the safe local planner remains the fallback.
+- `OPERATOR_ACTION_RUNNER_URL`: browser/API worker that accepts a step and calls `/api/operator/callback` when asynchronous work finishes.
+- `OPERATOR_VOICE_AGENT_URL`: conversational outbound voice service. The existing Twilio variables provide a simpler fallback.
+- `OPERATOR_HUMAN_QUEUE_URL`: human exception/escalation service.
+- `OPERATOR_WEBHOOK_SECRET`: bearer token required by external executor callbacks.
+- `RESEND_API_KEY` / `RESEND_FROM_EMAIL`: outbound email.
+- Stripe secret, webhook secret, and three price IDs for paid subscriptions.
 
-## Important finance disclaimer
+Executor requests include the task ID, step ID, requested objective, and a signed callback contract. External systems never receive database credentials.
 
-Texas funding values in Anchor are transparent planning scenarios, not guarantees of net state-aid impact. Production calculations must be reconciled to the customer's actual Foundation School Program circumstances and current attendance-accounting rules.
+## Trust model
 
-## Integration truthfulness
+Consequential actions are not inferred as permission. They are either explicitly approved for the task or covered by a stored authority rule. Spend rules with a maximum amount are enforced against the task's declared budget ceiling; if the amount is unknown, Operator asks.
 
-CSV import and the OneRoster roster adapter are implemented paths. Other named SIS/LMS vendors should not be represented as live integrations until their provider-specific adapters have been implemented and validated with authorized customer credentials.
+Every material state transition is persisted. The user can see what Operator attempted, why it paused, what provider handled a step, what was approved, and whether the task finished.
+
+## Deployment
+
+The repository includes a Dockerfile and can run anywhere that provides Node.js plus PostgreSQL. Set `NEXT_PUBLIC_SITE_URL` to the deployed HTTPS origin and keep all secrets server-side. Stripe should post to `/api/billing/webhook`; external action/voice/human workers should post signed completion events to `/api/operator/callback`.
+
+"Operator" is currently a working product name and should receive trademark/domain diligence before commercial launch.

@@ -2,19 +2,15 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="page-stack">
-      <header className="page-header">
-        <div className="page-header-copy">
-          <div className="eyebrow">Not found</div>
+    <div className="operator-page">
+      <header className="operator-page-header">
+        <div>
+          <span className="operator-kicker">Not found</span>
           <h1>This page is not available.</h1>
-          <p className="lede">
-            The link may be outdated or the case may no longer exist in this synthetic environment.
-          </p>
+          <p>The link may be outdated, or the resource no longer exists in this workspace.</p>
         </div>
       </header>
-      <div>
-        <Link className="primary-link" href="/">Return to executive overview</Link>
-      </div>
+      <Link className="operator-back" href="/assistant">← Return to Operator</Link>
     </div>
   );
 }

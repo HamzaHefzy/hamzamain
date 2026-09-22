@@ -16,7 +16,7 @@ const schema = z.object({
 export async function POST(request: Request) {
   if (!hasDatabase()) {
     return NextResponse.json(
-      { error: "This Anchor workspace is not connected to its database yet.", code: "database_unavailable" },
+      { error: "This Operator workspace is not connected to its database yet.", code: "database_unavailable" },
       { status: 503 },
     );
   }

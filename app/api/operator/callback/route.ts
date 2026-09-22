@@ -1,0 +1,32 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { acceptOperatorCallback } from "@/lib/operator/service";
+
+const schema = z.object({
+  taskId: z.string().uuid(),
+  stepId: z.string().uuid(),
+  state: z.enum(["completed", "failed"]),
+  message: z.string().min(1).max(2000),
+  data: z.record(z.unknown()).optional(),
+});
+
+function authorized(request: Request) {
+  const expected = process.env.OPERATOR_WEBHOOK_SECRET;
+  if (!expected) return false;
+  return request.headers.get("authorization") === "Bearer " + expected;
+}
+
+export async function POST(request: Request) {
+  if (!authorized(request)) {
+    return NextResponse.json({ error: "Invalid callback credentials." }, { status: 401 });
+  }
+
+  try {
+    const input = schema.parse(await request.json());
+    const task = await acceptOperatorCallback(input);
+    return NextResponse.json({ ok: true, task });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid callback.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}

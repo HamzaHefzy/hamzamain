@@ -27,7 +27,7 @@ function parseEnv(content) {
 }
 
 function randomPassword() {
-  return "Anchor-" + randomBytes(9).toString("base64url") + "!";
+  return "Operator-" + randomBytes(9).toString("base64url") + "!";
 }
 
 const existing = existsSync(envPath)
@@ -44,14 +44,15 @@ const values = {
   NEXT_PUBLIC_SITE_URL:
     existing.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   ANCHOR_DEMO_MODE: existing.ANCHOR_DEMO_MODE || "false",
+  OPERATOR_DEMO_MODE: existing.OPERATOR_DEMO_MODE || "true",
   SEED_ADMIN_EMAIL:
-    existing.SEED_ADMIN_EMAIL || "admin@anchor.local",
+    existing.SEED_ADMIN_EMAIL || "admin@operator.local",
   SEED_ADMIN_PASSWORD:
     existing.SEED_ADMIN_PASSWORD || randomPassword(),
   SEED_ORG_NAME:
-    existing.SEED_ORG_NAME || "Anchor Demo District",
+    existing.SEED_ORG_NAME || "Operator Demo",
   SEED_ORG_SLUG:
-    existing.SEED_ORG_SLUG || "anchor-demo",
+    existing.SEED_ORG_SLUG || "operator-demo",
   CRON_SECRET:
     existing.CRON_SECRET || randomBytes(32).toString("base64url"),
 };
@@ -62,6 +63,7 @@ const orderedKeys = [
   "AUTH_SECRET",
   "NEXT_PUBLIC_SITE_URL",
   "ANCHOR_DEMO_MODE",
+  "OPERATOR_DEMO_MODE",
   "SEED_ADMIN_EMAIL",
   "SEED_ADMIN_PASSWORD",
   "SEED_ORG_NAME",
@@ -82,7 +84,7 @@ const lines = [
 
 writeFileSync(envPath, lines.join("\n"), { mode: 0o600 });
 
-console.log("\nAnchor local setup");
+console.log("\nOperator local setup");
 console.log("------------------");
 console.log("Environment written to .env.local");
 
@@ -171,7 +173,7 @@ for (const command of [
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
-console.log("\nLocal Anchor workspace is ready.");
+console.log("\nLocal Operator workspace is ready.");
 console.log("URL:      http://localhost:3000");
 console.log("Email:    " + values.SEED_ADMIN_EMAIL);
 console.log("Password: " + values.SEED_ADMIN_PASSWORD);

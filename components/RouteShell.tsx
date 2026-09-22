@@ -49,7 +49,7 @@ export default function RouteShell({ children }: { children: ReactNode }) {
     <div className="app-shell">
       <aside className="sidebar app-sidebar" aria-label="Primary navigation">
         <div className="operator-shell-brand">
-          <Link href="/assistant" className="app-logo-link" aria-label="Operator home">
+          <Link href="/assistant" className="app-logo-link" aria-label="Dexyra home">
             <Logo />
           </Link>
           <p className="operator-shell-subtitle">Your life&apos;s administrative operating layer</p>
@@ -74,7 +74,7 @@ export default function RouteShell({ children }: { children: ReactNode }) {
       <main className="main-content">
         {children}
         <footer className="app-footer">
-          <span>© 2026 Operator.</span>
+          <span>© 2026 Dexyra.</span>
           <Link href="/">Public site</Link>
         </footer>
       </main>

@@ -14,12 +14,7 @@ const schema = z.object({
 });
 
 function slugBase(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 42) || "workspace";
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 42) || "workspace";
 }
 
 export async function POST(request: Request) {
@@ -54,8 +49,8 @@ export async function POST(request: Request) {
 
     const created = await sql.begin(async (tx) => {
       const [org] = await tx<{ id: string; name: string; slug: string }[]>`
-        insert into organizations (name, slug, organization_type, state, status)
-        values (${workspaceName}, ${slug}, 'other', 'NA', 'trial')
+        insert into organizations (name, slug, timezone, status)
+        values (${workspaceName}, ${slug}, 'America/New_York', 'trial')
         returning id, name, slug
       `;
       const [user] = await tx<{ id: string; email: string; name: string }[]>`
@@ -70,6 +65,10 @@ export async function POST(request: Request) {
       await tx`
         insert into operator_profiles (org_id, assistant_name, timezone)
         values (${org.id}, 'Operator', 'America/New_York')
+      `;
+      await tx`
+        insert into operator_subscriptions (org_id, plan, status)
+        values (${org.id}, 'trial', 'trialing')
       `;
       return { org, user };
     });

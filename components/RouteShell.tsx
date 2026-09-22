@@ -9,6 +9,8 @@ import LogoutButton from "./LogoutButton";
 const navItems = [
   { href: "/assistant", label: "Command center" },
   { href: "/assistant/activity", label: "Activity" },
+  { href: "/assistant/routines", label: "Routines" },
+  { href: "/assistant/memory", label: "Memory" },
   { href: "/assistant/authority", label: "Authority" },
   { href: "/assistant/connections", label: "Connections" },
   { href: "/assistant/billing", label: "Billing" },
@@ -21,7 +23,6 @@ const publicPaths = new Set([
   "/pricing",
   "/security",
   "/privacy",
-  "/request-demo",
 ]);
 
 function isActive(pathname: string, href: string) {

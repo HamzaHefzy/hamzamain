@@ -3,21 +3,21 @@ import Logo from "@/components/Logo";
 
 export const metadata = {
   title: "Privacy",
-  description: "Operator privacy principles for a trusted personal operations assistant.",
+  description: "Wafira privacy principles for a trusted personal execution assistant.",
 };
 
 export default function PrivacyPage() {
   return (
     <div className="marketing-site trust-site">
       <header className="operator-public-nav">
-        <Link href="/" aria-label="Operator home"><Logo /></Link>
+        <Link href="/" aria-label="Wafira home"><Logo /></Link>
         <nav><Link href="/pricing">Pricing</Link><Link href="/security">Security</Link><Link href="/signup" className="operator-nav-cta">Start delegating</Link></nav>
       </header>
       <main className="m-container trust-main">
         <div className="m-section-heading centered trust-heading">
           <div className="operator-kicker">Privacy principles</div>
           <h1>Your assistant should work for you, not advertise to you.</h1>
-          <p>Operator is designed around explicit delegation, minimum necessary context, bounded authority, and an auditable record of external actions.</p>
+          <p>Wafira is designed around explicit delegation, minimum necessary context, bounded authority, and an auditable record of external actions.</p>
         </div>
         <div className="trust-grid">
           <article><h2>User-aligned business model</h2><p>The core product is subscription funded. The product architecture does not require selling personal behavior or inserting paid merchant placement into task decisions.</p></article>

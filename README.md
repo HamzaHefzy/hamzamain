@@ -1,36 +1,39 @@
-# Operator
+# Wafira
 
-Operator is a production-shaped personal operations system: a user delegates an outcome and the product owns the workflow until it is complete. The execution engine is provider-neutral and follows an API/browser → voice → human escalation model with durable state, approvals, bounded authority, billing, and a complete audit trail.
+Wafira is a production-shaped personal execution system: the user delegates an outcome and Wafira owns the workflow until it is complete. The application combines durable task state, bounded authority, Google Maps / Places, managed app connections, phone and email execution, billing, proactive routines, and a complete audit trail.
+
+The codebase is intentionally a **modular monolith**, not a monorepo. The core application, authentication, billing, task state, approvals, UI, and persistence ship together. Browser workers, conversational voice providers, and human exception queues remain replaceable external execution contracts only where separate scaling or operational isolation is justified.
 
 ## What is implemented
 
-- Public product site, pricing, sign-in, and self-service signup
+- Google-grade responsive application shell and public product experience
+- Self-service signup, login, password recovery, and production email verification
 - PostgreSQL-backed multi-tenant workspaces and signed sessions
-- Command center for natural-language task delegation
-- Pluggable reasoning planner with deterministic safe fallback and explicit execution steps
+- Natural-language task delegation with a deterministic safe planner and optional reasoning planner
 - Durable task/step state machine that survives external waits
+- Atomic step claiming to prevent duplicate calls, bookings, or payments
+- Task cancellation, late-callback rejection, and idempotent callback ledger
+- Per-step opaque callback credentials, hashed at rest and revoked at terminal state
 - Approval queue and default-deny authority wallet
 - Spend-cap enforcement for delegated purchasing authority
-- Browser/API executor contract
+- First-party Google Places search and business-phone resolution
+- Private contact directory resolved only at execution time
+- Pipedream Connect gateway for managed app authentication and long-tail app actions
+- Connected-app tool discovery so the planner can select exact actions without receiving credentials
+- Browser/API execution contract
 - Conversational voice-agent contract plus Twilio fallback
+- Signed inbound Twilio SMS and voice task intake
 - Resend email execution
-- Human-operator exception queue contract
-- Signed asynchronous provider callbacks and automatic task resume
-- Task-level audit/activity history
-- Atomic execution-step claiming to prevent duplicate calls, bookings, or payments under concurrent retries
-- Personal memory with normal/private/restricted privacy tiers
-- Private contacts resolved only at execution time, without exposing the address book to the planner
-- Daily and weekly proactive routines that create normal governed tasks
 - Deduplicated email/SMS alerts for approvals, completion, and failures
-- Signed, retry-safe inbound Twilio SMS that turns a text into an Operator task
-- Signed inbound Twilio call intake with automated-assistant disclosure and speech-to-task capture
+- Personal memory with normal/private/restricted privacy tiers
+- Daily and weekly proactive routines that create governed tasks
+- Human exception queue for complex workflows
+- Task-level audit history
+- Subscription entitlements, usage limits, Stripe Checkout, webhooks, and billing portal
+- Workspace data export and owner-controlled deletion safeguards
 - Connection-health UI
-- Production email verification before execution or workspace mutation
-- Workspace JSON export and owner-controlled deletion with billing cancellation safeguards
-- Subscription entitlements, usage limits, and self-service Stripe billing management
-- Stripe Checkout subscriptions and signed webhook processing
 - Docker/local bootstrap and PostgreSQL-backed GitHub CI
-- Demo executor for safe end-to-end product testing without external credentials
+- Safe demo executor for end-to-end product testing without touching outside systems
 
 ## Run locally
 
@@ -40,9 +43,9 @@ npm run setup:local
 npm run dev
 ~~~
 
-Open http://localhost:3000. The setup script creates a local database and prints a development login. You can also create a new workspace through /signup.
+Open http://localhost:3000. The setup script creates a local database, applies the standalone Wafira schema, seeds a verified development owner, and prints the login.
 
-Set `OPERATOR_DEMO_MODE=true` to run the complete task lifecycle locally without placing real calls, purchases, or bookings.
+Set `OPERATOR_DEMO_MODE=true` to exercise the complete governed task lifecycle locally without placing real calls, purchases, or bookings. The historical `OPERATOR_*` configuration prefix is intentionally retained as an internal compatibility contract; changing it provides no customer value and would add deployment risk.
 
 ## Production validation
 
@@ -54,35 +57,44 @@ npm test
 npm run build
 ~~~
 
-GitHub Actions also provisions PostgreSQL, applies the standalone schema, seeds the database, runs the integration suite, and performs a production build. `npm run check:production` is intentionally stricter than CI because it validates live credentials and rejects demo mode.
+GitHub Actions provisions PostgreSQL, applies the standalone schema, seeds it, runs dependency auditing and source hygiene, executes the integration suite, and performs a production Next.js build.
 
 ## Connecting the outside world
 
-The application code is intentionally provider-neutral. Production deployment needs credentials/endpoints rather than another product rewrite:
+Production capability is activated with credentials rather than product rewrites:
 
-- `OPERATOR_PLANNER_URL`: optional reasoning/planning service for arbitrary requests; the safe local planner remains the fallback.
-- `OPERATOR_ACTION_RUNNER_URL`: browser/API worker that accepts a step and calls `/api/operator/callback` when asynchronous work finishes.
-- `TWILIO_FROM_NUMBER` + `/api/operator/inbound/sms`: optional inbound text-to-Operator channel. Link the owner's E.164 phone number in Connections and configure Twilio's Messaging webhook to this route.
-- `/api/operator/inbound/voice`: optional Twilio Voice webhook for disclosed automated call intake. It collects the caller's spoken reason for calling and creates a follow-up task; full conversation automation belongs behind `OPERATOR_VOICE_AGENT_URL`.
-- `OPERATOR_VOICE_AGENT_URL`: conversational outbound voice service. The existing Twilio variables provide a simpler fallback.
-- `OPERATOR_HUMAN_QUEUE_URL`: human exception/escalation service.
-- `RESEND_API_KEY` / `RESEND_FROM_EMAIL`: outbound email.
+- `GOOGLE_MAPS_API_KEY`: Places API (New) for canonical business search, addresses, ratings, websites, Maps links, and phone numbers.
+- `PIPEDREAM_PROJECT_ID`, `PIPEDREAM_CLIENT_ID`, `PIPEDREAM_CLIENT_SECRET`: managed per-workspace OAuth and actions across thousands of applications.
+- `OPERATOR_PLANNER_URL`: optional reasoning planner. Wafira keeps the deterministic safe planner as fallback.
+- `OPERATOR_ACTION_RUNNER_URL`: browser/API worker for web workflows that do not have a direct app/API path.
+- `OPERATOR_VOICE_AGENT_URL`: conversational outbound voice provider. Twilio credentials provide a basic fallback.
+- `TWILIO_FROM_NUMBER` + `/api/operator/inbound/sms`: inbound text-to-Wafira.
+- `/api/operator/inbound/voice`: disclosed automated call intake.
+- `RESEND_API_KEY` / `RESEND_FROM_EMAIL`: transactional email and verification delivery.
+- `OPERATOR_HUMAN_QUEUE_URL`: human exception escalation for Concierge.
 - Stripe secret, webhook secret, and three price IDs for paid subscriptions.
+- `CRON_SECRET`: authenticates the scheduler that invokes `/api/jobs/operator-routines`.
 
-Executor requests include the task ID, step ID, requested objective, and a one-time scoped callback token. The token is hashed at rest, bound to that step, and revoked when the step reaches a terminal state. External systems never receive database credentials or a workspace-wide callback secret.
+External executors receive only the task/step contract and a one-time callback token for that step. The token is hashed at rest and revoked when the step ends. External systems never receive database credentials or a workspace-wide execution secret.
 
 ## Trust model
 
-Consequential actions are not inferred as permission. They are either explicitly approved for the task or covered by a stored authority rule. Spend rules with a maximum amount are enforced against the task's declared budget ceiling; if the amount is unknown, Operator asks.
+Consequential actions are not inferred as permission. They are either explicitly approved for the task or covered by an authority rule the user created. Spending rules enforce declared caps; unknown amounts require approval rather than inheriting authority.
 
-Every material state transition is persisted. The user can see what Operator attempted, why it paused, what provider handled a step, what was approved, and whether the task finished.
+Every material transition is persisted. The user can see what Wafira attempted, why it paused, which provider handled a step, what was approved, and whether the workflow finished.
 
 ## Standalone repository
 
-Publish a clean-history repository with `bash scripts/publish-standalone.sh OWNER/operator private`. See `docs/STANDALONE_REPOSITORY.md` for the complete handoff and `docs/PRODUCTION_LAUNCH.md` for the release gate.
+This branch is intentionally isolated from Anchor. Publish a clean-history repository with:
+
+~~~bash
+bash scripts/publish-standalone.sh YOUR_GITHUB_OWNER/wafira private
+~~~
+
+See `docs/STANDALONE_REPOSITORY.md` for the handoff and `docs/PRODUCTION_LAUNCH.md` for the release gate.
 
 ## Deployment
 
-The repository includes a Dockerfile and can run anywhere that provides Node.js plus PostgreSQL. Set `NEXT_PUBLIC_SITE_URL` to the deployed HTTPS origin and keep all secrets server-side. Stripe should post to `/api/billing/webhook`; external action/voice/human workers should post signed completion events to `/api/operator/callback`; a scheduler should invoke `/api/jobs/operator-routines` with `Authorization: Bearer $CRON_SECRET` at least once per hour.
+The included Dockerfile can run anywhere that provides Node.js and PostgreSQL. Use HTTPS for `NEXT_PUBLIC_SITE_URL`, managed PostgreSQL, server-side secrets, Stripe at `/api/billing/webhook`, Twilio inbound routes as documented above, scoped external-executor callbacks at `/api/operator/callback`, and an hourly-or-better routine scheduler.
 
-"Operator" is currently a working product name and should receive trademark/domain diligence before commercial launch.
+**Brand note:** Wafira is the current launch candidate. The product-name screen found no comparable AI assistant/software product under the exact name, but commercial launch should still include formal trademark and domain clearance.

@@ -6,6 +6,8 @@ import {
   resolveOperatorApproval,
   runOperatorTask,
 } from "@/lib/operator/service";
+import { plannerContext, upsertOperatorMemory } from "@/lib/operator/context";
+import { createOperatorRoutine, runDueOperatorRoutines } from "@/lib/operator/routines";
 
 const run = Boolean(process.env.DATABASE_URL);
 const sql = run ? postgres(process.env.DATABASE_URL!, { max: 1, prepare: false }) : null;
@@ -93,5 +95,49 @@ describe.skipIf(!run)("Operator database lifecycle", () => {
 
     const loaded = await getOperatorTask(orgId, task.id);
     expect(loaded?.approvals.every((approval) => approval.status === "approved")).toBe(true);
+  });
+
+  it("scopes planner memory by sensitivity", async () => {
+    await upsertOperatorMemory({
+      orgId,
+      key: "dining_preferences",
+      value: "Quiet restaurants after 7 PM",
+      sensitivity: "normal",
+    });
+    await upsertOperatorMemory({
+      orgId,
+      key: "private_note",
+      value: "Do not send this to the planner by default",
+      sensitivity: "restricted",
+    });
+
+    const context = await plannerContext(orgId);
+    expect(context.memories.some((memory) => memory.key === "dining_preferences")).toBe(true);
+    expect(context.memories.some((memory) => memory.key === "private_note")).toBe(false);
+  });
+
+  it("claims a due routine once and creates a normal Operator task", async () => {
+    const routine = await createOperatorRoutine({
+      orgId,
+      userId,
+      title: "Daily planning test",
+      request: "Find three good options for an outdoor activity",
+      cadence: "daily",
+      firstRunAt: new Date(Date.now() + 60_000),
+    });
+
+    await sql!`
+      update operator_routines
+      set next_run_at = now() - interval '1 minute'
+      where id = ${routine.id}
+    `;
+
+    const results = await runDueOperatorRoutines();
+    const result = results.find((item) => item.routineId === routine.id);
+    expect(result?.taskId).toBeTruthy();
+    expect(result?.status).toBe("completed");
+
+    const secondPass = await runDueOperatorRoutines();
+    expect(secondPass.some((item) => item.routineId === routine.id)).toBe(false);
   });
 });

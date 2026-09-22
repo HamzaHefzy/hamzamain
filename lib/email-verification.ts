@@ -43,9 +43,9 @@ export async function issueEmailVerification(input: {
   const verificationUrl = siteUrl() + "/verify-email/" + token;
   await sendEmail({
     to: input.email,
-    subject: "Verify your Wafira email",
+    subject: "Verify your Yumna email",
     body:
-      "Verify your email to unlock Wafira execution and workspace changes:\n\n" +
+      "Verify your email to unlock Yumna execution and workspace changes:\n\n" +
       verificationUrl +
       "\n\nThis link expires in 24 hours.",
   });

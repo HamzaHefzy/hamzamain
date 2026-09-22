@@ -1918,3 +1918,266 @@
 @media (max-width: 620px) {
   .y-integration-three { grid-template-columns: 1fr; }
 }
+
+
+/* 2026 Yumna launch polish */
+.yumna-logo-mark {
+  width: 36px;
+  height: 36px;
+  filter: drop-shadow(0 7px 16px rgba(91,76,227,.20));
+}
+.yumna-logo-word {
+  font-size: 22px;
+  font-weight: 790;
+  letter-spacing: -.052em;
+}
+
+.y-demo-stage {
+  position: relative;
+  min-height: 710px;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+.y-stage-glow {
+  position: absolute;
+  z-index: -2;
+  inset: 10% -10% 2%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 48% 45%, rgba(91,76,227,.20), rgba(91,76,227,.075) 33%, transparent 67%),
+    radial-gradient(circle at 72% 24%, rgba(112,226,177,.22), transparent 29%);
+  filter: blur(12px);
+}
+.y-demo-stage::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 540px;
+  height: 540px;
+  border: 1px dashed rgba(91,76,227,.14);
+  border-radius: 50%;
+  animation: y-orbit-spin 28s linear infinite;
+}
+@keyframes y-orbit-spin {
+  to { transform: rotate(360deg); }
+}
+.y-floating-proof {
+  position: absolute;
+  z-index: 5;
+  min-width: 184px;
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 12px;
+  border: 1px solid rgba(222,223,232,.86);
+  border-radius: 16px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 18px 45px rgba(42,38,86,.12);
+  backdrop-filter: blur(18px);
+  animation: y-float 5.6s ease-in-out infinite;
+}
+.y-floating-proof.maps { left: -18px; top: 18%; }
+.y-floating-proof.call { right: -18px; top: 42%; animation-delay: -1.8s; }
+.y-floating-proof.app { left: 2%; bottom: 13%; animation-delay: -3.3s; }
+@keyframes y-float {
+  0%,100% { transform: translate3d(0,0,0); }
+  50% { transform: translate3d(0,-9px,0); }
+}
+.y-float-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--y-primary-soft);
+  color: var(--y-primary);
+  font-size: 12px;
+  font-weight: 850;
+}
+.y-floating-proof.call .y-float-icon {
+  background: #eaf8f2;
+  color: #19815e;
+}
+.y-floating-proof.app .y-float-icon {
+  background: #fff4dd;
+  color: #9b6915;
+}
+.y-floating-proof > div { display: grid; gap: 2px; }
+.y-floating-proof small {
+  color: #8a8d96;
+  font-size: 8px;
+  font-weight: 760;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.y-floating-proof strong { color: #262832; font-size: 10px; }
+.y-floating-proof em {
+  color: #777b86;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 760;
+}
+
+.y-phone-side-button {
+  position: absolute;
+  left: -3px;
+  z-index: 7;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+  background: #5a5b64;
+}
+.y-phone-side-button.top { top: 124px; height: 58px; }
+.y-phone-side-button.bottom { top: 194px; height: 82px; }
+.y-phone-hardware { position: relative; }
+.y-phone-logo .yumna-logo-word { display: none; }
+.y-phone-logo .yumna-logo-mark {
+  width: 25px;
+  height: 25px;
+  filter: none;
+}
+.y-phone-logo.assistant .yumna-logo-mark {
+  width: 28px;
+  height: 28px;
+}
+.y-phone-assistant-head > .yumna-logo { flex: 0 0 auto; }
+
+.y-phone-thread {
+  padding-bottom: 112px;
+}
+.y-phone-compose {
+  position: absolute;
+  z-index: 6;
+  left: 12px;
+  right: 12px;
+  bottom: 18px;
+  display: grid;
+  grid-template-columns: 1fr 38px;
+  gap: 7px;
+  align-items: center;
+  padding: 7px 7px 7px 13px;
+  border: 1px solid rgba(217,218,226,.94);
+  border-radius: 19px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 10px 32px rgba(23,23,36,.12);
+  backdrop-filter: blur(16px);
+}
+.y-phone-compose input {
+  min-width: 0;
+  height: 37px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #24262d;
+  font: inherit;
+  font-size: 10.5px;
+}
+.y-phone-compose input::placeholder { color: #9a9da6; }
+.y-phone-compose button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 13px;
+  background: var(--y-primary);
+  color: white;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: transform .16s ease, background .16s ease;
+}
+.y-phone-compose button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: var(--y-primary-dark);
+}
+.y-phone-compose button:disabled { opacity: .7; cursor: wait; }
+.y-compose-loader {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,.45);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: y-compose-spin .8s linear infinite;
+}
+@keyframes y-compose-spin { to { transform: rotate(360deg); } }
+.y-phone-demo-error {
+  position: absolute;
+  z-index: 8;
+  left: 20px;
+  right: 20px;
+  bottom: 72px;
+  padding: 8px 10px;
+  border: 1px solid #f2cbc7;
+  border-radius: 10px;
+  background: rgba(255,246,245,.96);
+  color: #9d3730;
+  font-size: 9px;
+  line-height: 1.35;
+  box-shadow: 0 6px 18px rgba(60,20,18,.08);
+}
+.y-demo-scenarios button.custom {
+  border-style: dashed;
+}
+.y-demo-live-note {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  margin-top: 28px;
+  padding: 15px 16px;
+  border: 1px solid #dddaf8;
+  border-radius: 14px;
+  background: #faf9ff;
+}
+.y-demo-live-note > i {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--y-mint);
+  box-shadow: 0 0 0 5px rgba(112,226,177,.16);
+}
+.y-demo-live-note > div { display: grid; gap: 3px; }
+.y-demo-live-note strong { color: #30313a; font-size: 12px; }
+.y-demo-live-note span { color: #777b86; font-size: 11px; line-height: 1.5; }
+
+.y-public-links a {
+  position: relative;
+}
+.y-public-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -11px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--y-primary);
+  transition: right .18s ease;
+}
+.y-public-links a:hover::after,
+.y-public-links a.active::after { right: 0; }
+.y-public-links a.active { color: #202129; }
+
+@media (max-width: 1120px) {
+  .y-floating-proof.maps { left: -4px; }
+  .y-floating-proof.call { right: -4px; }
+  .y-floating-proof.app { left: 4%; }
+}
+@media (max-width: 960px) {
+  .y-demo-stage { min-height: auto; }
+  .y-demo-stage::before,
+  .y-floating-proof { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .y-demo-stage::before,
+  .y-floating-proof,
+  .y-phone-live i,
+  .y-pulse-dots i,
+  .y-compose-loader {
+    animation: none !important;
+  }
+}

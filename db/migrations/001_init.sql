@@ -229,3 +229,15 @@ CREATE TABLE operator_routines (
 CREATE INDEX operator_routines_due_idx
   ON operator_routines(enabled, next_run_at)
   WHERE enabled = true;
+
+
+CREATE TABLE operator_callback_events (
+  callback_id text PRIMARY KEY,
+  org_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  task_id uuid NOT NULL REFERENCES operator_tasks(id) ON DELETE CASCADE,
+  step_id uuid NOT NULL REFERENCES operator_steps(id) ON DELETE CASCADE,
+  state text NOT NULL CHECK (state IN ('completed','failed')),
+  received_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX operator_callback_events_task_idx
+  ON operator_callback_events(task_id, received_at DESC);

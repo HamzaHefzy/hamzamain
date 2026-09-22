@@ -58,6 +58,9 @@ for (const path of await walk(root)) {
   if (/\banchor\b/i.test(content)) {
     failures.push(rel + ": Anchor branding/domain residue");
   }
+  if (/\b(?:Wafira|Dexyra)\b/i.test(content)) {
+    failures.push(rel + ": retired product-brand residue");
+  }
   if (/\bdexyra\b/i.test(content)) {
     failures.push(rel + ": discarded Dexyra brand residue");
   }

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { acceptOperatorCallback } from "@/lib/operator/service";
+import { acceptSafeOperatorCallback, callbackIdFromRaw } from "@/lib/operator/callbacks";
 
 const schema = z.object({
+  eventId: z.string().min(1).max(200).optional(),
   taskId: z.string().uuid(),
   stepId: z.string().uuid(),
   state: z.enum(["completed", "failed"]),
@@ -22,9 +23,21 @@ export async function POST(request: Request) {
   }
 
   try {
-    const input = schema.parse(await request.json());
-    const task = await acceptOperatorCallback(input);
-    return NextResponse.json({ ok: true, task });
+    const raw = await request.text();
+    const input = schema.parse(JSON.parse(raw));
+    const callbackId = callbackIdFromRaw(
+      raw,
+      request.headers.get("x-operator-event-id") ?? input.eventId ?? null,
+    );
+    const task = await acceptSafeOperatorCallback({
+      callbackId,
+      taskId: input.taskId,
+      stepId: input.stepId,
+      state: input.state,
+      message: input.message,
+      data: input.data,
+    });
+    return NextResponse.json({ ok: true, callbackId, task });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Invalid callback.";
     return NextResponse.json({ error: message }, { status: 400 });

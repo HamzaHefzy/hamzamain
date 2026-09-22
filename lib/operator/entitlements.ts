@@ -37,35 +37,66 @@ const planRules: Record<OperatorPlan, {
 
 export async function getOperatorEntitlements(orgId: string) {
   const sql = db();
-  const [subscription] = await sql<{ plan: OperatorPlan; status: string; customer_id: string | null }[]>`
+  const [subscription] = await sql<{
+    plan: OperatorPlan;
+    status: string;
+    customer_id: string | null;
+  }[]>`
     select plan, status, customer_id
     from operator_subscriptions
     where org_id = ${orgId}
     limit 1
   `;
 
-  const active = subscription && ["active", "trialing"].includes(subscription.status);
-  const plan: OperatorPlan = active ? subscription.plan : "trial";
+  const plan: OperatorPlan = subscription?.plan ?? "trial";
+  const status = subscription?.status ?? "trialing";
+  const executionEnabled = ["active", "trialing"].includes(status);
   const rules = planRules[plan];
 
   const [usage] = await sql<{ tasks: number; routines: number }[]>`
     select
-      (select count(*)::int from operator_tasks where org_id = ${orgId} and created_at >= date_trunc('month', now())) as tasks,
-      (select count(*)::int from operator_routines where org_id = ${orgId} and enabled = true) as routines
+      (
+        select count(*)::int
+        from operator_tasks
+        where org_id = ${orgId}
+          and created_at >= date_trunc('month', now())
+      ) as tasks,
+      (
+        select count(*)::int
+        from operator_routines
+        where org_id = ${orgId}
+          and enabled = true
+      ) as routines
   `;
 
   return {
     plan,
-    status: subscription?.status ?? "trialing",
+    status,
+    executionEnabled,
     customerId: subscription?.customer_id ?? null,
-    limits: { monthlyTasks: rules.monthlyTasks, routines: rules.routines },
+    limits: {
+      monthlyTasks: rules.monthlyTasks,
+      routines: rules.routines,
+    },
     usage: usage ?? { tasks: 0, routines: 0 },
     allowedKinds: rules.allowedKinds,
   };
 }
 
+function assertExecutionEnabled(
+  entitlement: Awaited<ReturnType<typeof getOperatorEntitlements>>,
+) {
+  if (entitlement.executionEnabled) return;
+  throw new Error(
+    "Operator execution is paused because this workspace subscription is " +
+    entitlement.status +
+    ". Update billing to resume new tasks and routines.",
+  );
+}
+
 export async function assertTaskCapacity(orgId: string) {
   const entitlement = await getOperatorEntitlements(orgId);
+  assertExecutionEnabled(entitlement);
   if (entitlement.usage.tasks >= entitlement.limits.monthlyTasks) {
     throw new Error(
       "This workspace has reached its monthly task limit for the " +
@@ -96,6 +127,7 @@ export function assertPlanSupportsSteps(
 
 export async function assertRoutineCapacity(orgId: string) {
   const entitlement = await getOperatorEntitlements(orgId);
+  assertExecutionEnabled(entitlement);
   if (entitlement.usage.routines >= entitlement.limits.routines) {
     throw new Error(
       "This workspace has reached its active routine limit for the " +

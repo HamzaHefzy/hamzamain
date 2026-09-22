@@ -10,6 +10,7 @@ import { plannerContext, upsertOperatorMemory } from "@/lib/operator/context";
 import { createOperatorRoutine, runDueOperatorRoutines } from "@/lib/operator/routines";
 import { cancelOperatorTask } from "@/lib/operator/cancellation";
 import { acceptSafeOperatorCallback } from "@/lib/operator/callbacks";
+import { resolveOperatorDestination, saveOperatorContact } from "@/lib/operator/contacts";
 
 const run = Boolean(process.env.DATABASE_URL);
 const sql = run ? postgres(process.env.DATABASE_URL!, { max: 1, prepare: false }) : null;
@@ -326,6 +327,43 @@ describe.skipIf(!run)("Operator database lifecycle", () => {
         and event_type = 'step.completed'
     `;
     expect(events.count).toBe(1);
+  });
+
+  it("resolves private contact destinations and refuses ambiguous matches", async () => {
+    const primary = await saveOperatorContact({
+      orgId,
+      displayName: "Dr. Lee",
+      organization: "Triangle Dental",
+      phone: "+19195550111",
+      email: "office@triangle-dental.example",
+      aliases: ["dentist"],
+    });
+
+    const resolved = await resolveOperatorDestination({
+      orgId,
+      kind: "voice",
+      taskRequest: "Call Dr. Lee and ask for the earliest cleaning next week",
+      request: {},
+    });
+    expect(resolved.to).toBe(primary.phone);
+    expect(resolved.contactName).toBe("Dr. Lee");
+
+    await saveOperatorContact({
+      orgId,
+      displayName: "Dr. Smith",
+      organization: "Downtown Dental",
+      phone: "+19195550222",
+      aliases: ["dentist"],
+    });
+
+    const ambiguous = await resolveOperatorDestination({
+      orgId,
+      kind: "voice",
+      taskRequest: "Call my dentist",
+      request: {},
+    });
+    expect(ambiguous.to).toBeUndefined();
+    expect(String(ambiguous.contactResolutionError)).toMatch(/more than one/i);
   });
 
 });

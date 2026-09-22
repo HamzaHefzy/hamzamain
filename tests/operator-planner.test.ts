@@ -23,9 +23,15 @@ describe("Operator planner", () => {
   it("keeps restaurant discovery non-transactional until the user asks to book", () => {
     const plan = planOperatorTask("Find three restaurants near downtown");
     expect(plan.category).toBe("dining");
-    expect(plan.steps.some((step) => step.kind === "browser")).toBe(true);
+    expect(plan.steps.some((step) => step.kind === "api" && step.provider === "google-places")).toBe(true);
     expect(plan.steps.some((step) => step.kind === "payment")).toBe(false);
     expect(plan.steps.some((step) => step.kind === "calendar")).toBe(false);
   });
 
+
+  it("uses Google Places for a phone-number lookup without accidentally placing a call", () => {
+    const plan = planOperatorTask("Find the phone number for Triangle Dental near me");
+    expect(plan.steps.some((step) => step.provider === "google-places")).toBe(true);
+    expect(plan.steps.some((step) => step.kind === "voice")).toBe(false);
+  });
 });

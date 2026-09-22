@@ -67,13 +67,13 @@ for (const path of await walk(root)) {
 }
 
 const pkg = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
-if (pkg.name !== "wafira") {
-  failures.push("package.json: package name must remain wafira");
+if (pkg.name !== "yumna") {
+  failures.push("package.json: package name must remain yumna");
 }
 
 const lock = JSON.parse(await readFile(join(root, "package-lock.json"), "utf8"));
-if (lock.name !== "wafira" || lock.packages?.[""]?.name !== "wafira") {
-  failures.push("package-lock.json: root package metadata is not Wafira-native");
+if (lock.name !== "yumna" || lock.packages?.[""]?.name !== "yumna") {
+  failures.push("package-lock.json: root package metadata is not Yumna-native");
 }
 
 if (failures.length) {

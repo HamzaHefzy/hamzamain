@@ -350,11 +350,13 @@ export async function runOperatorTask(orgId: string, taskId: string) {
             });
 
       result = await executeOperatorStep({
+        orgId,
         taskId,
         stepId: step.id,
         kind: step.kind,
         summary: step.summary,
         request: executionRequest,
+        provider: step.provider,
         callbackToken,
       });
     } catch (error) {

@@ -3,6 +3,8 @@ import { fetchWithTimeout } from "@/lib/http";
 import { runPipedreamAppAction } from "@/lib/operator/pipedream";
 import { getGooglePlaceDetails, searchGooglePlaces } from "@/lib/operator/places";
 import { getOperatorProfile } from "@/lib/operator/profile";
+import { searchWeb } from "@/lib/operator/web-search";
+import { startVapiCall, vapiConfigured } from "@/lib/operator/vapi";
 
 type ExecuteInput = {
   orgId: string;
@@ -62,6 +64,53 @@ async function postExecutor(
 }
 
 
+
+
+async function webSearchRunner(input: ExecuteInput): Promise<ExecutionResult> {
+  if (!process.env.BRAVE_SEARCH_API_KEY) {
+    return {
+      state: "waiting_external",
+      provider: "brave-search",
+      message: "Connect Brave Search to run live web research.",
+      data: { connector: "BRAVE_SEARCH_API_KEY", noDispatch: true },
+    };
+  }
+
+  try {
+    const query =
+      typeof input.request.query === "string"
+        ? input.request.query
+        : typeof input.request.objective === "string"
+          ? input.request.objective
+          : typeof input.request.userRequest === "string"
+            ? input.request.userRequest
+            : input.summary;
+    const freshness =
+      input.request.freshness === "pd" ||
+      input.request.freshness === "pw" ||
+      input.request.freshness === "pm" ||
+      input.request.freshness === "py"
+        ? input.request.freshness
+        : undefined;
+
+    const results = await searchWeb({ query, count: 8, freshness });
+    return {
+      state: "completed",
+      provider: "brave-search",
+      message:
+        results.length > 0
+          ? "Searched the live web and found " + results.length + " relevant results."
+          : "The live web search returned no results.",
+      data: { query, results },
+    };
+  } catch (error) {
+    return {
+      state: "failed",
+      provider: "brave-search",
+      message: error instanceof Error ? error.message : "Live web search failed.",
+    };
+  }
+}
 
 async function googlePlacesRunner(input: ExecuteInput): Promise<ExecutionResult> {
   if (!process.env.GOOGLE_MAPS_API_KEY) {
@@ -193,6 +242,38 @@ async function actionRunner(input: ExecuteInput): Promise<ExecutionResult> {
 }
 
 async function callWithVoiceProvider(input: ExecuteInput): Promise<ExecutionResult> {
+
+  if (vapiConfigured()) {
+    try {
+      const objective =
+        typeof input.request.objective === "string"
+          ? input.request.objective
+          : input.summary;
+      const started = await startVapiCall({
+        taskId: input.taskId,
+        stepId: input.stepId,
+        to,
+        objective,
+        contactName:
+          typeof input.request.contactName === "string"
+            ? input.request.contactName
+            : null,
+      });
+      return {
+        state: "waiting_external",
+        provider: "vapi",
+        message: "Conversational outbound call started. Yumna is waiting for the call report.",
+        data: { callId: started.id, callStatus: started.status },
+      };
+    } catch (error) {
+      return {
+        state: "failed",
+        provider: "vapi",
+        message: error instanceof Error ? error.message : "Vapi call failed.",
+      };
+    }
+  }
+
   const voiceUrl = process.env.OPERATOR_VOICE_AGENT_URL;
   if (voiceUrl) {
     return postExecutor(
@@ -349,6 +430,9 @@ export async function executeOperatorStep(input: ExecuteInput): Promise<Executio
   }
 
   if (input.kind === "research") {
+    if (input.provider === "brave-search" || input.provider === "web-search") {
+      return webSearchRunner(input);
+    }
     return {
       state: "completed",
       provider: "operator",
@@ -359,6 +443,7 @@ export async function executeOperatorStep(input: ExecuteInput): Promise<Executio
     };
   }
   if (input.provider === "google-places") return googlePlacesRunner(input);
+  if (input.provider === "brave-search" || input.provider === "web-search") return webSearchRunner(input);
   if (input.kind === "voice") return callWithVoiceProvider(input);
   if (input.kind === "api" && (input.provider === "pipedream" || input.provider === "app-agent" || input.request.pipedreamActionId || input.request.app)) return connectedAppRunner(input);
   if (input.kind === "email") return sendWithResend(input);

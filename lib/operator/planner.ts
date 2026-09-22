@@ -1,6 +1,7 @@
 import type { PlannedStep, TaskPlan } from "@/lib/operator/types";
 
-const includesAny = (value: string, terms: string[]) => terms.some((term) => value.includes(term));
+const includesAny = (value: string, terms: string[]) =>
+  terms.some((term) => value.includes(term));
 
 function titleFromRequest(request: string) {
   const clean = request.trim().replace(/\s+/g, " ");
@@ -15,20 +16,46 @@ function step(input: PlannedStep): PlannedStep {
 export function planOperatorTask(rawRequest: string): TaskPlan {
   const request = rawRequest.trim();
   if (request.length < 4) throw new Error("Tell Operator what you want handled.");
+
   const text = request.toLowerCase();
   const steps: PlannedStep[] = [];
   const assumptions: string[] = [];
   let category = "general";
 
-  const isRestaurant = includesAny(text, ["restaurant", "dinner", "reservation", "brunch", "lunch"]);
-  const isAppointment = includesAny(text, ["appointment", "dentist", "doctor", "salon", "barber", "mechanic"]);
-  const isTravel = includesAny(text, ["flight", "hotel", "trip", "airline", "rental car"]);
-  const isPurchase = includesAny(text, ["buy", "purchase", "order", "book", "reserve"]);
-  const isCancel = includesAny(text, ["cancel", "subscription", "refund", "return"]);
-  const isCall = includesAny(text, ["call", "phone", "hold", "speak to", "ask them"]);
-  const isCalendar = isRestaurant || isAppointment || isTravel || includesAny(text, ["calendar", "schedule", "reschedule", "reservation", "meeting"]);
-  const isEmail = includesAny(text, ["email", "send", "reply", "message"]);
-  const involvesSpend = isPurchase || isRestaurant || isTravel || includesAny(text, ["pay", "quote", "price", "$"]);
+  const isRestaurant = includesAny(text, [
+    "restaurant", "dinner", "brunch", "lunch",
+  ]);
+  const isAppointment = includesAny(text, [
+    "appointment", "dentist", "doctor", "salon", "barber", "mechanic",
+  ]);
+  const isTravel = includesAny(text, [
+    "flight", "hotel", "trip", "airline", "rental car",
+  ]);
+  const isPurchase = includesAny(text, [
+    "buy", "purchase", "order",
+  ]);
+  const isBookingIntent = includesAny(text, [
+    "book", "reserve", "reservation", "schedule", "reschedule",
+    "make an appointment", "set up an appointment",
+  ]);
+  const isCancel = includesAny(text, [
+    "cancel", "subscription", "refund", "return",
+  ]);
+  const isCall = includesAny(text, [
+    "call", "phone", "hold", "speak to", "ask them",
+  ]);
+  const isEmail = includesAny(text, [
+    "email", "send", "reply", "message",
+  ]);
+  const explicitPayment = includesAny(text, [
+    "pay", "charge my", "use my card",
+  ]);
+
+  const transactionIntent = isPurchase || isBookingIntent || explicitPayment;
+  const isCalendar =
+    isBookingIntent ||
+    includesAny(text, ["calendar", "meeting"]);
+  const involvesSpend = transactionIntent;
 
   if (isRestaurant) category = "dining";
   else if (isAppointment) category = "appointments";
@@ -45,7 +72,10 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
     request: { userRequest: request },
   }));
 
-  if (isCall || isAppointment || isCancel) {
+  const needsAppointmentCall =
+    isAppointment && (isBookingIntent || isCall);
+
+  if (isCall || isCancel || needsAppointmentCall) {
     steps.push(step({
       kind: "voice",
       summary: isCancel
@@ -57,12 +87,19 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
       provider: "twilio",
       request: { disclosureRequired: true, objective: request },
     }));
-  } else if (isRestaurant || isTravel || isPurchase) {
+  } else if (
+    isRestaurant ||
+    isTravel ||
+    isPurchase ||
+    isBookingIntent
+  ) {
     steps.push(step({
       kind: "browser",
-      summary: "Search live availability and prepare the best executable option",
+      summary: transactionIntent
+        ? "Search live availability and prepare the best executable option"
+        : "Research live options and return the best matches",
       domain: category,
-      action: "transact",
+      action: transactionIntent ? "transact" : "research",
       requiresApproval: false,
       provider: "action-runner",
       request: { objective: request },
@@ -93,7 +130,9 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
       provider: "payment-runner",
       request: { objective: request },
     }));
-    assumptions.push("No money is spent unless an authority rule covers the action or the user approves it.");
+    assumptions.push(
+      "No money is spent unless an authority rule covers the action or the user approves it.",
+    );
   }
 
   if (isCalendar) {
@@ -123,7 +162,8 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
   return {
     title: titleFromRequest(request),
     category,
-    rationale: "Operator decomposes the request into auditable actions and pauses only when authority is missing.",
+    rationale:
+      "Operator decomposes the request into auditable actions and pauses only when authority is missing.",
     steps,
     assumptions,
   };

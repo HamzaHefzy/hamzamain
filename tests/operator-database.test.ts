@@ -14,6 +14,7 @@ import { acceptSafeOperatorCallback } from "@/lib/operator/callbacks";
 import { resolveOperatorDestination, saveOperatorContact } from "@/lib/operator/contacts";
 import { issueOperatorStepCallbackToken, verifyOperatorStepCallbackToken } from "@/lib/operator/callback-auth";
 import { deleteOperatorWorkspace, exportOperatorWorkspace } from "@/lib/operator/account";
+import { attachInboundTask, claimInboundEvent } from "@/lib/operator/inbound";
 
 const run = Boolean(process.env.DATABASE_URL);
 const sql = run ? postgres(process.env.DATABASE_URL!, { max: 1, prepare: false }) : null;
@@ -474,6 +475,37 @@ describe.skipIf(!run)("Operator database lifecycle", () => {
     `;
     expect(remaining.orgs).toBe(0);
     expect(remaining.users).toBe(0);
+  });
+
+  it("deduplicates retried inbound provider events", async () => {
+    const provider = "test-provider";
+    const eventId = "event-123";
+    expect(await claimInboundEvent({
+      provider, eventId, orgId, source: "sms",
+    })).toBe(true);
+    expect(await claimInboundEvent({
+      provider, eventId, orgId, source: "sms",
+    })).toBe(false);
+
+    const [task] = await sql!<{ id: string }[]>`
+      insert into operator_tasks (
+        org_id, created_by, title, request, category, status, source
+      )
+      values (
+        ${orgId}, ${userId}, 'Inbound dedupe test', 'Inbound dedupe test',
+        'general', 'ready', 'sms'
+      )
+      returning id
+    `;
+    await attachInboundTask({ provider, eventId, taskId: task.id });
+
+    const [row] = await sql!<{ count: number; task_id: string | null }[]>`
+      select count(*)::int as count, max(task_id::text) as task_id
+      from operator_inbound_events
+      where provider = ${provider} and event_id = ${eventId}
+    `;
+    expect(row.count).toBe(1);
+    expect(row.task_id).toBe(task.id);
   });
 
 });

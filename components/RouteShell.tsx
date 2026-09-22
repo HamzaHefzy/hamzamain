@@ -11,6 +11,7 @@ const navItems = [
   { href: "/assistant/activity", label: "Activity" },
   { href: "/assistant/authority", label: "Authority" },
   { href: "/assistant/connections", label: "Connections" },
+  { href: "/assistant/billing", label: "Billing" },
 ];
 
 const publicPaths = new Set([

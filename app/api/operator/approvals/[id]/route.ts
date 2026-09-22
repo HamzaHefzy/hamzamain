@@ -6,7 +6,7 @@ import { resolveOperatorApproval, runOperatorTask } from "@/lib/operator/service
 const schema = z.object({ decision: z.enum(["approved","rejected"]) });
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await apiSession("support_write");
+  const auth = await apiSession("task_write");
   if (!auth.session) return auth.response;
   try {
     const { id } = await context.params;

@@ -28,6 +28,12 @@ export default async function ConnectionsPage() {
       description: "Search local businesses and resolve canonical addresses, Maps links, websites, ratings and phone numbers before execution.",
     },
     {
+      name: "Live web search",
+      env: "BRAVE_SEARCH_API_KEY",
+      connected: Boolean(process.env.BRAVE_SEARCH_API_KEY),
+      description: "Fresh web research and source retrieval through Brave Search for current facts, reviews, comparisons and news.",
+    },
+    {
       name: "Browser & API runner",
       env: "OPERATOR_ACTION_RUNNER_URL",
       connected: Boolean(process.env.OPERATOR_ACTION_RUNNER_URL),
@@ -35,9 +41,15 @@ export default async function ConnectionsPage() {
     },
     {
       name: "Conversational voice agent",
-      env: "OPERATOR_VOICE_AGENT_URL",
-      connected: Boolean(process.env.OPERATOR_VOICE_AGENT_URL),
-      description: "Full outbound conversations, hold time and provider negotiation through a connected voice-agent service.",
+      env: "VAPI_* or OPERATOR_VOICE_AGENT_URL",
+      connected: Boolean(
+        (process.env.VAPI_API_KEY &&
+          process.env.VAPI_ASSISTANT_ID &&
+          process.env.VAPI_PHONE_NUMBER_ID &&
+          process.env.VAPI_WEBHOOK_SECRET) ||
+        process.env.OPERATOR_VOICE_AGENT_URL
+      ),
+      description: "Natural outbound conversations with call reports and transcripts returned into the task. Vapi is the preferred built-in provider.",
     },
     {
       name: "Twilio phone identity",

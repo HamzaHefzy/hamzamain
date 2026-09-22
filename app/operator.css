@@ -1106,3 +1106,101 @@ button.ghost,
     flex-direction: column;
   }
 }
+
+.operator-integration-hub {
+  display: grid;
+  gap: 16px;
+}
+.operator-featured-apps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+}
+.operator-featured-apps button {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  min-height: 74px;
+  border: 1px solid var(--op-line);
+  border-radius: 13px;
+  padding: 12px;
+  background: white;
+  color: var(--op-ink);
+  cursor: pointer;
+}
+.operator-featured-apps button.connected {
+  border-color: #b8e1ca;
+  background: #f7fcf9;
+}
+.operator-featured-apps button span { font-weight: 750; }
+.operator-featured-apps button small { color: var(--op-muted); }
+.operator-custom-app {
+  display: grid;
+  grid-template-columns: 1fr minmax(180px, 280px) auto;
+  align-items: end;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--op-line);
+}
+.operator-custom-app > div {
+  display: grid;
+  gap: 4px;
+}
+.operator-custom-app span {
+  color: var(--op-muted);
+  font-size: 12px;
+}
+.operator-custom-app input {
+  min-height: 43px;
+  border: 1px solid #d9dbe0;
+  border-radius: 11px;
+  padding: 0 12px;
+  font: inherit;
+}
+.operator-custom-app button,
+.operator-connected-accounts button {
+  min-height: 43px;
+  border: 0;
+  border-radius: 11px;
+  padding: 0 15px;
+  background: var(--op-ink);
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.operator-connected-accounts {
+  display: grid;
+  gap: 8px;
+}
+.operator-connected-accounts article {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--op-line);
+  border-radius: 12px;
+  background: white;
+}
+.operator-connected-accounts article > div {
+  display: grid;
+  gap: 3px;
+}
+.operator-connected-accounts span {
+  color: var(--op-muted);
+  font-size: 12px;
+}
+.operator-connected-accounts button.ghost {
+  background: var(--op-soft);
+  color: var(--op-ink);
+  border: 1px solid var(--op-line);
+}
+@media (max-width: 900px) {
+  .operator-featured-apps { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 620px) {
+  .operator-featured-apps { grid-template-columns: 1fr 1fr; }
+  .operator-custom-app { grid-template-columns: 1fr; }
+  .operator-connected-accounts article { align-items: flex-start; flex-direction: column; }
+}

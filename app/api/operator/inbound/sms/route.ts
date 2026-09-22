@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   `;
 
   if (!identity) {
-    return response("This phone number is not linked to a verified Wafira workspace.", 403);
+    return response("This phone number is not linked to a verified Yumna workspace.", 403);
   }
 
   const provider = "twilio-sms";
@@ -67,17 +67,17 @@ export async function POST(request: Request) {
     const finalTask = await runOperatorTask(identity.org_id, task.id);
 
     if (finalTask?.status === "awaiting_approval") {
-      return response("I started that. One step needs your approval in Wafira before I can continue.");
+      return response("I started that. One step needs your approval in Yumna before I can continue.");
     }
     if (finalTask?.status === "waiting_external") {
       return response("I started that and I’m working on the outside-world step now.");
     }
     if (finalTask?.status === "completed") {
-      return response("Done. I completed that task and saved the activity in Wafira.");
+      return response("Done. I completed that task and saved the activity in Yumna.");
     }
-    return response("I added that to Wafira. You can follow its progress in the command center.");
+    return response("I added that to Yumna. You can follow its progress in the command center.");
   } catch {
     if (!taskId) await releaseInboundEvent({ provider, eventId });
-    return response("I could not start that task. Open Wafira to review the request.", 500);
+    return response("I could not start that task. Open Yumna to review the request.", 500);
   }
 }

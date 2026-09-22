@@ -58,16 +58,19 @@ for (const path of await walk(root)) {
   if (/\banchor\b/i.test(content)) {
     failures.push(rel + ": Anchor branding/domain residue");
   }
+  if (/\bdexyra\b/i.test(content)) {
+    failures.push(rel + ": discarded Dexyra brand residue");
+  }
 }
 
 const pkg = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
-if (pkg.name !== "operator-personal-ops") {
-  failures.push("package.json: package name must remain operator-personal-ops");
+if (pkg.name !== "wafira") {
+  failures.push("package.json: package name must remain wafira");
 }
 
 const lock = JSON.parse(await readFile(join(root, "package-lock.json"), "utf8"));
-if (lock.name !== "operator-personal-ops" || lock.packages?.[""]?.name !== "operator-personal-ops") {
-  failures.push("package-lock.json: root package metadata is not Operator-native");
+if (lock.name !== "wafira" || lock.packages?.[""]?.name !== "wafira") {
+  failures.push("package-lock.json: root package metadata is not Wafira-native");
 }
 
 if (failures.length) {

@@ -63,8 +63,10 @@ export function planOperatorTask(rawRequest: string): TaskPlan {
     "find information", "find out", "news",
   ]);
   const freshness =
-    includesAny(text, ["today", "latest", "right now"]) ? "pd" :
-    includesAny(text, ["this week", "recent"]) ? "pw" :
+    includesAny(text, ["this week"]) ? "pw" :
+    includesAny(text, ["today", "right now"]) ? "pd" :
+    includesAny(text, ["latest"]) ? "pd" :
+    includesAny(text, ["recent"]) ? "pw" :
     undefined;
 
   const transactionIntent = isPurchase || isBookingIntent || explicitPayment;

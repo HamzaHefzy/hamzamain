@@ -11,6 +11,7 @@ import { createOperatorRoutine, runDueOperatorRoutines } from "@/lib/operator/ro
 import { cancelOperatorTask } from "@/lib/operator/cancellation";
 import { acceptSafeOperatorCallback } from "@/lib/operator/callbacks";
 import { resolveOperatorDestination, saveOperatorContact } from "@/lib/operator/contacts";
+import { issueOperatorStepCallbackToken, verifyOperatorStepCallbackToken } from "@/lib/operator/callback-auth";
 
 const run = Boolean(process.env.DATABASE_URL);
 const sql = run ? postgres(process.env.DATABASE_URL!, { max: 1, prepare: false }) : null;
@@ -364,6 +365,52 @@ describe.skipIf(!run)("Operator database lifecycle", () => {
     });
     expect(ambiguous.to).toBeUndefined();
     expect(String(ambiguous.contactResolutionError)).toMatch(/more than one/i);
+  });
+
+  it("scopes callback credentials to one running step and revokes them on cancellation", async () => {
+    const [task] = await sql!<{ id: string }[]>`
+      insert into operator_tasks (
+        org_id, created_by, title, request, category, status, source
+      )
+      values (
+        ${orgId}, ${userId}, 'Scoped callback test',
+        'Test external callback authorization', 'general', 'in_progress', 'api'
+      )
+      returning id
+    `;
+    const [step] = await sql!<{ id: string }[]>`
+      insert into operator_steps (
+        org_id, task_id, sequence, kind, status, summary
+      )
+      values (
+        ${orgId}, ${task.id}, 1, 'browser', 'running',
+        'External step awaiting callback'
+      )
+      returning id
+    `;
+
+    const token = await issueOperatorStepCallbackToken({
+      orgId,
+      taskId: task.id,
+      stepId: step.id,
+    });
+    expect(await verifyOperatorStepCallbackToken({
+      taskId: task.id,
+      stepId: step.id,
+      token,
+    })).toBe(true);
+    expect(await verifyOperatorStepCallbackToken({
+      taskId: task.id,
+      stepId: step.id,
+      token: token + "wrong",
+    })).toBe(false);
+
+    await cancelOperatorTask({ orgId, userId, taskId: task.id });
+    expect(await verifyOperatorStepCallbackToken({
+      taskId: task.id,
+      stepId: step.id,
+      token,
+    })).toBe(false);
   });
 
 });
